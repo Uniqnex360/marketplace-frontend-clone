@@ -61,16 +61,9 @@ console.log('BASEURL',baseUrl)
     setLoading(true);
     try {
       const response = await axios.post(
-      `${baseUrl}loginUser/`,
-      { email, password },
-      {
-        headers: {
-          "Content-Type": "application/json",
-        },
-        withCredentials: false, 
-      }
-    );
-
+        `${process.env.REACT_APP_IP}loginUser/`,
+        { email, password }
+      );
       
       if (response.data && response.data.data) {
         const userData = response.data.data;
