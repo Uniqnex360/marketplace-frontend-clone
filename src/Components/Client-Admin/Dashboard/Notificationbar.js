@@ -68,7 +68,7 @@ function Notificationbar() {
               borderRadius: "2px",
             }}
           /> */}
-          <h2>Logo</h2>
+          <h6>Logo</h6>
         </IconButton>
 
         <Typography variant="h6" sx={{ flexGrow: 1, textAlign: "center" }}>
