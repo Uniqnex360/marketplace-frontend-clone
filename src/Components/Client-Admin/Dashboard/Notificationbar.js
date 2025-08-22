@@ -45,7 +45,8 @@ function Notificationbar() {
     localStorage.removeItem("token");
     localStorage.removeItem("user");
   };
-
+  
+  
   return (
     <AppBar
       position="fixed"
