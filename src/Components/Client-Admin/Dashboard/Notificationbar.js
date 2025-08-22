@@ -52,12 +52,12 @@ function Notificationbar() {
       sx={{ backgroundColor: accentColor, zIndex: 1201 }}
     >
       <Toolbar>
-        {/* <IconButton edge="start" color="inherit" aria-label="menu">
-          <MenuIcon />
-        </IconButton> */}
-
         <IconButton edge="start" color="inherit" aria-label="menu">
-          {/* <img
+          <MenuIcon />
+        </IconButton>
+
+        {/* <IconButton edge="start" color="inherit" aria-label="menu">
+          <img
             src={require("../../assets/One Tree Brands Main Logo 2400x1800 (HIGH RES).607b435d3277b92df838 (1).png")}
             alt="Logo"
             style={{
@@ -67,9 +67,8 @@ function Notificationbar() {
               padding: "2px",
               borderRadius: "2px",
             }}
-          /> */}
-          <h6>Logo</h6>
-        </IconButton>
+          />
+        </IconButton> */}
 
         <Typography variant="h6" sx={{ flexGrow: 1, textAlign: "center" }}>
           MarketPlace Management
