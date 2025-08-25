@@ -238,7 +238,7 @@ const CompareChart = ({
         payload
       );
 
-      const data = response.data.data;
+      const data = response.data;
       setCompareDropDown(data.comapre_past);
       setCompareTotal(data.compare_total);
       setChartData(data?.graph);
