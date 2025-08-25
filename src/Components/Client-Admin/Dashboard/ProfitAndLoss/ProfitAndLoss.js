@@ -501,7 +501,7 @@ const ProfitAndLoss = ({
                 {formatMetricName(item.name)}
               </span>
               <span style={{ color: "#000", fontWeight: "bold" }}>
-                {item.name === "units"
+                {item.name === "units"|| item.name==='Orders'
                   ? item.value
                   : `$${Number(item.value).toFixed(2)}`}
               </span>
@@ -524,7 +524,7 @@ const ProfitAndLoss = ({
       case "netProfit":
         return "Net Profit";
       case "units":
-        return "Units Sold";
+        return "Orders";
       // case "ppcSales": return "PPC Sales";
       default:
         return metric;
@@ -1058,7 +1058,7 @@ const ProfitAndLoss = ({
                       type="monotone"
                       dataKey="units"
                       stroke="#b8b8ff"
-                      name="Units Sold"
+                      name="Orders"
                       strokeWidth={2}
                       dot={false}
                       activeDot={{ r: 5 }}
