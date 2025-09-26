@@ -18,22 +18,22 @@ const Sidebar = () => {
   const location = useLocation();
 
   const menuItems = [
-    { text: "Dashboard", icon: <Dashboard />, path: "/Home" },
-    { text: "Products", icon: <ShoppingCart />, path: "/Home/products" },
-    { text: "Orders", icon: <AssignmentIcon />, path: "/Home/orders" },
-     { text: "Inventory", icon: <Inventory2Icon />, path: "/Home/contact" },
-     { text: "Users", icon: <Person />, path: "/Home/users" },
-    { text: "Settings", icon: <Settings />, path: "/Home/settings" },
+    { text: "Dashboard", icon: <Dashboard />, path: "/home" },
+    { text: "Products", icon: <ShoppingCart />, path: "/home/products" },
+    { text: "Orders", icon: <AssignmentIcon />, path: "/home/orders" },
+     { text: "Inventory", icon: <Inventory2Icon />, path: "/home/contact" },
+     { text: "Users", icon: <Person />, path: "/home/users" },
+    { text: "Settings", icon: <Settings />, path: "/home/settings" },
   ];
 
   const isActivePath = (path) => {
     if (location.pathname === path) {
       return true;
     }
-    if (path === "/Home/products" && location.pathname.startsWith("/Home/products")) {
+    if (path === "/home/products" && location.pathname.startsWith("/home/products")) {
       return true;
     }
-    if (path === "/Home/orders" && location.pathname.startsWith("/Home/orders")) {
+    if (path === "/home/orders" && location.pathname.startsWith("/home/orders")) {
       return true;
     }
     return false;

@@ -26,8 +26,8 @@ import ArrowUpwardIcon from '@mui/icons-material/ArrowUpward';
 import ArrowDownwardIcon from '@mui/icons-material/ArrowDownward';
 import CustomizeTooltip from '../CustomTooltip/CustomTooltip';
 import { formatCurrency } from '../../../utils/currencyFormatter';
-const SalesDecreasing = ({ userId, marketPlaceId, brand_id, product_id, manufacturer_name, fulfillment_channel, DateStartDate, DateEndDate }) => {
-    const [products, setProducts] = useState([]);
+const SalesDecreasing = ({ userId, marketPlaceId, brand_id, product_id, manufacturer_name, fulfillment_channel, DateStartDate, DateEndDate ,products}) => {
+    // const [products, setProducts] = useState([]);
     const [tooltipText, setTooltipText] = useState('Copy ASIN');
     const [copied, setCopied] = useState(false);
     const today = new Date();
@@ -112,45 +112,45 @@ const SalesDecreasing = ({ userId, marketPlaceId, brand_id, product_id, manufact
 
 
     // Fetch function to get product data from API
-    const fetchSalesDecreasing = async () => {
-        try {
-            const response = await axios.post(
-                `${process.env.REACT_APP_IP}getProductPerformanceSummary/`,
-                {
-                    action: "least",
-                    user_id: userId, // Include userId if needed
-                    marketplace_id: marketPlaceId.id,
-                    brand_id: brand_id,
-                    product_id: product_id,
-                    manufacturer_name: manufacturer_name,
-                    fulfillment_channel: fulfillment_channel,
-                    start_date: DateStartDate,
-                    end_date: DateEndDate,
-                    timezone: Intl.DateTimeFormat().resolvedOptions().timeZone, // Get the user's timezone
-                }
-            );
-            console.log('res', response.data.least_3_products);
-            // Use 'top_3_products' instead of 'least_3_products' based on your request
-            setProducts(response.data.least_3_products || []); // Safe check if least_3_products exists
-        } catch (error) {
-            console.error('Failed to fetch sales decreasing data:', error);
-        }
-    };
+    // const fetchSalesDecreasing = async () => {
+    //     try {
+    //         const response = await axios.post(
+    //             `${process.env.REACT_APP_IP}getProductPerformanceSummary/`,
+    //             {
+    //                 action: "least",
+    //                 user_id: userId, // Include userId if needed
+    //                 marketplace_id: marketPlaceId.id,
+    //                 brand_id: brand_id,
+    //                 product_id: product_id,
+    //                 manufacturer_name: manufacturer_name,
+    //                 fulfillment_channel: fulfillment_channel,
+    //                 start_date: DateStartDate,
+    //                 end_date: DateEndDate,
+    //                 timezone: Intl.DateTimeFormat().resolvedOptions().timeZone, // Get the user's timezone
+    //             }
+    //         );
+    //         console.log('res', response.data.least_3_products);
+    //         // Use 'top_3_products' instead of 'least_3_products' based on your request
+    //         setProducts(response.data.least_3_products || []); // Safe check if least_3_products exists
+    //     } catch (error) {
+    //         console.error('Failed to fetch sales decreasing data:', error);
+    //     }
+    // };
 
-    useEffect(() => {
+    // useEffect(() => {
 
-        const currentParams = JSON.stringify({
+    //     const currentParams = JSON.stringify({
 
-            userId, marketPlaceId, brand_id, product_id, manufacturer_name, fulfillment_channel, DateStartDate, DateEndDate
+    //         userId, marketPlaceId, brand_id, product_id, manufacturer_name, fulfillment_channel, DateStartDate, DateEndDate
 
-        });
+    //     });
 
-        if (lastParamsRef.current !== currentParams) {
-            lastParamsRef.current = currentParams;
-            fetchSalesDecreasing();
-        }
+    //     if (lastParamsRef.current !== currentParams) {
+    //         lastParamsRef.current = currentParams;
+    //         fetchSalesDecreasing();
+    //     }
 
-    }, [userId, marketPlaceId, brand_id, product_id, manufacturer_name, fulfillment_channel, DateStartDate, DateEndDate]);
+    // }, [userId, marketPlaceId, brand_id, product_id, manufacturer_name, fulfillment_channel, DateStartDate, DateEndDate]);
 
 
 

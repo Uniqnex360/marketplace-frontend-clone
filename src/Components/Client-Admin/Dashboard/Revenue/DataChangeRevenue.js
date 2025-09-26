@@ -8,7 +8,6 @@ import {
   Legend,
   ResponsiveContainer,
 } from "recharts";
-
 import { Close as CloseIcon } from "@mui/icons-material";
 import {
   ArrowDownward,
@@ -18,8 +17,7 @@ import {
   ChevronRight,
 } from "@mui/icons-material";
 import CheckIcon from "@mui/icons-material/Check";
-import SettingsIcon from "@mui/icons-material/Settings"; // or SettingsOutlined
-
+import SettingsIcon from "@mui/icons-material/Settings"; 
 import RevenueChooseMetrics from "./RevenueChooseMetrics";
 import {
   Tabs,
@@ -46,12 +44,11 @@ import {
   FormControlLabel,
 } from "@mui/material";
 import dayjs from "dayjs";
-import axios from "axios"; // Assuming axios is used for API calls
+import axios from "axios"; 
 import NoteModel from "../NoteModel";
 import { parse, format, parseISO, isValid } from "date-fns";
 import { enUS } from "date-fns/locale";
 import DottedCircleLoading from "../../../Loading/DotLoading";
-
 const metricColors = {
   gross_revenue: "#00b894",
   gross_revenue_with_tax: "#2ecc71",
@@ -62,7 +59,6 @@ const metricColors = {
   refund_amount: "#e6770d",
   refund_quantity: "#600101",
 };
-
 const initialMetricConfig = [
   {
     id: "gross_revenue_with_tax",
@@ -131,7 +127,6 @@ const initialMetricConfig = [
     show: false,
   },
 ];
-
 const metricLabels = {
   gross_revenue: "Gross Revenue",
   gross_revenue_with_tax: "Gross Revenue",
@@ -142,7 +137,6 @@ const metricLabels = {
   refund_amount: "Refund Amount",
   refund_quantity: "Refund Quantity",
 };
-
 const CompareChart = ({
   startDate,
   endDate,
@@ -155,7 +149,7 @@ const CompareChart = ({
   DateStartDate,
   DateEndDate,
 }) => {
-  const [chartData, setChartData] = useState({}); // Initialize as an empty object
+  const [chartData, setChartData] = useState({}); 
   const [loading, setLoading] = useState(false);
   const [tab, setTab] = useState(0);
   const [compare, setCompare] = useState("Compare to past");
@@ -166,63 +160,47 @@ const CompareChart = ({
   const [bindGraph, setBindGraph] = useState([]);
   const [openNote, setOpenNote] = useState(false);
   let lastParamsRef = useRef("");
-
   const [open, setOpen] = useState(false);
   const [visibleMetrics, setVisibleMetrics] = useState([]);
   const [showComparisonPill, setShowComparisonPill] = useState(false);
   const [comparisonText, setComparisonText] = useState("");
-
   const userData = JSON.parse(localStorage.getItem("user") || "{}");
   const userId = userData?.id || "";
-
   const [selectedStartDate, setSelectedStartDate] = useState(() => {
     const saved = localStorage.getItem("selectedStartDate");
     return saved ? new Date(saved) : null;
   });
-
   const [selectedEndDate, setSelectedEndDate] = useState(() => {
     const saved = localStorage.getItem("selectedEndDate");
     return saved ? new Date(saved) : null;
   });
-
   const [selectedValue, setSelectedValue] = useState("");
   const [graphData, setGraphData] = useState([]);
   const [compareGraphData, setCompareGraphData] = useState([]);
-  const [mergedGraphData, setMergedGraphData] = useState([]); // Unified data for the chart
-
+  const [mergedGraphData, setMergedGraphData] = useState([]); 
   const [CompareGrpah, setCompareGrpah] = useState([]);
-
   const [compareFinalDate, setCompareFinalDate] = useState([]);
   const [currentFinalDate, setCurrentFinalDate] = useState([]);
-
   const [CompareDateFilter, setCompareDateFilter] = useState([]);
-
   const [CompareTotal, setCompareTotal] = useState([]);
-
   const options = [
     { key: "previous_period", label: "Previous period" },
     { key: "previous_week", label: "Previous week" },
     { key: "previous_month", label: "Previous month" },
     { key: "previous_year", label: "Previous year" },
   ];
-
   const handleClick = (event) => setAnchorEl(event.currentTarget);
   const fetchRevenue = async () => {
     setLoading(true);
     try {
       const userData = JSON.parse(localStorage.getItem("user") || "{}");
       const userId = userData?.id || "";
-
       const payload = {
         preset: widgetData,
-        marketplace_id: marketPlaceId?.id, // Use optional chaining in case marketPlaceId is null/undefined
+        marketplace_id: marketPlaceId?.id, 
         user_id: userId,
         compare_startdate: selectedStartDate,
         compare_enddate: selectedEndDate,
-
-        //  compare_startdate:'2025-06-10',
-        //   //  DateStartDate,
-        //   compare_enddate: '2025-06-10',
         brand_id: brand_id,
         product_id: product_id,
         manufacturer_name: manufacturer_name,
@@ -231,18 +209,14 @@ const CompareChart = ({
         end_date: DateEndDate,
         timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
       };
-
-      // You have a mocked response here. For a real API call, uncomment the axios.post line:
       const response = await axios.post(
         `${process.env.REACT_APP_IP}updatedRevenueWidgetAPIView/`,
         payload
       );
-
       const data = response.data.data;
       setCompareDropDown(data.comapre_past);
       setCompareTotal(data.compare_total);
       setChartData(data?.graph);
-
       const formatCurrency = (amount) =>
         `$${Number(amount || 0).toLocaleString(undefined, {
           minimumFractionDigits: 2,
@@ -250,13 +224,11 @@ const CompareChart = ({
         })}`;
       const formatPercentage = (value) => `${Number(value || 0).toFixed(2)}%`;
       const formatNumber = (value) => Number(value || 0).toLocaleString();
-
       const availableMetrics = Object.keys(data.total);
       const updatedMetricConfig = initialMetricConfig.map((metric) => ({
         ...metric,
         show: availableMetrics.includes(metric.id),
       }));
-
       setMetrics(
         updatedMetricConfig
           .filter((m) => m.show)
@@ -287,18 +259,15 @@ const CompareChart = ({
       );
     } catch (error) {
       console.error("Error fetching revenue data:", error);
-      setChartData({}); // Reset data on error
+      setChartData({}); 
     } finally {
       setLoading(false);
     }
   };
-  // Convert snake_case metric id to camelCase for dataKey, e.g. gross_revenue -> grossRevenue
   const formatMetricDataKey = (id) => {
     return id.replace(/_([a-z])/g, (match, p1) => p1.toUpperCase());
   };
-
   const capitalize = (str) => str.charAt(0).toUpperCase() + str.slice(1);
-
   const handleMetricToggle = (metric) => {
     setVisibleMetrics((prev) =>
       prev.includes(metric)
@@ -306,45 +275,36 @@ const CompareChart = ({
         : [...prev, metric]
     );
   };
-
   const handleReset = () => {
     setVisibleMetrics([]);
   };
-
   const handleApply = () => {
-    // Logic to apply the selected metrics
     console.log("Applied Metrics:", visibleMetrics);
     handleClose();
   };
-
   const handleOpen = () => {
     setOpen(true);
   };
-
   const handleClose = () => {
     setOpen(false);
     fetchRevenue();
   };
   const formatDate = (dateInput) => {
-    const date = new Date(dateInput); // Convert string or timestamp to Date
+    const date = new Date(dateInput); 
     const options = { month: "short", day: "numeric" };
     const dayMonth = date.toLocaleDateString("en-US", options);
     const year = date.getFullYear();
     return `${dayMonth}, ${year}`;
   };
-
   const handleChange = async (event) => {
     const value = event.target.value;
     setSelectedValue(value);
     console.log("9999999999", value);
-
     if (value !== "custom") {
       const start = compareDropDown?.[value]?.start;
       const end = compareDropDown?.[value]?.end;
-
       if (start && end) {
         try {
-          // Convert "Apr 28, 2025" -> 2025-04-28 format
           const parsedStart = format(
             parse(start, "MMM dd, yyyy", new Date()),
             "yyyy-MM-dd"
@@ -353,14 +313,9 @@ const CompareChart = ({
             parse(end, "MMM dd, yyyy", new Date()),
             "yyyy-MM-dd"
           );
-
           setSelectedStartDate(parsedStart);
           setSelectedEndDate(parsedEnd);
-
-          // API CALL AUTOMATIC
           await fetchRevenue(parsedStart, parsedEnd);
-
-          // Only show the pill after the API call (or immediately if no API call)
           const selectedOption = options.find((opt) => opt.key === value);
           if (selectedOption) {
             let formattedDate;
@@ -380,7 +335,6 @@ const CompareChart = ({
           }
         } catch (error) {
           console.error("Error processing comparison value:", error);
-          // Optionally handle the error (e.g., show an error message)
           setShowComparisonPill(false);
           setComparisonText("");
         }
@@ -389,7 +343,6 @@ const CompareChart = ({
         setComparisonText("");
       }
     } else if (value === "custom") {
-      // Handle custom date range selection logic here
       setComparisonText("— Custom date range");
       setShowComparisonPill(true);
     } else {
@@ -397,7 +350,6 @@ const CompareChart = ({
       setComparisonText("");
     }
   };
-
   useEffect(() => {
     const currentParams = JSON.stringify({
       value,
@@ -414,10 +366,8 @@ const CompareChart = ({
       DateStartDate,
       DateEndDate,
     });
-
     if (lastParamsRef.current !== currentParams) {
       lastParamsRef.current = currentParams;
-
       fetchRevenue();
     }
   }, [
@@ -434,11 +384,9 @@ const CompareChart = ({
     fulfillment_channel,
     DateStartDate,
     DateEndDate,
-  ]); // Add dependencies that might trigger a refetch
-
+  ]); 
   useEffect(() => {
     if (!chartData || Object.keys(chartData).length === 0) return;
-
     const localGraphData = Object.values(chartData);
     console.log("varialbe", localGraphData);
     if (localGraphData.length > 0) {
@@ -446,35 +394,27 @@ const CompareChart = ({
       const endDate = new Date(
         localGraphData[localGraphData.length - 1].current_date
       );
-
       const formatShortDate = (date) =>
         date.toLocaleDateString("en-US", { month: "short", day: "numeric" });
-
-      const formattedStart = formatShortDate(startDate); // e.g., "Jun 9"
-      const formattedEnd = formatShortDate(endDate); // e.g., "Jun 12"
-      const year = endDate.getFullYear(); // 2025
-
+      const formattedStart = formatShortDate(startDate); 
+      const formattedEnd = formatShortDate(endDate); 
+      const year = endDate.getFullYear(); 
       const displayRange =
         widgetData === "Today" || widgetData === "Yesterday"
           ? `${formattedStart}, ${year}`
           : `${formattedStart} - ${formattedEnd}, ${year}`;
-
       console.log(`📊 Widget (${widgetData}): ${displayRange}`);
-      setCompareDateFilter(displayRange); // optional state update if you're showing it in UI
+      setCompareDateFilter(displayRange); 
     }
   }, [chartData, widgetData]);
-
   const formattedData = useMemo(() => {
-    // Ensure chartData is an object with values before mapping
     if (!chartData || Object.keys(chartData).length === 0) {
       return [];
     }
-
     return Object.values(chartData).map((item) => ({
       time: dayjs(item.current_date).format("h A"),
       date: item.current_date,
       compareDate: item.compare_date,
-
       grossRevenue: item.gross_revenue_with_tax ?? 0,
       netProfit: item.net_profit ?? 0,
       profitMargin: item.profit_margin ?? 0,
@@ -482,7 +422,6 @@ const CompareChart = ({
       unitsSold: item.units_sold ?? 0,
       refundAmount: item.refund_amount ?? 0,
       refundQuantity: item.refund_quantity ?? 0,
-
       compareGrossRevenue: item.compare_gross_revenue_with_tax ?? null,
       compareNetProfit: item.compare_net_profit ?? null,
       compareProfitMargin: item.compare_profit_margin ?? null,
@@ -492,19 +431,13 @@ const CompareChart = ({
       compareRefundQuantity: item.compare_refund_quantity ?? null,
     }));
   }, [chartData]);
-
   const CustomTooltip = ({ active, payload, label }) => {
-    // Removed compareFinalDate and compareWiseData from here
     if (!active || !payload || payload.length === 0) {
       return null;
     }
-
-    // Find the current data point from the payload to get its compare_date
     const currentDataPoint = payload[0]?.payload;
     const currentItemDate = currentDataPoint?.date;
-    const compareDateForHeader = currentDataPoint?.compareDate; // Get compare date from the current data point
-
-    // Helper to format values
+    const compareDateForHeader = currentDataPoint?.compareDate; 
     const formatValue = (val, key) => {
       if (typeof val === "number") {
         if (
@@ -521,15 +454,13 @@ const CompareChart = ({
         ) {
           return `$${val.toFixed(2)}`;
         } else if (key.toLowerCase() === "roas") {
-          return val.toFixed(2); // RoAS is typically a multiplier, not a percentage or currency
+          return val.toFixed(2); 
         } else {
           return val.toLocaleString();
         }
       }
       return "n/a";
     };
-
-    // Helper to safely format dates for the header
     const safeFormatDateHeader = (dateString) => {
       if (!dateString) return "N/A";
       const parsedDate = dayjs(dateString);
@@ -537,33 +468,25 @@ const CompareChart = ({
         ? parsedDate.format("MMM D, h:mm A")
         : "Invalid Date";
     };
-
-    // Organize current and compare data
     const currentData = {};
     const compareData = {};
-
     payload.forEach((item) => {
       const isCompare = item.dataKey.startsWith("compare");
-      // Remove "compare" prefix and apply camelCase to space separation for display
       const key = isCompare
         ? item.dataKey.replace("compare", "")
         : item.dataKey;
-      // Convert to Title Case with spaces for display (e.g., "grossRevenue" -> "Gross Revenue")
       const formattedKey =
         key.charAt(0).toUpperCase() +
         key
           .slice(1)
           .replace(/([A-Z])/g, " $1")
           .trim();
-
       if (isCompare) {
         compareData[formattedKey] = item;
       } else {
         currentData[formattedKey] = item;
       }
     });
-
-    // **Updated Order of keys for display to match the image precisely**
     const orderedKeys = [
       "Gross Revenue",
       "Profit Margin",
@@ -573,10 +496,7 @@ const CompareChart = ({
       "Refund Amount",
       "Refund Quantity",
     ];
-
-    // Determine if compare graph is active. This is now based on whether compareDateForHeader exists.
     const CompareGraph = !!compareDateForHeader;
-
     return (
       <div
         className="custom-tooltip bg-white p-3 border rounded shadow text-sm min-w-[320px]"
@@ -625,16 +545,13 @@ const CompareChart = ({
             </span>
           )}
         </div>
-
         {/* Metric Rows */}
         {orderedKeys.map((key, index) => {
           const currentItem = currentData[key];
           const compareItem = compareData[key];
-
           const currentValue = currentItem?.value;
           const compareValue = compareItem?.value;
           const color = currentItem?.color || "#000";
-
           return (
             <div
               key={index}
@@ -673,7 +590,6 @@ const CompareChart = ({
                   {key}
                 </span>
               </div>
-
               {/* Values - Container for current and compare values */}
               <div
                 style={{
@@ -695,7 +611,6 @@ const CompareChart = ({
                     {formatValue(currentValue, key)}
                   </span>
                 </div>
-
                 {/* Compare Value — Only show if CompareGraph is active */}
                 {CompareGraph && (
                   <div style={{ textAlign: "right", minWidth: "100px" }}>
@@ -716,7 +631,6 @@ const CompareChart = ({
       </div>
     );
   };
-
   const handleCheckboxChange = (event) => {
     const { name, checked } = event.target;
     setVisibleMetrics((prev) => {
@@ -727,7 +641,6 @@ const CompareChart = ({
       }
     });
   };
-
   const handleClosePill = () => {
     setSelectedValue(null);
     setSelectedEndDate("");
@@ -736,30 +649,25 @@ const CompareChart = ({
     setShowComparisonPill(false);
     setComparisonText("");
   };
-
   const formatDateRange = (start, end) => {
     if (!start || !end) return "";
     return `${start} - ${end}`;
   };
-
   const [compareDropDown, setCompareDropDown] = useState("Compare to past");
-  // Fetch data when component mounts or relevant props change
-
   if (loading) {
     return (
       <div
         style={{
           display: "flex",
-          justifyContent: "center", // Horizontal center
-          alignItems: "center", // Vertical center
-          height: "50vh", // Adjust height as needed
+          justifyContent: "center", 
+          alignItems: "center", 
+          height: "50vh", 
         }}
       >
         <DottedCircleLoading />
       </div>
     );
   }
-
   if (formattedData.length === 0) {
     return (
       <div className="text-center py-4">
@@ -767,7 +675,6 @@ const CompareChart = ({
       </div>
     );
   }
-
   return (
     <Box sx={{ p: 2 }}>
       <Grid container spacing={2} mt={2}>
@@ -807,8 +714,7 @@ const CompareChart = ({
           >
             {metrics.map((metric, index) => {
               const isSelected = visibleMetrics.includes(metric.id);
-              const isProfitMargin = metric.id === "profitMargin"; // Assuming 'profitMargin' is the id for profit margin
-
+              const isProfitMargin = metric.id === "profitMargin"; 
               return (
                 <Card
                   key={index}
@@ -880,7 +786,6 @@ const CompareChart = ({
                       {metricLabels[metric.id]}
                     </Typography>
                   </Box>
-
                   <Box
                     sx={{
                       display: "flex",
@@ -903,7 +808,6 @@ const CompareChart = ({
                         ? `${Number(metric.value).toFixed(2)}%`
                         : metric.value}
                     </Typography>
-
                     {metric.compareValue !== undefined && CompareTotal && (
                       <Box
                         sx={{
@@ -921,7 +825,6 @@ const CompareChart = ({
                           );
                           const isPositive = cleanCompareValue > 0;
                           const isNegative = cleanCompareValue < 0;
-
                           return (
                             <Typography
                               variant="body2"
@@ -983,7 +886,6 @@ const CompareChart = ({
               <SettingsIcon sx={{ fontSize: 18 }} />
               Choose Metrics
             </Box>
-
             <Dialog open={open} onClose={handleClose} maxWidth="600">
               <DialogContent dividers>
                 <RevenueChooseMetrics
@@ -1078,11 +980,11 @@ const CompareChart = ({
                       sx={{
                         display: "flex",
                         alignItems: "center",
-                        backgroundColor: "#e0f2f7", // Example background color
+                        backgroundColor: "#e0f2f7", 
                         borderRadius: "20px",
                         padding: "8px 12px",
                         fontWeight: 500,
-                        color: "#1e88e5", // Example text color
+                        color: "#1e88e5", 
                       }}
                     >
                       <Typography
@@ -1123,13 +1025,11 @@ const CompareChart = ({
                 >
                   Events
                 </Typography>
-
                 <Switch
                   checked={events}
                   onChange={() => setEvents(!events)}
                   size="small"
                 />
-
                 {events && (
                   <Button
                     variant="outlined"
@@ -1147,24 +1047,24 @@ const CompareChart = ({
                   </Button>
                 )}
               </Box>
-
               <NoteModel open={openNote} onClose={() => setOpenNote(false)} />
             </Box>
-
             <ResponsiveContainer width="100%" height={500}>
               <LineChart data={formattedData}>
                 <XAxis
                   dataKey="date"
                   padding={{ left: 20, right: 20 }}
                   tickFormatter={(value) => {
-                    if (widgetData === "Today" || widgetData === "Yesterday") {
-                      return dayjs(value).format("h:mm A").toLowerCase(); // e.g., 11:00 am, 1:00 pm
+                    const isPresentSingleDay=widgetData==='Today' || widgetData ==='Yesterday'
+                    const isCustomSingleDay=DateStartDate && DateEndDate && 
+                    dayjs(DateStartDate).format("YYYY-MM-DD")===dayjs(DateEndDate).format("YYYY-MM-DD")
+                    if (isPresentSingleDay || isCustomSingleDay) {
+                      return dayjs(value).format("h:mm A").toLowerCase(); 
                     } else {
-                      return dayjs(value).format("MMM D"); // e.g., Apr 11, Apr 22
+                      return dayjs(value).format("MMM D"); 
                     }
                   }}
                 />
-
                 {/* Left axis (default, always needed) */}
                 <YAxis
                   yAxisId="left"
@@ -1193,7 +1093,6 @@ const CompareChart = ({
                   }}
                   domain={["auto", "auto"]}
                 />
-
                 <YAxis
                   yAxisId="right-percentage"
                   orientation="right"
@@ -1212,7 +1111,6 @@ const CompareChart = ({
                   tickFormatter={(value) => `${Math.round(value)}%`}
                   domain={["auto", "auto"]}
                 />
-
                 <YAxis
                   yAxisId="right-number"
                   orientation="right"
@@ -1239,11 +1137,8 @@ const CompareChart = ({
                   axisLine={true}
                   domain={["auto", "auto"]}
                 />
-
                 {/* Pass a function to the content prop of Tooltip */}
                 <Tooltip content={<CustomTooltip />} />
-
-
                 {visibleMetrics.includes("gross_revenue") && (
                   <Line
                     type="monotone"
@@ -1278,8 +1173,6 @@ const CompareChart = ({
                     yAxisId="left"
                   />
                 )}
-
-
                 {/* Optional: add comparison lines */}
                 {visibleMetrics.includes("gross_revenue_with_tax") && (
                   <Line
@@ -1293,8 +1186,6 @@ const CompareChart = ({
                     yAxisId="left"
                   />
                 )}
-
-               
                 {visibleMetrics.includes("profit_margin") && (
                   <Line
                     type="monotone"
@@ -1305,7 +1196,6 @@ const CompareChart = ({
                     yAxisId="right-percentage"
                   />
                 )}
-
                 {visibleMetrics.includes("net_profit") && (
                   <Line
                     type="monotone"
@@ -1317,7 +1207,6 @@ const CompareChart = ({
                     yAxisId="left"
                   />
                 )}
-
                 {visibleMetrics.includes("net_profit") && (
                   <Line
                     type="monotone"
@@ -1330,7 +1219,6 @@ const CompareChart = ({
                     yAxisId="left"
                   />
                 )}
-
                 {visibleMetrics.includes("orders") && (
                   <Line
                     type="monotone"
@@ -1342,7 +1230,6 @@ const CompareChart = ({
                     yAxisId="right-number"
                   />
                 )}
-
                 {visibleMetrics.includes("orders") && (
                   <Line
                     type="monotone"
@@ -1355,7 +1242,6 @@ const CompareChart = ({
                     yAxisId="right-percentage"
                   />
                 )}
-
                 {visibleMetrics.includes("units_sold") && (
                   <Line
                     type="monotone"
@@ -1367,7 +1253,6 @@ const CompareChart = ({
                     yAxisId="right-number"
                   />
                 )}
-
                 {visibleMetrics.includes("units_sold") && (
                   <Line
                     type="monotone"
@@ -1380,7 +1265,6 @@ const CompareChart = ({
                     yAxisId="right-number"
                   />
                 )}
-
                 {visibleMetrics.includes("refund_amount") && (
                   <Line
                     type="monotone"
@@ -1392,7 +1276,6 @@ const CompareChart = ({
                     yAxisId="right-number"
                   />
                 )}
-
                 {visibleMetrics.includes("refund_amount") && (
                   <Line
                     type="monotone"
@@ -1405,7 +1288,6 @@ const CompareChart = ({
                     yAxisId="right-number"
                   />
                 )}
-
                 {visibleMetrics.includes("refund_quantity") && (
                   <Line
                     type="monotone"
@@ -1417,7 +1299,6 @@ const CompareChart = ({
                     yAxisId="right-number"
                   />
                 )}
-
                 {visibleMetrics.includes("refund_quantity") && (
                   <Line
                     type="monotone"
@@ -1438,5 +1319,4 @@ const CompareChart = ({
     </Box>
   );
 };
-
 export default CompareChart;

@@ -31,6 +31,7 @@ const ClientDashboardHomepage = () => {
         <Notificationbar /> {/* Notificationbar is outside the Routes */}
         
         <Routes>
+          
           <Route path="/" element={<ClientDashboardpage />} />
           <Route path="products" element={<ProductTable />} />
           <Route path="products/details/:id" element={<ProductDetials />} />

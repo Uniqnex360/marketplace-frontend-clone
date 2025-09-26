@@ -171,19 +171,26 @@ const ChooseMetrics = ({
   };
 
   const fetchMetricsChoose = async (date) => {
+    console.log('Fetching metrics from ChooseMetrics', new Date());
+
     setLoading(true);
     try {
       const userData = JSON.parse(localStorage.getItem('user') || '{}');
       const userId = userData?.id || '';
-      const response = await axios.get(
+      const payload={
+        user_id:userId,
+        target_date:(date||moment()).format("DD/MM/YYYY")
+      }
+      const response = await axios.post(
         `${process.env.REACT_APP_IP}get_metrics_by_date_range/`,
-        {
-          params: {
-            target_date: (date || moment()).format('DD/MM/YYYY'),
-            user_id: userId,
+        payload
+        // {
+        //   params: {
+        //     target_date: (date || moment()).format('DD/MM/YYYY'),
+        //     user_id: userId,
             
-          },
-        }
+        //   },
+        // }
       );
 
       if (response && response.data && response.data.data) {

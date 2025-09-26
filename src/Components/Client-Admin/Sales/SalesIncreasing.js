@@ -39,9 +39,10 @@ const SalesIncreasing = ({
   manufacturer_name,
   fulfillment_channel,
   DateStartDate,
-  DateEndDate
+  DateEndDate,
+  products
 }) => {
-  const [products, setProducts] = useState([]);
+  // const [products, setProducts] = useState([]);
   const [tooltipText, setTooltipText] = useState('');
   const [anchorEl, setAnchorEl] = useState(null);
   const open = Boolean(anchorEl);
@@ -125,48 +126,48 @@ const SalesIncreasing = ({
   };
 
   // Fetch product data
-  const fetchSalesIncreasing = async () => {
-    try {
-      const response = await axios.post(
-        `${process.env.REACT_APP_IP}getProductPerformanceSummary/`,
-        {
-          user_id: userId,
-          target_date: dayjs().format('DD/MM/YYYY'),
-          marketplace_id: marketPlaceId.id,
-          brand_id,
-          product_id,
-          manufacturer_name,
-          fulfillment_channel,
-          start_date: DateStartDate,
-          end_date: DateEndDate,
-          timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
-        }
-      );
-      setProducts(response.data.top_3_products || []);
-    } catch (error) {
-      console.error('Failed to fetch sales increasing data:', error);
-    }
-  };
+  // const fetchSalesIncreasing = async () => {
+  //   try {
+  //     const response = await axios.post(
+  //       `${process.env.REACT_APP_IP}getProductPerformanceSummary/`,
+  //       {
+  //         user_id: userId,
+  //         target_date: dayjs().format('DD/MM/YYYY'),
+  //         marketplace_id: marketPlaceId.id,
+  //         brand_id,
+  //         product_id,
+  //         manufacturer_name,
+  //         fulfillment_channel,
+  //         start_date: DateStartDate,
+  //         end_date: DateEndDate,
+  //         timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
+  //       }
+  //     );
+  //     setProducts(response.data.top_3_products || []);
+  //   } catch (error) {
+  //     console.error('Failed to fetch sales increasing data:', error);
+  //   }
+  // };
 
-  // Effect to fetch data when parameters change
-  useEffect(() => {
-    const currentParams = JSON.stringify({
-      userId,
-      marketPlaceId,
-      brand_id,
-      product_id,
-      manufacturer_name,
-      fulfillment_channel,
-      DateStartDate,
-      DateEndDate
-    });
+  // // Effect to fetch data when parameters change
+  // useEffect(() => {
+  //   const currentParams = JSON.stringify({
+  //     userId,
+  //     marketPlaceId,
+  //     brand_id,
+  //     product_id,
+  //     manufacturer_name,
+  //     fulfillment_channel,
+  //     DateStartDate,
+  //     DateEndDate
+  //   });
 
-    if (lastParamsRef.current !== currentParams) {
-      lastParamsRef.current = currentParams;
-      fetchSalesIncreasing();
-    }
-    // eslint-disable-next-line
-  }, [userId, marketPlaceId, brand_id, product_id, manufacturer_name, fulfillment_channel, DateStartDate, DateEndDate]);
+  //   if (lastParamsRef.current !== currentParams) {
+  //     lastParamsRef.current = currentParams;
+  //     fetchSalesIncreasing();
+  //   }
+  //   // eslint-disable-next-line
+  // }, [userId, marketPlaceId, brand_id, product_id, manufacturer_name, fulfillment_channel, DateStartDate, DateEndDate]);
 
   // Copy ASIN handler
   const handleTooltipOpen = (value) => {

@@ -26,15 +26,12 @@ function InventoryChannel({ handleProduct }) {
   useEffect(() => {
     const fetchMarketplaceList = async () => {
       try {
-        const response = await axios.get(
-          `${process.env.REACT_APP_IP}getMarketplaceList/?user_id=${userIds}`
-        );
+        // const response = await axios.get(
+        //   `${process.env.REACT_APP_IP}getMarketplaceList/?user_id=${userIds}`
+        // );
 
-        const categoryData = response.data.data.map((item) => ({
-          id: item.id,
-          name: item.name,
-          imageUrl: item.image_url,
-        }));
+             const categoryData=await fetchMarketplaceList(userIds,'Invenroty channel')
+
 
         setCategories([
           { id: "all", name: "All Channels", icon: <AppsIcon fontSize="small" sx={{ height: '13px' }} /> },

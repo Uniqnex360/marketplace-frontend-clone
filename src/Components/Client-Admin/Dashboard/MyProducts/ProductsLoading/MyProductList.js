@@ -21,17 +21,16 @@ import FilterListIcon from "@mui/icons-material/FilterList";
 import { ArrowDropUp, ArrowDropDown } from "@mui/icons-material";
 import axios from "axios";
 import { useNavigate, useLocation } from "react-router-dom";
-import MyProductTable from "./MyProductTable"; // Assuming MyProductTable is in the same directory or correctly imported
-import SettingsIcon from "@mui/icons-material/Settings"; // or SettingsOutlined
-import ProductExport from "./ProductExport"; // Assuming ProductExport is in the same directory or correctly imported
+import MyProductTable from "./MyProductTable"; 
+import SettingsIcon from "@mui/icons-material/Settings"; 
+import ProductExport from "./ProductExport"; 
 import FilterParentSku from "./FilterParentSku";
 import DottedCircleLoading from "../../../../Loading/DotLoading";
 import SkeletonTableMyProduct from "./MyProductLoading";
-import Modal from "@mui/material/Modal"; // Correct Modal import
-
+import Modal from "@mui/material/Modal"; 
 import FilterAltIcon from "@mui/icons-material/FilterAlt";
 import CloseIcon from "@mui/icons-material/Close";
-// Define column sets for different views
+
 const allColumns = [
   "Products",
   "Category & Subcategory BSR",
@@ -46,12 +45,11 @@ const allColumns = [
   "Units Sold",
   "Profit Margin",
   "Amazon Fees",
-  // 'ROI', // Commented out as per original code
+  
   "COGS",
   "Listings",
   "Fulfilment status",
 ];
-
 const productPerformanceColumns = [
   "Products",
   "Gross Revenue",
@@ -64,34 +62,30 @@ const productPerformanceColumns = [
   "Net Profit",
   "Profit Margin",
   "Amazon Fees",
-  // 'ROI', // Commented out as per original code
+  
   "COGS",
   "Unit Session %",
 ];
-
 const Keywords = ["Products", "Category & Subcategory BSR"];
-
 const Listing = [
   "Products",
   "Category & Subcategory BSR",
   "Stock",
-  // 'Price', // Price is handled dynamically based on Parent/SKU tab
-  // 'Unit Sessions', // Commented out as per original code
+  
+  
 ];
-
 const Advertising = [
   "Products",
-  // Example advertising-related columns, adjust as per your actual data
-  // 'Ad Spend',
-  // 'Ad Impressions',
-  // 'Ad Click',
-  // 'Ad Rate',
-  // 'ACoS',
-  // 'RoAS',
-  // 'Ads Total Sales',
-  // 'TACoS'
+  
+  
+  
+  
+  
+  
+  
+  
+  
 ];
-
 const Refund = [
   "Products",
   "Profit Margin",
@@ -101,10 +95,8 @@ const Refund = [
   "Refund Rate",
 ];
 const imageSizes = ["Small", "Medium", "Large", "Extra Large"];
-
 const additionalInfo = ["ASIN Details"];
 
-// Component for displaying a number with an optional change indicator
 const NumberIndicator = ({ value, change }) => (
   <Box>
     <Typography
@@ -129,7 +121,6 @@ const NumberIndicator = ({ value, change }) => (
     )}
   </Box>
 );
-
 const MyProductList = ({
   widgetData,
   marketPlaceId,
@@ -141,7 +132,6 @@ const MyProductList = ({
   DateEndDate,
 }) => {
   const navigate = useNavigate();
-
   const location = useLocation();
   const [selectedImageSize, setSelectedImageSize] = useState("Medium");
   const [selectedColumns, setSelectedColumns] = useState([
@@ -154,13 +144,12 @@ const MyProductList = ({
   const [totalProducts, setTotalProducts] = useState(0);
   const userData = JSON.parse(localStorage.getItem("user") || "{}");
   const userId = userData?.id || "";
-  const [visibleColumns, setVisibleColumns] = useState(allColumns); // Initialize with all columns
-  const [activeColumnCategoryTab, setActiveColumnCategoryTab] = useState(0); // For "All Columns", "Product Performance" etc.
-  const [tab, setTab] = React.useState(0); // 0 for Parent, 1 for SKU
-  const [expandedRows, setExpandedRows] = useState({}); // State for expanded rows in the table (if applicable)
+  const [visibleColumns, setVisibleColumns] = useState(allColumns); 
+  const [activeColumnCategoryTab, setActiveColumnCategoryTab] = useState(0); 
+  const [tab, setTab] = React.useState(0); 
+  const [expandedRows, setExpandedRows] = useState({}); 
   const queryParams = new URLSearchParams(window.location.search);
-  localStorage.removeItem("selectedCategory"); // Clear a specific localStorage item
-
+  localStorage.removeItem("selectedCategory"); 
   const [searchQuery, setSearchQuery] = useState("");
   const initialPage = parseInt(queryParams.get("page"), 10) || 1;
   const [loadingTime, setLoadingTime] = useState(0);
@@ -187,48 +176,38 @@ const MyProductList = ({
       loadingIntervalRef.current = null;
     }
   };
-  const [page, setPage] = useState(initialPage); // Current page for pagination
-  const [showSearch, setShowSearch] = useState(false); // State to toggle search input visibility
-  let lastParamsRef = useRef(""); // Ref to store last API call parameters to prevent unnecessary fetches
+  const [page, setPage] = useState(initialPage); 
+  const [showSearch, setShowSearch] = useState(false); 
+  let lastParamsRef = useRef(""); 
   const controllerRef = useRef(null);
-
-  const [rowsPerPage, setRowsPerPage] = useState(10); // Number of rows to display per page
   const [sortValues, setSortValues] = useState({
     sortBy: null,
     sortByValue: null,
-  }); // State for sorting
-
-  const [TabType, setTabType] = useState(); // To store the tab type received from backend
-
-  const [filterParent, setFilterParent] = useState(); // To store the tab type received from backend
-
-  const [filterSku, setFilterSku] = useState(); // To store the tab type received from backend
-
+  }); 
+  const [TabType, setTabType] = useState(); 
+  const [filterParent, setFilterParent] = useState(); 
+  const [filterSku, setFilterSku] = useState(); 
   const [isFilterOpen, setIsFilterOpen] = useState(false);
   const [anchorEl, setAnchorEl] = useState(null);
   const [filterParentFilter, setfilterParentFilter] = useState("");
   const [asinFilter, setAsinFilter] = useState("");
-
-  // These states hold the *input values* in the popover's text fields
+  
   const [parentAsin, setParentAsin] = useState("");
   const [skuAsin, setSkuAsin] = useState("");
   const [isCustomizedPage, setIsCustomizedPage] = useState(false);
   const [hasChanges, setHasChanges] = useState(false);
-
-  const initialRowsPerPage = parseInt(queryParams.get("rowsPerPage"), 10) || 50; // Default to 50 if no rowsPerPage param exists
-
+  const initialRowsPerPage = parseInt(queryParams.get("rowsPerPage"), 10) || 50; 
+  const [rowsPerPage, setRowsPerPage] = useState(initialRowsPerPage); 
   const handlePopoverClose = () => {
     setAnchorEl(null);
-    setIsFilterOpen(false); // Ensure isFilterOpen is false when popover closes
+    setIsFilterOpen(false); 
   };
-
   useEffect(() => {
-    // Handle undefined/null values safely using optional chaining or fallback to ''
+    
     const currentParentTrimmed = (parentAsin || "").trim();
     const currentSkuTrimmed = (skuAsin || "").trim();
     const appliedParentTrimmed = (filterParent || "").trim();
     const appliedSkuTrimmed = (filterSku || "").trim();
-
     if (TabType === "sku") {
       setHasChanges(
         currentParentTrimmed !== appliedParentTrimmed ||
@@ -238,19 +217,16 @@ const MyProductList = ({
       setHasChanges(currentParentTrimmed !== appliedParentTrimmed);
     }
   }, [parentAsin, skuAsin, TabType, filterParent, filterSku]);
-
   const handleClear = () => {
-    setParentAsin(""); // Clear input field for parent SKU
-    setSkuAsin(""); // Clear input field for SKU
-    // Note: This 'Clear' button inside the popover only clears the input fields,
-    // not the actively applied filters. The user must click "Apply Filters"
-    // after clearing inputs for the change to take effect on the data.
+    setParentAsin(""); 
+    setSkuAsin(""); 
+    
+    
+    
   };
-
   const closeCustomModal = () => {
     setIsCustomizedPage(false);
   };
-
   const handleToggleAll = () => {
     if (selectAll) {
       setSelectedColumns([]);
@@ -262,7 +238,6 @@ const MyProductList = ({
     }
     setSelectAll(!selectAll);
   };
-
   const handleCheckboxChange = (column) => {
     if (selectedColumns.includes(column)) {
       setSelectedColumns(selectedColumns.filter((col) => col !== column));
@@ -270,9 +245,8 @@ const MyProductList = ({
       setSelectedColumns([...selectedColumns, column]);
     }
   };
-
   const handleFilterClick = (event) => {
-    // When opening the filter popover, pre-fill text fields with current applied filters
+    
     setParentAsin(filterParent);
     setSkuAsin(filterSku);
     setAnchorEl(event.currentTarget);
@@ -280,11 +254,9 @@ const MyProductList = ({
     setPage(1);
     setRowsPerPage(10);
   };
-
   const handleCustomizedPage = (event, value) => {
     setIsCustomizedPage(true);
   };
-
   /**
    * Handles applying filters, either from the popover or from clearing chips.
    * @param {object} [newFilterValues] - Optional. An object containing {parentAsin, skuAsin} if called from a chip.
@@ -293,45 +265,38 @@ const MyProductList = ({
    * Defaults to true, set to false for chip deletions.
    */
   const handleApplyFilter = (newFilterValues = {}, closePopover = true) => {
-    // Determine the parent and SKU values to apply
+    
     const finalParentAsin =
       newFilterValues.parentAsin !== undefined
         ? newFilterValues.parentAsin
         : parentAsin;
-
     const finalSkuAsin =
       newFilterValues.skuAsin !== undefined ? newFilterValues.skuAsin : skuAsin;
-
-    // Apply trimming
+    
     setFilterParent(finalParentAsin.trim());
     setFilterSku(finalSkuAsin.trim());
-
-    // Update localStorage
+    
     localStorage.setItem("filterParent", finalParentAsin.trim());
     localStorage.setItem("filterSku", finalSkuAsin.trim());
-
-    // Close popover if specified
+    
     if (closePopover) {
       handlePopoverClose();
     }
-
     console.log("Applied Filters:", {
       parentAsin: finalParentAsin.trim(),
       skuAsin: finalSkuAsin.trim(),
     });
-    // You would typically trigger your data fetching here based on the new filters
-    // For example: fetchData(finalParentAsin.trim(), finalSkuAsin.trim());
+    
+    
   };
-
   const getFilterCount = () => {
     let count = 0;
     if (filterParent?.trim()) count++;
     if (filterSku?.trim()) count++;
     return count;
   };
-
   const handleClearFilter = () => {
-    // This function clears ALL applied filters and resets input fields.
+    
     setFilterParent("");
     setFilterSku("");
     setParentAsin("");
@@ -339,73 +304,67 @@ const MyProductList = ({
     localStorage.removeItem("filterParent");
     localStorage.removeItem("filterSku");
   };
-
-  // Handler for search input change
+  
   const handleSearchChange = (e) => {
     setSearchQuery(e.target.value);
     if (e.target.value) {
-      // Only reset page to 1 if there's a search query
+      
       setPage(1);
       setRowsPerPage(10);
     }
   };
-
-  // Handler for column category tabs (All Columns, Product Performance, etc.)
+  
   const handleColumnCategoryClick = (index) => {
     setActiveColumnCategoryTab(index);
     console.log("Column category changed to:", index);
-    // This will trigger the useEffect below to update visibleColumns
+    
   };
-
-  // Handler for changing rows per page
+  
   const handleRowsPerPageChange = (e) => {
     setRowsPerPage(e.target.value);
     navigate(`/Home?page=${page}&&rowsPerPage=${e.target.value}`);
-    setPage(1); // Reset page to 1 when rows per page changes
+    setPage(1); 
   };
-
-  // Function to determine the set of columns based on category and Parent/SKU tab
+  
   const getColumnSet = (columnCategoryIndex, isParentTab) => {
     let columns;
     switch (columnCategoryIndex) {
-      case 0: // All Columns
+      case 0: 
         columns = [...allColumns];
         break;
-      case 1: // Product Performance
+      case 1: 
         columns = [...productPerformanceColumns];
         break;
-      case 2: // Keywords
+      case 2: 
         columns = [...Keywords];
         break;
-      case 3: // Listing
+      case 3: 
         columns = [...Listing];
         break;
-      case 4: // Advertising
+      case 4: 
         columns = [...Advertising];
         break;
-      case 5: // Refunds
+      case 5: 
         columns = [...Refund];
         break;
       default:
         columns = [...allColumns];
     }
-
     let finalColumns = [...columns];
-
-    // Handle 'Price' column title and visibility based on Parent/SKU tab
+    
     if (isParentTab) {
-      // If it's the Parent tab
-      // Remove 'Price' if it exists and add 'Price' back if it's in allColumns
-      // The original logic here was a bit convoluted. Simplifying:
-      // If it's Parent tab, 'Price' should be present if it's part of the base column set.
-      // If it's SKU tab, 'Price' should always be present.
-      // The original logic had 'Price' removed and then re-added based on 'allColumns'
-      // and 'stockIndex'. Let's ensure 'Price' is handled correctly.
+      
+      
+      
+      
+      
+      
+      
       if (finalColumns.includes("Price")) {
         finalColumns = finalColumns.filter((col) => col !== "Price");
       }
-      // Add 'Price' if it's relevant for parent (e.g., if it was in allColumns)
-      // For parent, it's usually a price range.
+      
+      
       if (allColumns.includes("Price") && !finalColumns.includes("Price")) {
         const stockIndex = finalColumns.indexOf("Stock");
         if (stockIndex !== -1) {
@@ -415,8 +374,8 @@ const MyProductList = ({
         }
       }
     } else {
-      // If it's the SKU tab
-      // For SKU, 'Price' should always be present if not already.
+      
+      
       if (!finalColumns.includes("Price")) {
         const stockIndex = finalColumns.indexOf("Stock");
         if (stockIndex !== -1) {
@@ -426,18 +385,15 @@ const MyProductList = ({
         }
       }
     }
-
-    //   let finalColumns = [...columns];
-
-    // Remove 'Price' if it's parent tab
+    
+    
     if (isParentTab) {
       finalColumns = finalColumns.filter((col) => col !== "Price");
     }
-
-    // Handle Listings, Fulfilment status, current price Range
+    
     if (columnCategoryIndex === 0 || columnCategoryIndex === 3) {
       if (isParentTab) {
-        // Parent tab: show only 'current price Range', remove others
+        
         if (!finalColumns.includes("current price Range")) {
           finalColumns.push("current price Range");
         }
@@ -445,7 +401,7 @@ const MyProductList = ({
           (col) => !["ListingScore", "Fulfilment status"].includes(col)
         );
       } else {
-        // SKU tab: show Listings and Fulfilment, remove current price Range
+        
         if (!finalColumns.includes("Listings")) {
           finalColumns.push("Listings");
         }
@@ -457,7 +413,7 @@ const MyProductList = ({
         );
       }
     } else {
-      // Other tabs: remove all 3
+      
       finalColumns = finalColumns.filter(
         (col) =>
           ![
@@ -467,44 +423,38 @@ const MyProductList = ({
           ].includes(col)
       );
     }
-
     return finalColumns;
   };
-
-  // Handler for sort changes from the MyProductTable component
+  
   const handleSortChange = (sortInfo) => {
     console.log("Sort info received in parent:", sortInfo);
     setSortValues(sortInfo);
   };
-
-  // This handles the Parent/SKU tab change
+  
   const handleChangeParentSkuTab = (event, newValue) => {
     setTab(newValue);
-    setPage(1); // Reset page on tab change
+    setPage(1); 
     setRowsPerPage(10);
     if (newValue === 0) {
       console.log("anywhere ", newValue);
       setFilterSku("");
     }
-    // Set the active column category to "All Columns" (index 0) when switching Parent/SKU tabs
+    
     setActiveColumnCategoryTab(0);
   };
-
-  useEffect(() => {
-    setRowsPerPage(initialRowsPerPage);
-  }, [location.search]);
-
-  // This useEffect handles column visibility based on the activeColumnCategoryTab and the main tab (parent/SKU)
+  // useEffect(() => {
+  //   setRowsPerPage(initialRowsPerPage);
+  // }, [location.search]);
+  
   useEffect(() => {
     const columns = getColumnSet(activeColumnCategoryTab, tab === 0);
     setVisibleColumns(columns);
     setSelectedColumns(columns);
   }, [activeColumnCategoryTab, tab, filterParent, filterSku]);
-
   useEffect(() => {
     setVisibleColumns(selectedColumns);
   }, [selectedColumns]);
-  // This useEffect triggers data fetching when relevant parameters change
+  
   useEffect(() => {
     const currentParams = JSON.stringify({
       marketPlaceId,
@@ -523,11 +473,10 @@ const MyProductList = ({
       filterParent,
       filterSku,
     });
-
-    // Only fetch if parameters have actually changed
+    
     if (lastParamsRef.current !== currentParams) {
       lastParamsRef.current = currentParams;
-      fetchMyProducts(1); // Always start from page 1 when filters/sort/tabs change
+      fetchMyProducts(1); 
     }
   }, [
     marketPlaceId,
@@ -546,7 +495,6 @@ const MyProductList = ({
     filterParent,
     filterSku,
   ]);
-
   const fetchMyProducts = async (currentPage) => {
     setLoading(true);
     startLoadingTimer();
@@ -555,17 +503,17 @@ const MyProductList = ({
       if (controllerRef.current) {
         controllerRef.current.abort();
       }
-      // Create new controller
+      
       controllerRef.current = new AbortController();
       const response = await axios.post(
         `${process.env.REACT_APP_IP}get_products_with_pagination/`,
         {
-          parent: tab === 0, // This determines if it's Parent or SKU
+          parent: tab === 0, 
           preset: widgetData,
           marketplace_id: marketPlaceId.id,
           user_id: userId,
           search_query: searchQuery,
-          page: calculatedPageForBackend, // Use the calculated page value here
+          page: calculatedPageForBackend, 
           page_size: rowsPerPage,
           brand_id: brand_id,
           product_id: product_id,
@@ -581,14 +529,13 @@ const MyProductList = ({
           timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
         }
       );
-
       const responseData = response.data;
       if (responseData && responseData.products) {
         const normalizedProducts = responseData.products.map((product) => {
-          setTabType(response.data.tab_type); // Set tab type from response
+          setTabType(response.data.tab_type); 
           return {
             ...product,
-            // Normalize various product data fields, providing 'N/A' if undefined
+            
             grossRevenue:
               product.grossRevenue !== undefined ? product.grossRevenue : "N/A",
             grossRevenueforPeriod:
@@ -708,7 +655,6 @@ const MyProductList = ({
       stopLoadingTimer();
     }
   };
-
   return (
     <Box
       sx={{
@@ -719,7 +665,6 @@ const MyProductList = ({
       }}
     >
       {/* My Products Title and Tabs */}
-
       <Box
         display="flex"
         sx={{ borderBottom: "1px solid #ddd", padding: "4px" }}
@@ -755,7 +700,7 @@ const MyProductList = ({
         >
           <Tabs
             value={tab}
-            onChange={handleChangeParentSkuTab} // Use the new handler here
+            onChange={handleChangeParentSkuTab} 
             variant="standard"
             sx={{
               height: "28px",
@@ -826,7 +771,6 @@ const MyProductList = ({
           </Typography>
           <Box display="flex" alignItems="center" gap={1}>
             {/* Filter Button */}
-
             <Badge
               badgeContent={getFilterCount()}
               color="primary"
@@ -835,7 +779,7 @@ const MyProductList = ({
               <Button
                 variant="outlined"
                 startIcon={<FilterAltIcon />}
-                onClick={handleFilterClick} // open filter popover
+                onClick={handleFilterClick} 
                 sx={{
                   backgroundColor: "rgba(10,111,232,0.1)",
                   color: "rgb(10, 111, 232)",
@@ -849,9 +793,7 @@ const MyProductList = ({
                 Filter
               </Button>
             </Badge>
-
             {/* Filter Popover */}
-
             {/* Filter Popover */}
             <Popover
               open={Boolean(anchorEl)}
@@ -874,7 +816,6 @@ const MyProductList = ({
                   value={parentAsin}
                   onChange={(e) => setParentAsin(e.target.value)}
                 />
-
                 {TabType === "sku" && (
                   <TextField
                     label="Child SKU"
@@ -884,7 +825,6 @@ const MyProductList = ({
                     onChange={(e) => setSkuAsin(e.target.value)}
                   />
                 )}
-
                 <Box display="flex" justifyContent="flex-end" gap={1}>
                   <Button
                     variant="outlined"
@@ -919,7 +859,7 @@ const MyProductList = ({
                     size="small"
                     onClick={() =>
                       handleApplyFilter({ parentAsin, skuAsin }, true)
-                    } // Pass true to close popover
+                    } 
                     disabled={!hasChanges}
                     sx={{
                       fontFamily:
@@ -967,11 +907,11 @@ const MyProductList = ({
                 sx={{
                   width: 190,
                   "& .MuiInputBase-root": {
-                    height: 32, // ✅ sets the input box height
+                    height: 32, 
                     fontSize: "13px",
                   },
                   "& input": {
-                    padding: "6px 8px", // ✅ optional fine-tuning
+                    padding: "6px 8px", 
                   },
                 }}
                 InputProps={{
@@ -993,7 +933,6 @@ const MyProductList = ({
             )}
           </Box>
         </Box>
-
         {/* Column Tabs */}
         <Box display="flex" alignItems="center" gap={0.5}>
           <Button
@@ -1002,7 +941,6 @@ const MyProductList = ({
             sx={{
               fontFamily:
                 "'Nunito Sans', -apple-system, 'Segoe UI', 'Roboto', 'Helvetica Neue', 'Arial', sans-serif",
-
               textTransform: "none",
               fontSize: "12px",
               mr: 0.5,
@@ -1023,7 +961,6 @@ const MyProductList = ({
             sx={{
               fontFamily:
                 "'Nunito Sans', -apple-system, 'Segoe UI', 'Roboto', 'Helvetica Neue', 'Arial', sans-serif",
-
               textTransform: "none",
               fontSize: "12px",
               mr: 0.5,
@@ -1044,7 +981,6 @@ const MyProductList = ({
             sx={{
               fontFamily:
                 "'Nunito Sans', -apple-system, 'Segoe UI', 'Roboto', 'Helvetica Neue', 'Arial', sans-serif",
-
               textTransform: "none",
               fontSize: "12px",
               mr: 0.5,
@@ -1065,7 +1001,6 @@ const MyProductList = ({
             sx={{
               fontFamily:
                 "'Nunito Sans', -apple-system, 'Segoe UI', 'Roboto', 'Helvetica Neue', 'Arial', sans-serif",
-
               textTransform: "none",
               fontSize: "12px",
               mr: 0.5,
@@ -1086,7 +1021,6 @@ const MyProductList = ({
             sx={{
               fontFamily:
                 "'Nunito Sans', -apple-system, 'Segoe UI', 'Roboto', 'Helvetica Neue', 'Arial', sans-serif",
-
               textTransform: "none",
               fontSize: "12px",
               mr: 0.5,
@@ -1107,7 +1041,6 @@ const MyProductList = ({
             sx={{
               fontFamily:
                 "'Nunito Sans', -apple-system, 'Segoe UI', 'Roboto', 'Helvetica Neue', 'Arial', sans-serif",
-
               textTransform: "none",
               fontSize: "12px",
               mr: 0.5,
@@ -1129,7 +1062,6 @@ const MyProductList = ({
             sx={{
               fontFamily:
                 "'Nunito Sans', -apple-system, 'Segoe UI', 'Roboto', 'Helvetica Neue', 'Arial', sans-serif",
-
               textTransform: "none",
               fontSize: "12px",
               color: "#485E75",
@@ -1168,7 +1100,7 @@ const MyProductList = ({
               label={`Parent SKU: ${filterParent}`}
               onDelete={() =>
                 handleApplyFilter({ parentAsin: "", skuAsin: filterSku }, false)
-              } // Pass false to prevent closing popover
+              } 
               deleteIcon={<CloseIcon sx={{ color: "#fff" }} />}
               size="small"
               sx={{
@@ -1181,7 +1113,6 @@ const MyProductList = ({
               }}
             />
           )}
-
           {filterSku && (
             <Chip
               label={`Child SKU: ${filterSku}`}
@@ -1190,7 +1121,7 @@ const MyProductList = ({
                   { parentAsin: filterParent, skuAsin: "" },
                   false
                 )
-              } // Pass false to prevent closing popover
+              } 
               deleteIcon={<CloseIcon sx={{ color: "#fff" }} />}
               size="small"
               sx={{
@@ -1203,7 +1134,6 @@ const MyProductList = ({
               }}
             />
           )}
-
           {(filterParent || filterSku) && (
             <Button
               size="small"
@@ -1228,7 +1158,6 @@ const MyProductList = ({
         {/* Right - Export Button */}
         {showSearch && <ProductExport products={products} />}
       </Box>
-
       <Box sx={{ minHeight: 200 }}>
         {loading ? (
           <Box
@@ -1250,7 +1179,6 @@ const MyProductList = ({
             <Box sx={{ mb: 2 }}>
               <DottedCircleLoading size={40} />
             </Box>
-
             {/* Main loading message */}
             <Typography
               variant="h6"
@@ -1262,7 +1190,6 @@ const MyProductList = ({
             >
               Fetching Data, Please wait a moment...
             </Typography>
-
           </Box>
         ) : (
           <MyProductTable
@@ -1274,7 +1201,6 @@ const MyProductList = ({
           />
         )}
       </Box>
-
       {/* Pagination */}
       <Box
         display="flex"
@@ -1290,13 +1216,12 @@ const MyProductList = ({
             onChange={(event, newPage) => {
               setPage(newPage);
               navigate(`/Home?page=${newPage}&&rowsPerPage=${rowsPerPage}`);
-              fetchMyProducts(newPage); // Pass the MUI pagination's newPage value
+              fetchMyProducts(newPage); 
             }}
             size="small"
             color="primary"
           />
         </Box>
-
         {/* Right-aligned Rows Per Page Select */}
         <Select
           value={rowsPerPage}
@@ -1312,5 +1237,4 @@ const MyProductList = ({
     </Box>
   );
 };
-
 export default MyProductList;
