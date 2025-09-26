@@ -167,7 +167,7 @@ const TestCard = ({
     difference: {},
     bindGraph: [],
   });
-
+  const hasInitializedDates = useRef(false);
   const [tooltipData, setTooltipData] = useState(null);
   const [loading, setLoading] = useState(false);
   const [dataLoading, setDataLoading] = useState(false);
@@ -180,7 +180,7 @@ const TestCard = ({
   const [open, setOpen] = useState(false);
 
   const [visibleMetrics, setVisibleMetrics] = useState([
-   "gross_revenue_without_tax",
+    "gross_revenue_without_tax",
     "gross_revenue_with_tax",
     "total_orders",
     "total_units",
@@ -217,6 +217,10 @@ const TestCard = ({
 
   // Fetch data when dates change
   useEffect(() => {
+    if (!hasInitializedDates.current) {
+      hasInitializedDates.current = true;
+      return;
+    }
     fetchMetrics(currentDates.selectedDate, currentDates.displayDate);
   }, [
     currentDates.selectedDate,
@@ -229,71 +233,72 @@ const TestCard = ({
     marketPlaceId?.id,
   ]);
 
- const latestRequestRef = useRef(0);
+  const latestRequestRef = useRef(0);
 
-const fetchMetrics = async (selectedDate, displayDate) => {
-  setDataLoading(true);
-  
-  const requestId = ++latestRequestRef.current; // Increment the token
+  const fetchMetrics = async (selectedDate, displayDate) => {
+    setDataLoading(true);
+    console.log("Fetching metrics from testcard", new Date());
 
-  try {
-    const payload = {
-      target_date: selectedDate.format("DD/MM/YYYY"),
-      user_id: userId,
-      preset: currentPreset,
-      marketplace_id: marketPlaceId.id,
-      brand_id: brand_id,
-      product_id: product_id,
-      manufacturer_name: manufacturer_name,
-      fulfillment_channel: fulfillment_channel,
-      timezone: TIMEZONE,
-    };
+    const requestId = ++latestRequestRef.current; // Increment the token
 
-    if (DateStartDate && dayjs(DateStartDate).isValid()) {
-      payload.start_date = dayjs(DateStartDate).format("DD/MM/YYYY");
+    try {
+      const payload = {
+        target_date: selectedDate.format("DD/MM/YYYY"),
+        user_id: userId,
+        preset: currentPreset,
+        marketplace_id: marketPlaceId.id,
+        brand_id: brand_id,
+        product_id: product_id,
+        manufacturer_name: manufacturer_name,
+        fulfillment_channel: fulfillment_channel,
+        timezone: TIMEZONE,
+      };
+
+      if (DateStartDate && dayjs(DateStartDate).isValid()) {
+        payload.start_date = dayjs(DateStartDate).format("DD/MM/YYYY");
+      }
+
+      if (DateEndDate && dayjs(DateEndDate).isValid()) {
+        payload.end_date = dayjs(DateEndDate).format("DD/MM/YYYY");
+      }
+
+      const response = await axios.post(
+        `${process.env.REACT_APP_IP}get_metrics_by_date_range/`,
+        payload
+      );
+
+      // ✅ Only update state if it's the latest request
+      if (requestId === latestRequestRef.current) {
+        const data = response.data.data;
+
+        setDataState({
+          metrics: data.targeted || {},
+          previous: data.previous || {},
+          difference: data.difference || {},
+          bindGraph: Object.entries(data.graph_data || {})
+            .map(([rawDate, values]) => ({
+              date: rawDate,
+              fullDate: rawDate,
+              dateObj: dayjs(rawDate, "MMMM DD, YYYY"),
+              gross_revenue_without_tax: values.gross_revenue_without_tax,
+              gross_revenue_with_tax: values.gross_revenue_with_tax,
+            }))
+            .sort((a, b) => a.dateObj - b.dateObj),
+        });
+
+        const selectedMetricKeys = Object.keys(data.targeted || {});
+        setVisibleMetrics(selectedMetricKeys);
+      }
+    } catch (error) {
+      if (requestId === latestRequestRef.current) {
+        console.error("Error fetching metrics:", error);
+      }
+    } finally {
+      if (requestId === latestRequestRef.current) {
+        setDataLoading(false);
+      }
     }
-
-    if (DateEndDate && dayjs(DateEndDate).isValid()) {
-      payload.end_date = dayjs(DateEndDate).format("DD/MM/YYYY");
-    }
-
-    const response = await axios.post(
-      `${process.env.REACT_APP_IP}get_metrics_by_date_range/`,
-      payload
-    );
-
-    // ✅ Only update state if it's the latest request
-    if (requestId === latestRequestRef.current) {
-      const data = response.data.data;
-
-      setDataState({
-        metrics: data.targeted || {},
-        previous: data.previous || {},
-        difference: data.difference || {},
-        bindGraph: Object.entries(data.graph_data || {})
-          .map(([rawDate, values]) => ({
-            date: rawDate,
-            fullDate: rawDate,
-            dateObj: dayjs(rawDate, "MMMM DD, YYYY"),
-            gross_revenue_without_tax: values.gross_revenue_without_tax,
-    gross_revenue_with_tax: values.gross_revenue_with_tax,
-          }))
-          .sort((a, b) => a.dateObj - b.dateObj),
-      });
-
-      const selectedMetricKeys = Object.keys(data.targeted || {});
-      setVisibleMetrics(selectedMetricKeys);
-    }
-  } catch (error) {
-    if (requestId === latestRequestRef.current) {
-      console.error("Error fetching metrics:", error);
-    }
-  } finally {
-    if (requestId === latestRequestRef.current) {
-      setDataLoading(false);
-    }
-  }
-};
+  };
 
   const getDisplayDateText = (
     widgetData,
@@ -455,22 +460,26 @@ const fetchMetrics = async (selectedDate, displayDate) => {
     }).format(value ?? 0);
 
   const METRICS_CONFIG = {
-      gross_revenue_without_tax: {
-    title: "Gross Revenue (No Tax)",
-    tooltip: (date, today, prev) =>
-      date.isSame(today, "day")
-        ? `Yesterday: ${formatCurrency(prev)}`
-        : `${date.subtract(1, "day").format("MMM DD")}: ${formatCurrency(prev)}`,
-    currencySymbol: "$",
-  },
-  gross_revenue_with_tax: {
-    title: "Gross Revenue",
-    tooltip: (date, today, prev) =>
-      date.isSame(today, "day")
-        ? `Yesterday: ${formatCurrency(prev)}`
-        : `${date.subtract(1, "day").format("MMM DD")}: ${formatCurrency(prev)}`,
-    currencySymbol: "$",
-  },
+    gross_revenue_without_tax: {
+      title: "Gross Revenue (No Tax)",
+      tooltip: (date, today, prev) =>
+        date.isSame(today, "day")
+          ? `Yesterday: ${formatCurrency(prev)}`
+          : `${date.subtract(1, "day").format("MMM DD")}: ${formatCurrency(
+              prev
+            )}`,
+      currencySymbol: "$",
+    },
+    gross_revenue_with_tax: {
+      title: "Gross Revenue",
+      tooltip: (date, today, prev) =>
+        date.isSame(today, "day")
+          ? `Yesterday: ${formatCurrency(prev)}`
+          : `${date.subtract(1, "day").format("MMM DD")}: ${formatCurrency(
+              prev
+            )}`,
+      currencySymbol: "$",
+    },
     total_orders: {
       title: "Orders",
       tooltip: (date, today, prev) =>
@@ -478,7 +487,7 @@ const fetchMetrics = async (selectedDate, displayDate) => {
           ? `Yesterday: ${prev || "0"}`
           : `${date.subtract(1, "day").format("MMM DD")}: ${prev || "0"}`,
     },
-    
+
     total_units: {
       title: "Units Sold",
       tooltip: (date, today, prev) =>
@@ -486,15 +495,16 @@ const fetchMetrics = async (selectedDate, displayDate) => {
           ? `Yesterday: ${prev || "0"}`
           : `${date.subtract(1, "day").format("MMM DD")}: ${prev || "0"}`,
     },
-    total_tax:{
-      title:"Total Tax",
-      tooltip:(date,today,prev)=>
-         date.isSame(today, "day")
+    total_tax: {
+      title: "Total Tax",
+      tooltip: (date, today, prev) =>
+        date.isSame(today, "day")
           ? `Yesterday: ${formatCurrency(prev)}`
           : `${date.subtract(1, "day").format("MMM DD")}: ${formatCurrency(
               prev
             )}`,
-            currencySymbol:"$"},
+      currencySymbol: "$",
+    },
     refund: {
       title: "Refunds",
       tooltip: (date, today, prev) =>
@@ -633,31 +643,25 @@ const fetchMetrics = async (selectedDate, displayDate) => {
   };
 
   const getGraphPoints = (metric = "gross_revenue_without_tax") => {
-  const maxValue = Math.max(
-    ...dataState.bindGraph.map((d) => d[metric]),
-    1
-  );
-  return dataState.bindGraph
-    .map((item, index) => {
-      const x = (index / (dataState.bindGraph.length - 1)) * 280 + 10;
-      const y = 50 - (item[metric] / maxValue) * 30;
-      return `${x},${y}`;
-    })
-    .join(" ");
-};
+    const maxValue = Math.max(...dataState.bindGraph.map((d) => d[metric]), 1);
+    return dataState.bindGraph
+      .map((item, index) => {
+        const x = (index / (dataState.bindGraph.length - 1)) * 280 + 10;
+        const y = 50 - (item[metric] / maxValue) * 30;
+        return `${x},${y}`;
+      })
+      .join(" ");
+  };
 
-const getCirclePoints = (metric = "gross_revenue_without_tax") => {
-  const maxValue = Math.max(
-    ...dataState.bindGraph.map((d) => d[metric]),
-    1
-  );
-  return dataState.bindGraph.map((item, index) => ({
-    ...item,
-    cx: (index / (dataState.bindGraph.length - 1)) * 280 + 10,
-    cy: 50 - (item[metric] / maxValue) * 30,
-    value: item[metric],
-  }));
-};  
+  const getCirclePoints = (metric = "gross_revenue_without_tax") => {
+    const maxValue = Math.max(...dataState.bindGraph.map((d) => d[metric]), 1);
+    return dataState.bindGraph.map((item, index) => ({
+      ...item,
+      cx: (index / (dataState.bindGraph.length - 1)) * 280 + 10,
+      cy: 50 - (item[metric] / maxValue) * 30,
+      value: item[metric],
+    }));
+  };
 
   const metricBlockStyle = {
     flex: "0 0 180px",
@@ -780,12 +784,14 @@ const getCirclePoints = (metric = "gross_revenue_without_tax") => {
 
           {/* Gross Revenue */}
           {visibleMetrics.includes("gross_revenue_without_tax") && (
-  <Box sx={metricBlockStyle}>
-    <MetricItem
-      title="Gross Revenue (No Tax)"
-      value={dataState.metrics.gross_revenue_without_tax}
-      change={dataState.difference.gross_revenue_without_tax}
-      isNegative={String(dataState.difference.gross_revenue_without_tax).startsWith("-")}
+            <Box sx={metricBlockStyle}>
+              <MetricItem
+                title="Gross Revenue (No Tax)"
+                value={dataState.metrics.gross_revenue_without_tax}
+                change={dataState.difference.gross_revenue_without_tax}
+                isNegative={String(
+                  dataState.difference.gross_revenue_without_tax
+                ).startsWith("-")}
                 tooltip={
                   currentDates.selectedDate.isSame(today, "day")
                     ? `Yesterday: ${formatCurrency(
@@ -803,13 +809,15 @@ const getCirclePoints = (metric = "gross_revenue_without_tax") => {
             </Box>
           )}
           {visibleMetrics.includes("gross_revenue_with_tax") && (
-  <Box sx={metricBlockStyle}>
-    <MetricItem
-      title="Gross Revenue"
-      value={dataState.metrics.gross_revenue_with_tax}
-      change={dataState.difference.gross_revenue_with_tax}
-      isNegative={String(dataState.difference.gross_revenue_with_tax).startsWith("-")}
-      tooltip={
+            <Box sx={metricBlockStyle}>
+              <MetricItem
+                title="Gross Revenue"
+                value={dataState.metrics.gross_revenue_with_tax}
+                change={dataState.difference.gross_revenue_with_tax}
+                isNegative={String(
+                  dataState.difference.gross_revenue_with_tax
+                ).startsWith("-")}
+                tooltip={
                   currentDates.selectedDate.isSame(today, "day")
                     ? `Yesterday: ${formatCurrency(
                         dataState.previous.gross_revenue_with_tax
@@ -820,14 +828,15 @@ const getCirclePoints = (metric = "gross_revenue_without_tax") => {
                         dataState.previous.gross_revenue_with_tax
                       )}`
                 }
-      currencySymbol="$"
-      loading={dataLoading}
-    />
-  </Box>
-)}
+                currencySymbol="$"
+                loading={dataLoading}
+              />
+            </Box>
+          )}
 
           {/* Chart */}
-          {(visibleMetrics.includes("gross_revenue_without_tax") || visibleMetrics.includes("gross_revenue_with_tax")) && (
+          {(visibleMetrics.includes("gross_revenue_without_tax") ||
+            visibleMetrics.includes("gross_revenue_with_tax")) && (
             <Box sx={{ borderRight: "1px solid #e0e0e0" }}>
               <Box
                 ref={graphContainerRef}
@@ -886,61 +895,70 @@ const getCirclePoints = (metric = "gross_revenue_without_tax") => {
                     {!dataLoading && (
                       <>
                         <polyline
-                              points={getGraphPoints("gross_revenue_without_tax")}
-
+                          points={getGraphPoints("gross_revenue_without_tax")}
                           style={{
                             fill: "none",
                             stroke: theme.palette.primary.main,
                             strokeWidth: 2,
                           }}
                         />
-                         <polyline
-    points={getGraphPoints("gross_revenue_with_tax")}
-    style={{
-      fill: "none",
-      stroke: "#FF9800", // Use a different color
-      strokeWidth: 2,
-    }}
-  />
+                        <polyline
+                          points={getGraphPoints("gross_revenue_with_tax")}
+                          style={{
+                            fill: "none",
+                            stroke: "#FF9800", // Use a different color
+                            strokeWidth: 2,
+                          }}
+                        />
 
-                        {getCirclePoints("gross_revenue_without_tax").map((point, index) => (
-  <circle
-    key={`no-tax-${index}`}
-    cx={point.cx}
-    cy={point.cy}
-    r="8"
-    fill="transparent"
-    stroke="transparent"
-    style={{ pointerEvents: "all", cursor: "pointer" }}
-    onMouseEnter={(e) => {
-      e.stopPropagation();
-      setTooltipData({ ...point, index });
-    }}
-    onMouseLeave={(e) => {
-      e.stopPropagation();
-      setTimeout(() => setTooltipData(null), 50);
-    }}
-  />
-))}
-{getCirclePoints("gross_revenue_with_tax").map((point, index) => (
-  <circle
-    key={`with-tax-${index}`}
-    cx={point.cx}
-    cy={point.cy}
-    r="8"
-    fill="transparent"
-    stroke="transparent"
-    style={{ pointerEvents: "all", cursor: "pointer" }}
-    onMouseEnter={(e) => {
-      e.stopPropagation();
-      setTooltipData({ ...point, index });
-    }}
-    onMouseLeave={(e) => {
-      e.stopPropagation();
-      setTimeout(() => setTooltipData(null), 50);
-    }}
-  />
-))}
+                        {getCirclePoints("gross_revenue_without_tax").map(
+                          (point, index) => (
+                            <circle
+                              key={`no-tax-${index}`}
+                              cx={point.cx}
+                              cy={point.cy}
+                              r="8"
+                              fill="transparent"
+                              stroke="transparent"
+                              style={{
+                                pointerEvents: "all",
+                                cursor: "pointer",
+                              }}
+                              onMouseEnter={(e) => {
+                                e.stopPropagation();
+                                setTooltipData({ ...point, index });
+                              }}
+                              onMouseLeave={(e) => {
+                                e.stopPropagation();
+                                setTimeout(() => setTooltipData(null), 50);
+                              }}
+                            />
+                          )
+                        )}
+                        {getCirclePoints("gross_revenue_with_tax").map(
+                          (point, index) => (
+                            <circle
+                              key={`with-tax-${index}`}
+                              cx={point.cx}
+                              cy={point.cy}
+                              r="8"
+                              fill="transparent"
+                              stroke="transparent"
+                              style={{
+                                pointerEvents: "all",
+                                cursor: "pointer",
+                              }}
+                              onMouseEnter={(e) => {
+                                e.stopPropagation();
+                                setTooltipData({ ...point, index });
+                              }}
+                              onMouseLeave={(e) => {
+                                e.stopPropagation();
+                                setTimeout(() => setTooltipData(null), 50);
+                              }}
+                            />
+                          )
+                        )}
 
                         {tooltipData && (
                           <>
@@ -1034,11 +1052,12 @@ const getCirclePoints = (metric = "gross_revenue_without_tax") => {
                     }}
                   >
                     <Typography fontWeight="bold" fontSize={14} color="#485E75">
-      {dayjs(tooltipData.fullDate).format("MMM DD, YYYY")}
-    </Typography>
-    <Typography fontSize={14} color="#FF9800" fontWeight="bold">
-      Gross Revenue: {formatCurrency(tooltipData.gross_revenue_with_tax)}
-    </Typography>
+                      {dayjs(tooltipData.fullDate).format("MMM DD, YYYY")}
+                    </Typography>
+                    <Typography fontSize={14} color="#FF9800" fontWeight="bold">
+                      Gross Revenue:{" "}
+                      {formatCurrency(tooltipData.gross_revenue_with_tax)}
+                    </Typography>
                   </Box>
                 )}
               </Box>
@@ -1049,7 +1068,7 @@ const getCirclePoints = (metric = "gross_revenue_without_tax") => {
           {[
             "total_orders",
             "total_units",
-             "total_tax",
+            "total_tax",
             "refund",
             "total_cogs",
             "margin",
@@ -1105,6 +1124,7 @@ const getCirclePoints = (metric = "gross_revenue_without_tax") => {
           <Dialog open={open} onClose={handleClose} maxWidth="sm" fullWidth>
             <DialogContent dividers>
               <ChooseMetrics
+                selectedDate={currentDates.selectedDate}
                 selectedMetrics={visibleMetrics}
                 onChange={handleMetricToggle}
                 onReset={handleReset}

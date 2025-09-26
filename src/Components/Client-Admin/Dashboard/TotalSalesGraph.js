@@ -31,6 +31,7 @@ import ArrowForwardIosIcon from "@mui/icons-material/ArrowForwardIos";
 import { format } from "date-fns";
 import DonutChart from "./DonutChart";
 import { utcToZonedTime, zonedTimeToUtc } from "date-fns-tz";
+import { fetchMarketplaceList } from "../../../utils/marketplace";
 
 const TotalOrdersGraph = ({
   widgetData,
@@ -80,22 +81,37 @@ const TotalOrdersGraph = ({
       }
     }
   };
+  useEffect(()=>{
+      fetchMarketplaceListAPI()
+    },[])
+
+   const fetchMarketplaceListAPI = async () => {
+      try {
+        const categoryData = await fetchMarketplaceList(userIds,'Total salesgraph');
+              setCategories(categoryData);
+  
+      } catch (error) {
+        console.error("Error fetching marketplace list:", error);
+      }
+    };
+    
 
   const fetchData = async () => {
     try {
       setLoading(true);
 
       // Fetch marketplace categories
-      const marketplaceResponse = await axios.get(
-        `${process.env.REACT_APP_IP}getMarketplaceList/`,
-        { params: { user_id: userIds } }
-      );
-      const categoryData = marketplaceResponse.data.data.map((item) => ({
-        id: item.id,
-        name: item.name,
-        imageUrl: item.image_url,
-      }));
-      setCategories(categoryData);
+      // const marketplaceResponse = await axios.get(
+      //   `${process.env.REACT_APP_IP}getMarketplaceList/`,
+      //   { params: { user_id: userIds } }
+      // );
+      // const categoryData = marketplaceResponse.data.data.map((item) => ({
+      //   id: item.id,
+      //   name: item.name,
+      //   imageUrl: item.image_url,
+      // }));
+      // const categoryData=await fetchMarketplaceList(userIds)
+      // setCategories(categoryData);
 
       // Fetch sales analytics
       const orderResponse = await axios.post(

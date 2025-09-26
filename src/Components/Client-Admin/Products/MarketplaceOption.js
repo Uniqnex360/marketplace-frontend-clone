@@ -25,19 +25,20 @@ function MarketplaceOption({ handleProduct, handleCategoryList, handleBrandList,
   },[clearChannel])
 
   
-  // Fetch marketplace list when the component mounts
   useEffect(() => {
     const fetchMarketplaceList = async () => {
       try {
-        const response = await axios.get(
-          `${process.env.REACT_APP_IP}getMarketplaceList/?user_id=${userIds}`
-      );
+      //   const response = await axios.get(
+      //     `${process.env.REACT_APP_IP}getMarketplaceList/?user_id=${userIds}`
+      // );
 
-        const categoryData = response.data.data.map((item) => ({
-          id: item.id,
-          name: item.name,
-          imageUrl: item.image_url,
-        }));
+        // const categoryData = response.data.data.map((item) => ({
+        //   id: item.id,
+        //   name: item.name,
+        //   imageUrl: item.image_url,
+        // }));
+        const response=await fetchMarketplaceList(userIds,'marketplaceoption')
+        const categoryData = response?.data || [];
 
         setCategories([{ id: "all", name: "All Channels" }, ...categoryData]);
         handleProduct({ id: "all", name: "All Channels" });

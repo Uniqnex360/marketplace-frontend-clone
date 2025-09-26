@@ -54,12 +54,17 @@ import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 import ArrowDropDownIcon from "@mui/icons-material/ArrowDropDown";
 import CompareChart from "./Revenue/DataChangeRevenue";
 import BrandSelector from "../../../utils/BrandSelector";
+import { fetchMarketplaceList } from "../../../utils/marketplace";
+import { useMarketplace } from "../../../utils/MarketplaceProvider";
+import ProductPerformanceContainer from "../../../utils/SalesTrends";
+
 function ClientDashboardpage() {
   const [selectedCategory, setSelectedCategory] = useState({
     id: "all",
     name: "All Channels",
   });
-  const [categories, setCategories] = useState([]);
+  // const [categories, setCategories] = useState([]);
+  const { categories, loading: marketplaceLoading, error } = useMarketplace();
   const [isLoading, setIsLoading] = useState(true);
   const [startDate, setStartDate] = useState(null);
   const [endDate, setEndDate] = useState(null);
@@ -232,45 +237,72 @@ function ClientDashboardpage() {
       setEndDate(null);
     }
   }, [befePreset, selectedPreset]);
-  useEffect(() => {
-    fetchMarketplaceList();
-  }, []);
-  const fetchMarketplaceList = async () => {
-    try {
-      const response = await axios.get(
-        `${process.env.REACT_APP_IP}getMarketplaceList/?user_id=${userIds}`
-      );
-      const categoryData = response.data.data.map((item) => ({
-        id: item.id,
-        name: item.name,
-        imageUrl: item.image_url,
-        fulfillment_channel: item.fulfillment_channel,
-      }));
-      setCategories([
-        {
-          id: "all",
-          name: "All Channels",
-          icon: (
-            <AppsIcon
-              fontSize="small"
-              sx={{ height: "13px", textTransform: "capitalize" }}
-            />
-          ),
-        },
-        {
-          id: "custom",
-          name: "Custom",
-          icon: <ShoppingCartIcon fontSize="small" sx={{ height: "13px" }} />,
-        },
-        ...categoryData,
-      ]);
-      setSelectedCategory({ id: "all", name: "All Channels" });
-    } catch (error) {
-      console.error("Error fetching marketplace list:", error);
-    } finally {
-      setIsLoading(false);
+  // useEffect(() => {
+  //   fetchMarketplaceListAPI();
+  // }, [userIds]);
+
+  // const fetchMarketplaceListAPI = async () => {
+  //   try {
+  //     const categoryData=await fetchMarketplaceList(userIds,'ClientDashboard')
+
+  //     // const response = await axios.get(
+  //     //   `${process.env.REACT_APP_IP}getMarketplaceList/?user_id=${userIds}`
+  //     // );
+  //     // const categoryData = response.data.data.map((item) => ({
+  //     //   id: item.id,
+  //     //   name: item.name,
+  //     //   imageUrl: item.image_url,
+  //     //   fulfillment_channel: item.fulfillment_channel,
+  //     // }));
+  //     setCategories([
+  //       {
+  //         id: "all",
+  //         name: "All Channels",
+  //         icon: (
+  //           <AppsIcon
+  //             fontSize="small"
+  //             sx={{ height: "13px", textTransform: "capitalize" }}
+  //           />
+  //         ),
+  //       },
+  //       {
+  //         id: "custom",
+  //         name: "Custom",
+  //         icon: <ShoppingCartIcon fontSize="small" sx={{ height: "13px" }} />,
+  //       },
+  //       ...categoryData,
+  //     ]);
+  //     setSelectedCategory({ id: "all", name: "All Channels" });
+  //   } catch (error) {
+  //     console.error("Error fetching marketplace list:", error);
+  //   } finally {
+  //     setIsLoading(false);
+  //   }
+  // };
+  const enhancedCategories = React.useMemo(() => {
+  return [
+    {
+      id: "all",
+      name: "All Channels",
+      icon: <AppsIcon fontSize="small" sx={{ height: "13px" }} />,
+    },
+    {
+      id: "custom",
+      name: "Custom",
+      icon: <ShoppingCartIcon fontSize="small" sx={{ height: "13px" }} />,
+    },
+    ...categories,
+  ];
+}, [categories]);
+
+  useEffect(()=>{
+    if(!marketplaceLoading && enhancedCategories.length>0)
+    {
+      setSelectedCategory({ id: "all", name: "All Channels" })
     }
-  };
+  },[enhancedCategories,marketplaceLoading])
+ 
+
   const handleRemoveFilter = (filter) => {
     updateActiveFilters(filter.type, filter.value, filter.label, false);
     switch (filter.type) {
@@ -334,6 +366,7 @@ function ClientDashboardpage() {
           search_query: search,
           user_id: userIds,
           brand_id,
+          sku_ids: selectedSku.map(s => s.id),
           manufacturer_name: selectedManufacturer,
         }
       );
@@ -351,6 +384,7 @@ function ClientDashboardpage() {
       category_id: selectedCategory?.id,
       brand: selectedBrand,
       manufacturer: selectedManufacturer,
+      sku:selectedSku
     });
     let debounceTimer;
     if (trimmedInput !== lastInputRef.current) {
@@ -366,69 +400,66 @@ function ClientDashboardpage() {
       lastFilterParamsRef.current = currentFilterParams;
       fetchAsinList("");
     }
+    // fetchAsinList('')
     return () => clearTimeout(debounceTimer);
-  }, [selectedCategory, selectedBrand, selectedManufacturer, inputValueAsin]);
-  const fetchManufacturerList = async (searchText) => {
-    setIsLoading(true);
-    try {
-      const response = await axios.get(
-        `${process.env.REACT_APP_IP}obtainManufactureNames/`,
-        {
-          params: {
-            marketplace_id: selectedCategory?.id,
-            user_id: userIds,
-            search_query: searchText,
-          },
-        }
-      );
-      const names = response.data.manufacturer_name_list || [];
-      setManufacturerList(names);
-    } catch (error) {
-      console.error("Error fetching manufacturer list:", error);
-    } finally {
-      setIsLoading(false);
-    }
-  };
-  useEffect(() => {
-    const delayDebounceFn = setTimeout(() => {
-      if (inputValueManufactuer.trim() === "") {
-        fetchManufacturerList("");
-      } else {
-        fetchManufacturerList(inputValueManufactuer);
-      }
-    }, 300);
-    return () => clearTimeout(delayDebounceFn);
-  }, [inputValueManufactuer]);
-  useEffect(() => {
-    fetchBrandList();
-  }, [brandLimit, selectedCategory?.id, userIds]);
-  const debouncedFetchBrandList = useCallback(
-    debounce((search) => {
-      setBrandLimit(11);
-      fetchBrandList(search);
-    }, 300),
-    []
-  );
-  useEffect(() => {
-    const delayDebounceFn = setTimeout(() => {
-      if (inputValueBrand.trim() === "") {
-        fetchBrandList("");
-      } else {
-        debouncedFetchBrandList(inputValueBrand);
-      }
-    }, 300);
-    return () => clearTimeout(delayDebounceFn);
-  }, [inputValueBrand, debouncedFetchBrandList]);
-  useEffect(() => {
-    const delayDebounceFn = setTimeout(() => {
-      if (inputValueBrand.trim() === "") {
-        fetchBrandList("");
-      } else {
-        debouncedFetchBrandList(inputValueBrand);
-      }
-    }, 300);
-    return () => clearTimeout(delayDebounceFn);
-  }, [inputValueBrand, debouncedFetchBrandList]);
+  }, [selectedCategory, selectedBrand, selectedManufacturer, inputValueAsin,selectedSku,selectedAsin]);
+  // const fetchManufacturerList = async (searchText) => {
+  //   setIsLoading(true);
+  //   try {
+  //     const response = await axios.get(
+  //       `${process.env.REACT_APP_IP}obtainManufactureNames/`,
+  //       {
+  //         params: {
+  //           marketplace_id: selectedCategory?.id,
+  //           user_id: userIds,
+  //           search_query: searchText,
+  //         },
+  //       }
+  //     );
+  //     const names = response.data.manufacturer_name_list || [];
+  //     setManufacturerList(names);
+  //   } catch (error) {
+  //     console.error("Error fetching manufacturer list:", error);
+  //   } finally {
+  //     setIsLoading(false);
+  //   }
+  // };
+  // useEffect(() => {
+  //   const delayDebounceFn = setTimeout(() => {
+  //     if (inputValueManufactuer.trim() === "") {
+  //       fetchManufacturerList("");
+  //     } else {
+  //       fetchManufacturerList(inputValueManufactuer);
+  //     }
+  //   }, 300);
+  //   return () => clearTimeout(delayDebounceFn);
+  // }, [inputValueManufactuer]);
+useEffect(() => {
+  // run brand call if category/sku/asin/brandlimit changes OR input search changes
+  const delayDebounceFn = setTimeout(() => {
+    fetchBrandList(inputValueBrand.trim() || "");
+  }, 300);
+
+  return () => clearTimeout(delayDebounceFn);
+}, [brandLimit, selectedCategory?.id, userIds, selectedAsin, selectedSku, inputValueBrand]);
+  // const debouncedFetchBrandList = useCallback(
+  //   debounce((search) => {
+  //     setBrandLimit(11);
+  //     fetchBrandList(search);
+  //   }, 300),
+  //   []
+  // );
+  // useEffect(() => {
+  //   const delayDebounceFn = setTimeout(() => {
+  //     if (inputValueBrand.trim() === "") {
+  //       fetchBrandList("");
+  //     } else {
+  //       debouncedFetchBrandList(inputValueBrand);
+  //     }
+  //   }, 300);
+  //   return () => clearTimeout(delayDebounceFn);
+  // }, [inputValueBrand, debouncedFetchBrandList]);
+
   const fetchBrandList = async (search = "") => {
     setIsLoading(true);
     try {
@@ -439,6 +470,8 @@ function ClientDashboardpage() {
             marketplace_id: selectedCategory?.id,
             search_query: search,
             user_id: userIds,
+            asin_ids: selectedAsin.map(a => a.id),
+            sku_ids: selectedSku.map(s => s.id),
             limit: brandLimit,
           },
         }
@@ -453,14 +486,14 @@ function ClientDashboardpage() {
       setIsLoading(false);
     }
   };
-  useEffect(() => {
-    const currentCategoryId = selectedCategory?.id;
-    if (currentCategoryId && currentCategoryId !== lastCategoryIdRef.current) {
-      lastCategoryIdRef.current = currentCategoryId;
-      fetchBrandList("");
-      fetchManufacturerList("");
-    }
-  }, [selectedCategory]);
+  // useEffect(() => {
+  //   const currentCategoryId = selectedCategory?.id;
+  //   if (currentCategoryId && currentCategoryId !== lastCategoryIdRef.current) {
+  //     lastCategoryIdRef.current = currentCategoryId;
+  //     fetchBrandList("");
+  //   }
+  // }, [selectedCategory]);
+
   useEffect(() => {
     updateActiveFilters("date", "customDate", "", false);
     if (startDate && endDate) {
@@ -471,17 +504,18 @@ function ClientDashboardpage() {
       updateActiveFilters("preset", selectedPreset, selectedPreset, false);
     }
   }, [startDate, endDate]);
-  useEffect(() => {
-    if (inputValueBrand.trim()) {
-      setIsTyping(true);
-      const delay = setTimeout(() => {
-        fetchBrandList(inputValueBrand.trim());
-      }, 300);
-      return () => clearTimeout(delay);
-    } else {
-      setIsTyping(false);
-    }
-  }, [inputValueBrand]);
+  // useEffect(() => {
+  //   if (inputValueBrand.trim()) {
+  //     setIsTyping(true);
+  //     const delay = setTimeout(() => {
+  //       fetchBrandList(inputValueBrand.trim());
+  //     }, 300);
+  //     return () => clearTimeout(delay);
+  //   } else {
+  //     setIsTyping(false);
+  //   }
+  // }, [inputValueBrand]);
+
   const fetchSkuList = async (searchText = "") => {
     setIsLoading(true);
     try {
@@ -492,6 +526,7 @@ function ClientDashboardpage() {
           search_query: searchText,
           user_id: userIds,
           brand_id,
+          asin_ids:selectedAsin.map(a=>a.id),
           manufacturer_name: selectedManufacturer,
         }
       );
@@ -509,25 +544,26 @@ function ClientDashboardpage() {
       brand: selectedBrand,
       manufacturer: selectedManufacturer,
       sku: selectedSku,
+      asin:selectedAsin
     });
     if (
-      (selectedCategory?.id || selectedBrand || selectedManufacturer) &&
+      (selectedCategory?.id || selectedBrand || selectedManufacturer||selectedAsin) &&
       currentParams !== lastParamsRef.current
     ) {
       lastParamsRef.current = currentParams;
       fetchSkuList("");
     }
-  }, [selectedCategory, selectedBrand, selectedManufacturer, selectedSku]);
+    // fetchSkuList('')
+  }, [selectedCategory, selectedBrand, selectedManufacturer,userIds,selectedAsin]);
+
   useEffect(() => {
+    if(!inputValueSku.trim())return 
     const delayDebounce = setTimeout(() => {
-      if (inputValueSku.trim() === "") {
-        fetchSkuList("");
-      } else {
-        fetchSkuList(inputValueSku);
-      }
+      fetchSkuList(inputValueSku)
     }, 300);
     return () => clearTimeout(delayDebounce);
   }, [inputValueSku]);
+  
   const handleMenuOpen = (event) => {
     setAnchorEl(event.currentTarget);
   };
@@ -835,7 +871,14 @@ function ClientDashboardpage() {
                 >
                   Welcome
                 </Box>
-                <BrandSelector
+                 <Box
+                  sx={{
+                    position: "relative",
+                    paddingRight: "5%",
+                    width: "150px",
+                  }}
+                >
+                  <BrandSelector
                   selectedBrand={selectedBrand}
                   setSelectedBrand={setSelectedBrand}
                   brandList={brandList}
@@ -849,6 +892,8 @@ function ClientDashboardpage() {
                   label="Brands"
                   width={190}
                 />
+                </Box>
+               
                 <Box
                   sx={{
                     position: "relative",
@@ -956,7 +1001,7 @@ function ClientDashboardpage() {
                     }}
                   />
                 </Box>
-                <Box sx={{ width: 160, position: "relative" }}>
+                {/* <Box sx={{ width: 160, position: "relative" }}>
                   <Autocomplete
                     multiple
                     freeSolo
@@ -1020,7 +1065,7 @@ function ClientDashboardpage() {
                           maxHeight: 300,
                           position: "absolute",
                         }}
-                      >
+                      > */}
                         {/* Custom chip display inside dropdown */}
                         {/* {selectedManufacturer.length > 0 && (
           <Box
@@ -1052,7 +1097,7 @@ function ClientDashboardpage() {
             ))}
           </Box>
         )} */}
-                        {props.children}
+                        {/* {props.children}
                       </Box>
                     )}
                     sx={{
@@ -1066,7 +1111,7 @@ function ClientDashboardpage() {
                       },
                     }}
                   />
-                </Box>
+                </Box> */}
                 <Box
                   sx={{
                     marginLeft: "19px",
@@ -1112,7 +1157,7 @@ function ClientDashboardpage() {
                           />
                         </MenuItem>
                       ) : (
-                        categories.map((category) => (
+                        enhancedCategories.map((category) => (
                           <div key={category.id}>
                             <MenuItem
                               onClick={() => handleCategorySelect(category)}
@@ -1763,32 +1808,16 @@ function ClientDashboardpage() {
           />
         </Grid>
         <Grid item xs={12} sm={12}>
-          <Box sx={{ paddingBottom: "10px", width: "99%" }}>
-            <SalesIncreasing
-              marketPlaceId={
-                selectedCategory === "all" ? selectedCategory : filterFinal
-              }
-              brand_id={selectedBrandFilter}
-              product_id={mergedProductsFilter}
-              manufacturer_name={selectedManufacturerFilter}
-              fulfillment_channel={selectedFulfillment}
-              DateStartDate={appliedStartDate}
-              DateEndDate={appliedEndDate}
-            />
-          </Box>
-          <Box sx={{ paddingBottom: "10px", width: "99%" }}>
-            <SalesDecreasing
-              marketPlaceId={
-                selectedCategory === "all" ? selectedCategory : filterFinal
-              }
-              brand_id={selectedBrandFilter}
-              product_id={mergedProductsFilter}
-              manufacturer_name={selectedManufacturerFilter}
-              fulfillment_channel={selectedFulfillment}
-              DateStartDate={appliedStartDate}
-              DateEndDate={appliedEndDate}
-            />
-          </Box>
+          <ProductPerformanceContainer
+  userId={userIds}
+  marketPlaceId={selectedCategory === "all" ? selectedCategory : filterFinal}
+  brand_id={selectedBrandFilter}
+  product_id={mergedProductsFilter}
+  manufacturer_name={selectedManufacturerFilter}
+  fulfillment_channel={selectedFulfillment}
+  DateStartDate={appliedStartDate}
+  DateEndDate={appliedEndDate}
+/>  
           <Grid item xs={12} sm={12} sx={{ width: "99%" }}>
             <AllMarketplace
               widgetData={appliedPreset}
