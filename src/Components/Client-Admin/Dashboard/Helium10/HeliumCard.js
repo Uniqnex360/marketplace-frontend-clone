@@ -94,6 +94,7 @@ const MetricItem = ({
 
 const HeliumCard = () => {
   const theme = useTheme();
+  const fixedToday=dayjs('2025-09-25','YYYY-MM-DD')
   const [selectedDate, setSelectedDate] = useState(dayjs());
   const [metrics, setMetrics] = useState({});
   const [previous, setPrevious] = useState({});
@@ -108,7 +109,7 @@ const HeliumCard = () => {
     try {
       const payload={
               user_id:userId,
-              target_date:(date||moment()).format("DD/MM/YYYY")
+              target_date:"25/09/2025",
             }
 
       const response = await axios.post(
@@ -206,7 +207,7 @@ const HeliumCard = () => {
                   {selectedDate.format('ddd, MMM DD')}
                 </Typography>
                 <Typography variant="caption" color="text.secondary">
-                  {selectedDate.isSame(dayjs(), 'day') ? 'Today' : ''}
+                    {selectedDate.isSame(fixedToday, 'day') ? '' : ''}
                 </Typography>
               </Box>
             </Tooltip>

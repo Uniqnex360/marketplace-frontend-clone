@@ -19,6 +19,7 @@ import {
   Tooltip,
   IconButton,
   Menu,
+  FormControl,
 } from "@mui/material";
 import { MoreVert as MoreVertIcon } from "@mui/icons-material";
 import { Refresh, Download } from "@mui/icons-material";
@@ -33,6 +34,10 @@ import MarketplaceOption from "./MarketplaceOption";
 import EditIcon from "@mui/icons-material/Edit";
 import { toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
+import AppsIcon from "@mui/icons-material/Apps"; // Icon for "All Channels"
+import ShoppingCartIcon from "@mui/icons-material/ShoppingCart"; // Icon for "Custom"
+import { useMarketplace } from "../../../utils/MarketplaceProvider";
+import ImageIcon from "@mui/icons-material/Image";
 
 const ProductTable = () => {
   const location = useLocation();
@@ -59,12 +64,23 @@ const ProductTable = () => {
   const [totalPages, setTotalPages] = useState(1);
   const [productCount, setProductCount] = useState(0);
   const [isFetching, setIsFetching] = useState(false); // Flag to prevent multiple API calls
-  const [categories, setCategories] = useState([
-    "All",
-    "Category 1",
-    "Category 2",
-  ]);
+  const { categories, loading: marketplaceLoading, error } = useMarketplace();
 
+  const enhancedCategories = React.useMemo(() => {
+    return [
+      {
+        id: "all",
+        name: "All Channels",
+        icon: <AppsIcon fontSize="small" sx={{ height: "13px" }} />,
+      },
+      {
+        id: "custom",
+        name: "Custom",
+        icon: <ShoppingCartIcon fontSize="small" sx={{ height: "13px" }} />,
+      },
+      ...categories, // from useMarketplace hook
+    ];
+  }, [categories]);
   const initialPage = parseInt(searchParams.get("page"), 10) || 1;
   const [page, setPage] = useState(initialPage);
   const initialRowsPerPage =
@@ -79,6 +95,11 @@ const ProductTable = () => {
       ? JSON.parse(storedCategory)
       : { id: "all", name: "All Channels" };
   });
+  const handleMarketplaceSelect = (category) => {
+    setSelectedCategory(category);
+    localStorage.getItem("selectedCategory", JSON.stringify(category));
+    setPage(1);
+  };
 
   // Effect to set initial rowsPerPage from URL on component mount
   useEffect(() => {
@@ -386,12 +407,43 @@ const ProductTable = () => {
             }}
           >
             <Box sx={{ marginTop: "-7px" }}>
-              <MarketplaceOption
-                handleProduct={handleProduct}
-                handleCategoryList={handleCategoryList}
-                handleBrandList={handleBrandList}
-                clearChannel={selectedCategory}
-              />
+              <FormControl size="small" sx={{ minWidth: 150 }}>
+                <Select
+                  value={selectedCategory?.id || "all"}
+                  onChange={(e) => {
+                    const selected = enhancedCategories.find(
+                      (cat) => cat.id === e.target.value
+                    );
+                    if (selected) {
+                      handleMarketplaceSelect(selected);
+                    }
+                  }}
+                  displayEmpty
+                >
+                  {marketplaceLoading ? (
+                    <MenuItem disabled>Loading...</MenuItem>
+                  ) : (
+                    enhancedCategories.map((category) => (
+                      <MenuItem key={category.id} value={category.id}>
+                        <Box display="flex" alignItems="center" gap={1}>
+                          {category.icon ||
+                            (category.imageUrl ? (
+                              <img
+                                src={category.imageUrl}
+                                alt={category.name}
+                                width={18}
+                                height={14}
+                              />
+                            ) : (
+                              <ImageIcon fontSize="small" />
+                            ))}
+                          <span>{category.name}</span>
+                        </Box>
+                      </MenuItem>
+                    ))
+                  )}
+                </Select>
+              </FormControl>
             </Box>
 
             <TextField

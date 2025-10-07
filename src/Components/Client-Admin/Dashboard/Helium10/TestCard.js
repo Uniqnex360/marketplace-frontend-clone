@@ -151,11 +151,12 @@ const TestCard = ({
   fulfillment_channel,
 }) => {
   const theme = useTheme();
+  const API_TODAY = dayjs("25/09/2025", "DD/MM/YYYY").tz(TIMEZONE);
 
   // Combined state for dates and preset
   const [currentDates, setCurrentDates] = useState({
-    selectedDate: dayjs().tz(TIMEZONE),
-    displayDate: dayjs().tz(TIMEZONE),
+    selectedDate: API_TODAY,
+    displayDate: API_TODAY
   });
   const formatNumber = (value) => (value ?? 0).toLocaleString("en-US");
   const [currentPreset, setCurrentPreset] = useState(widgetData);
@@ -243,7 +244,7 @@ const TestCard = ({
 
     try {
       const payload = {
-        target_date: selectedDate.format("DD/MM/YYYY"),
+        target_date:"25/09/2025",
         user_id: userId,
         preset: currentPreset,
         marketplace_id: marketPlaceId.id,
@@ -299,7 +300,6 @@ const TestCard = ({
       }
     }
   };
-
   const getDisplayDateText = (
     widgetData,
     DateStartDate,
@@ -307,7 +307,7 @@ const TestCard = ({
     displayDate,
     selectedDate
   ) => {
-    const today = dayjs().tz(TIMEZONE);
+    const today = API_TODAY;
     if (DateStartDate && DateEndDate) {
       return `${dayjs(DateStartDate).format("MMMM D, YYYY")} - ${dayjs(
         DateEndDate
@@ -339,7 +339,7 @@ const TestCard = ({
     displayDate,
     selectedDate
   ) => {
-    const today = dayjs().tz(TIMEZONE);
+    const today = API_TODAY;
     if (DateStartDate && DateEndDate) return "Custom Date Range";
 
     if (widgetData === "Today" || widgetData === "Yesterday") {
@@ -366,7 +366,7 @@ const TestCard = ({
 
   // Initialize dates based on widget data
   useEffect(() => {
-    const today = dayjs().tz(TIMEZONE);
+    const today = API_TODAY;
     let newDisplayDate, newSelectedDate;
 
     // Handle custom date range
@@ -552,10 +552,10 @@ const TestCard = ({
     },
   };
 
-  const today = dayjs().tz(TIMEZONE);
+  const today = API_TODAY;
 
   const handlePrevious = () => {
-    const today = dayjs().tz(TIMEZONE);
+    const today = API_TODAY;
 
     if (DateStartDate && DateEndDate) {
       const rangeDays =
@@ -589,7 +589,7 @@ const TestCard = ({
   };
 
   const handleNext = () => {
-    const today = dayjs().tz(TIMEZONE);
+    const today = API_TODAY;
 
     if (DateStartDate && DateEndDate) {
       const rangeDays =
@@ -625,7 +625,7 @@ const TestCard = ({
   };
 
   const handleBackToToday = () => {
-    const today = dayjs().tz(TIMEZONE);
+    const today = API_TODAY;
     if (DateStartDate && DateEndDate) {
       const rangeDays =
         dayjs(DateEndDate).diff(dayjs(DateStartDate), "day") + 1;

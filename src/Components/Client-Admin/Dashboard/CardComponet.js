@@ -167,21 +167,23 @@ const CardComponent = ({
         setTotalOrders(total_order_count?.value || 0);
 
         if (marketPlaceId.id === "all") {
-          const pieData = Object.entries(marketplaces).map(([name, data]) => {
-            let color;
-            if (name === "Amazon") color = "#0b3954";
-            else if (name === "Walmart") color = "#ff6663";
-            else if (name === "custom") color = "#9381ff";
-            else color = getRandomColor();
+          const pieData = Object.entries(marketplaces)
+  .filter(([name, data]) => data?.count > 0)
+  .map(([name, data]) => {
+    let color;
+    if (name === "Amazon") color = "#0b3954";
+    else if (name === "Walmart") color = "#ff6663";
+    else if (name === "custom") color = "#9381ff";
+    else color = getRandomColor();
 
-            return {
-              name,
-              value: data?.count || 0,
-              percentage: parseFloat(data?.percentage || 0).toFixed(2),
-              color: color,
-              orderValue: data?.order_value || 0, // Bind orderValue here
-            };
-          });
+    return {
+      name,
+      value: data.count,
+      percentage: parseFloat(data.percentage || 0).toFixed(2),
+      color,
+      orderValue: data.order_value || 0,
+    };
+  });
           setOrderData(pieData);
         } else {
           const marketplaceName = Object.keys(marketplaces)[0];

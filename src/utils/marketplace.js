@@ -1,12 +1,12 @@
 import axios from 'axios'
 const API_BASE_URL = process.env.REACT_APP_IP
 
-export const fetchMarketplaceList = async (userId,source='Unknown') => {
+export const fetchMarketplaceList = async (userId,source='Unknown',country) => {
         console.log(`[fetchMarketplaceList] called from: ${source}`)
 
   try {
     const response = await axios.get(`${API_BASE_URL}getMarketplaceList/`, {
-      params: { user_id: userId }
+      params: { user_id: userId,country:country }
     })
 
     const categoryData = response.data.data.map((item) => ({
