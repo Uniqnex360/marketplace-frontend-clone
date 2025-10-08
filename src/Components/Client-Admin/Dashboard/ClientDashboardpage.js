@@ -244,9 +244,10 @@
         setEndDate(null);
       }
     }, [befePreset, selectedPreset]);
-    // useEffect(() => {
-    //   fetchMarketplaceListAPI();
-    // }, [userIds]);
+    useEffect(() => {
+  console.log('fetchMarketplaceList triggered for', userIds);
+  fetchMarketplaceList(userIds, 'ClientDashboard');
+}, [userIds]);
 
     // const fetchMarketplaceListAPI = async () => {
     //   try {
