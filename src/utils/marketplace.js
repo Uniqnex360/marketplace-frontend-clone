@@ -13,7 +13,7 @@ export const fetchMarketplaceList = async (userId,source='Unknown',country) => {
       id: item.id,
       name: item.name,
       imageUrl: item.image_url,
-      fulfillment_channel: item.fulfillment_channel,
+      ...(item.fulfillment_channel?.length > 0 && { fulfillment_channel: item.fulfillment_channel }),
     }))
 
     return categoryData
