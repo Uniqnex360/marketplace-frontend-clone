@@ -12,6 +12,7 @@ export const MarketplaceProvider = ({ userId, children }) => {
 
   useEffect(() => {
     const loadData = async () => {
+      if(!userId)return
       try {
         const data = await fetchMarketplaceList(userId, "MarketplaceProvider",selectedCountry)
         setCategories(data)
