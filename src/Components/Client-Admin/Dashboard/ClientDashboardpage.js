@@ -244,10 +244,9 @@
         setEndDate(null);
       }
     }, [befePreset, selectedPreset]);
-    useEffect(() => {
-  console.log('fetchMarketplaceList triggered for', userIds);
-  fetchMarketplaceList(userIds, 'ClientDashboard');
-}, [userIds]);
+    // useEffect(() => {
+    //   fetchMarketplaceListAPI();
+    // }, [userIds]);
 
     // const fetchMarketplaceListAPI = async () => {
     //   try {
