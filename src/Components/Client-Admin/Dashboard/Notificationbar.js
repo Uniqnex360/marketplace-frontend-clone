@@ -98,20 +98,52 @@ function Notificationbar() {
           <LocalizationProvider dateAdapter={AdapterDayjs}>
             {/* Preset Dropdown */}
             <Box sx={{ paddingTop: "5px" }}>
-              <FormControl size="small" sx={{ minWidth: 130, pr: "9px" ,"& .MuiInputLabel-root": {
-      color: "white", 
-    },}}>
-                <InputLabel>Country</InputLabel>
-                <Select
-                  value={selectedCountry}
-                  label="Country"
-                  onChange={(e) => setSelectedCountry(e.target.value)}
-                >
-                  <MenuItem value="">All Countries</MenuItem>
-                  <MenuItem value="US">United States</MenuItem>
-                  <MenuItem value="UK">United Kingdom</MenuItem>
-                </Select>
-              </FormControl>
+             <FormControl 
+  size="small" 
+  sx={{ 
+    minWidth: 130, 
+    pr: "9px",
+    "& .MuiInputLabel-root": {
+      color: "rgba(0, 0, 0, 0.6)", // Label color (default gray)
+      "&.Mui-focused": {
+        color: "#000080", // Label color when focused
+      },
+    },
+    "& .MuiOutlinedInput-root": {
+      backgroundColor: "white", // White background
+      "& fieldset": {
+        borderColor: "#cacaca", // Border color
+      },
+      "&:hover fieldset": {
+        borderColor: "#000080", // Border on hover
+      },
+      "&.Mui-focused fieldset": {
+        borderColor: "#000080", // Border when focused
+      },
+    },
+    "& .MuiSelect-select": {
+      color: "rgba(0, 0, 0, 0.87)", // Text color
+      backgroundColor: "white", // Ensure background is white
+      paddingTop: "8.5px", // Adjust vertical padding
+      paddingBottom: "8.5px",
+    },
+    "& .MuiSvgIcon-root": {
+      color: "rgba(0, 0, 0, 0.54)", // Dropdown arrow color
+    },
+  }}
+>
+  <InputLabel shrink={selectedCountry !== ""}></InputLabel>
+  <Select
+    value={selectedCountry}
+    // label="Country"
+    onChange={(e) => setSelectedCountry(e.target.value)}
+    displayEmpty
+  >
+    <MenuItem value="">All Countries</MenuItem>
+    <MenuItem value="US">United States</MenuItem>
+    <MenuItem value="UK">United Kingdom</MenuItem>
+  </Select>
+</FormControl>
             </Box>
           </LocalizationProvider>
 

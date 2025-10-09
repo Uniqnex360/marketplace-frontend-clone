@@ -139,6 +139,12 @@ import { useEnhancedCategories } from "../../../utils/UseEnhancedCategories";
       "This Year",
       "Last Year",
     ];
+    const getPresetDisplayLabel = (preset) => {
+  if (preset === "Today") {
+    return "September 1"; // Always shows "September 1" for Today
+  }
+  return preset; // All other presets show their normal name
+};
     const continents=["US","UK"]
     console.log("activefilters", activeFilters);
     const [value, setValue] = useState([dayjs().subtract(6, "day"), dayjs()]);
@@ -1439,7 +1445,7 @@ import { useEnhancedCategories } from "../../../utils/UseEnhancedCategories";
                       >
                         {presets.map((preset) => (
                           <MenuItem key={preset} value={preset}>
-                            {preset}
+                            {getPresetDisplayLabel(preset)}
                           </MenuItem>
                         ))}
                       </Select>
