@@ -48,6 +48,7 @@
   import AppsIcon from "@mui/icons-material/Apps"; // Icon for "All Channels"
   import ShoppingCartIcon from "@mui/icons-material/ShoppingCart";
   import ImageIcon from "@mui/icons-material/Image";
+import { useEnhancedCategories } from "../../../utils/UseEnhancedCategories";
 
 
   const OrderList = ({ fetchOrdersFromParent }) => {
@@ -85,21 +86,8 @@
       name: "All Channels",
     });
     const { categories, loading: marketplaceLoading, error } = useMarketplace();
-    const enhancedCategories = React.useMemo(() => {
-      return [
-        {
-          id: "all",
-          name: "All Channels",
-          icon: <AppsIcon fontSize="small" sx={{ height: "13px" }} />,
-        },
-        {
-          id: "custom",
-          name: "Custom",
-          icon: <ShoppingCartIcon fontSize="small" sx={{ height: "13px" }} />,
-        },
-        ...categories, // from useMarketplace hook
-      ];
-    }, [categories]);
+ const enhancedCategories = useEnhancedCategories(categories);
+
     const systemTimeZone = Intl.DateTimeFormat().resolvedOptions().timeZone;
     const handleClearFilter = () => {
       setSelectedBrand([]);

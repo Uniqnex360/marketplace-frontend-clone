@@ -38,6 +38,7 @@ import AppsIcon from "@mui/icons-material/Apps"; // Icon for "All Channels"
 import ShoppingCartIcon from "@mui/icons-material/ShoppingCart"; // Icon for "Custom"
 import { useMarketplace } from "../../../utils/MarketplaceProvider";
 import ImageIcon from "@mui/icons-material/Image";
+import { useEnhancedCategories } from "../../../utils/UseEnhancedCategories";
 
 const ProductTable = () => {
   const location = useLocation();
@@ -66,21 +67,8 @@ const ProductTable = () => {
   const [isFetching, setIsFetching] = useState(false); // Flag to prevent multiple API calls
   const { categories, loading: marketplaceLoading, error } = useMarketplace();
 
-  const enhancedCategories = React.useMemo(() => {
-    return [
-      {
-        id: "all",
-        name: "All Channels",
-        icon: <AppsIcon fontSize="small" sx={{ height: "13px" }} />,
-      },
-      {
-        id: "custom",
-        name: "Custom",
-        icon: <ShoppingCartIcon fontSize="small" sx={{ height: "13px" }} />,
-      },
-      ...categories, // from useMarketplace hook
-    ];
-  }, [categories]);
+  const enhancedCategories = useEnhancedCategories(categories);
+
   const initialPage = parseInt(searchParams.get("page"), 10) || 1;
   const [page, setPage] = useState(initialPage);
   const initialRowsPerPage =

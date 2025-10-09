@@ -57,6 +57,7 @@
   import { fetchMarketplaceList } from "../../../utils/marketplace";
   import { useMarketplace } from "../../../utils/MarketplaceProvider";
   import ProductPerformanceContainer from "../../../utils/SalesTrends";
+import { useEnhancedCategories } from "../../../utils/UseEnhancedCategories";
 
   function ClientDashboardpage() {
     const [selectedCategory, setSelectedCategory] = useState({
@@ -286,21 +287,8 @@
     //     setIsLoading(false);
     //   }
     // };
-    const enhancedCategories = React.useMemo(() => {
-    return [
-      {
-        id: "all",
-        name: "All Channels",
-        icon: <AppsIcon fontSize="small" sx={{ height: "13px" }} />,
-      },
-      {
-        id: "custom",
-        name: "Custom",
-        icon: <ShoppingCartIcon fontSize="small" sx={{ height: "13px" }} />,
-      },
-      ...categories,
-    ];
-  }, [categories]);
+   const enhancedCategories = useEnhancedCategories(categories);
+
 
     useEffect(()=>{
       if(!marketplaceLoading && enhancedCategories.length>0)
