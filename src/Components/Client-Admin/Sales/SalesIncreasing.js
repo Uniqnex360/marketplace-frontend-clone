@@ -52,6 +52,8 @@ const SalesIncreasing = ({
   const today = new Date();
   const yesterdayDate = new Date(today);
   yesterdayDate.setDate(today.getDate() - 1);
+  const endDate = new Date(2025, 8, 1);
+  const startDate = new Date(2025, 7, 31);
 
   const dayBeforeYesterdayDate = new Date(today);
   dayBeforeYesterdayDate.setDate(today.getDate() - 2);
@@ -61,8 +63,8 @@ const SalesIncreasing = ({
     return date.toLocaleDateString('en-US', options);
   };
 
-  const yesterday = formatDate(yesterdayDate);
-  const dayBeforeYesterday = formatDate(dayBeforeYesterdayDate);
+  const yesterday = formatDate(endDate);
+  const dayBeforeYesterday = formatDate(startDate);
 
   // Menu handlers
   const handleClick = (event) => {

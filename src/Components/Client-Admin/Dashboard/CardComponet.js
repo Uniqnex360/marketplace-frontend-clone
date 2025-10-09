@@ -168,22 +168,14 @@ const CardComponent = ({
 
         if (marketPlaceId.id === "all") {
           const pieData = Object.entries(marketplaces)
-  .filter(([name, data]) => data?.count > 0)
-  .map(([name, data]) => {
-    let color;
-    if (name === "Amazon") color = "#0b3954";
-    else if (name === "Walmart") color = "#ff6663";
-    else if (name === "custom") color = "#9381ff";
-    else color = getRandomColor();
-
-    return {
-      name,
-      value: data.count,
-      percentage: parseFloat(data.percentage || 0).toFixed(2),
-      color,
-      orderValue: data.order_value || 0,
-    };
-  });
+            .filter(([name, data]) => data?.count > 0)
+            .map(([name, data], index) => ({
+              name,
+              value: data.count,
+              percentage: parseFloat(data.percentage || 0).toFixed(2),
+              color: getPastelColor(name, index),
+              orderValue: data.order_value || 0,
+            }));
           setOrderData(pieData);
         } else {
           const marketplaceName = Object.keys(marketplaces)[0];
@@ -248,7 +240,27 @@ const CardComponent = ({
     manufacturer_name,
     JSON.stringify(product_id),
   ]);
-
+const PASTEL_COLORS = {
+  Amazon: "#A8D5E2",      // Pastel Blue
+  Walmart: "#FFB5A7",     // Pastel Coral
+  custom: "#C5A3FF",      // Pastel Purple
+  default: [
+    "#FFD4A3",            // Pastel Peach
+    "#B5EAD7",            // Pastel Mint
+    "#FFDFD3",            // Pastel Pink
+    "#E2F0CB",            // Pastel Lime
+    "#C7CEEA",            // Pastel Lavender
+    "#FFCCD5",            // Pastel Rose
+    "#B4E7CE",            // Pastel Teal
+    "#FFF4A3",            // Pastel Yellow
+  ]
+};
+const getPastelColor = (name, index) => {
+    if (PASTEL_COLORS[name]) {
+      return PASTEL_COLORS[name];
+    }
+    return PASTEL_COLORS.default[index % PASTEL_COLORS.default.length];
+  };
   const getRandomColor = () => {
     const letters = "0123456789ABCDEF";
     let color = "#";
@@ -277,6 +289,9 @@ const CardComponent = ({
 
   const formatDateTick = (tickItem) => {
     return format(tickItem, "MMM dd"); // Format date as "Month Day" (e.g., "Jan 01")
+  };
+   const renderCustomLabel = (entry) => {
+    return entry.name;
   };
 
   return (
@@ -330,7 +345,7 @@ const CardComponent = ({
                       nameKey="name"
                       innerRadius={35}
                       outerRadius={60}
-                      label={({ name }) => name}
+                      label={renderCustomLabel}
                     >
                       {orderData.map((entry, index) => (
                         <Cell key={`cell-${index}`} fill={entry.color} />

@@ -309,7 +309,7 @@ const ProfitAndLoss = ({
           product_id: product_id,
           manufacturer_name: manufacturer_name,
           fulfillment_channel: fulfillment_channel,
-          timezone: systemTimeZone,
+          timezone: "US/Pacific",
         }
       );
       

@@ -44,9 +44,10 @@ const SalesDecreasing = ({ userId, marketPlaceId, brand_id, product_id, manufact
         const options = { month: 'short', day: '2-digit', year: 'numeric' };
         return date.toLocaleDateString('en-US', options);
     };
-
-    const yesterday = formatDate(yesterdayDate);
-    const dayBeforeYesterday = formatDate(dayBeforeYesterdayDate);
+    const endDate = new Date(2025, 8, 1);
+  const startDate = new Date(2025, 7, 31);
+    const yesterday = formatDate(endDate);
+    const dayBeforeYesterday = formatDate(startDate );
 
     const [anchorEl, setAnchorEl] = useState(null);
     const open = Boolean(anchorEl);
