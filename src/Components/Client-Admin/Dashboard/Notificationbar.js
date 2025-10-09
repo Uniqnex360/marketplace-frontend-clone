@@ -13,6 +13,9 @@ import {
   Divider,
   ListItemIcon,
   Box,
+  FormControl,
+  Select,
+  InputLabel,
 } from "@mui/material";
 import MenuIcon from "@mui/icons-material/Menu";
 import {
@@ -23,6 +26,9 @@ import {
   HelpOutline,
 } from "@mui/icons-material";
 import { Link, useLocation, useNavigate } from "react-router-dom";
+import { LocalizationProvider } from "@mui/x-date-pickers";
+import { useMarketplace } from "../../../utils/MarketplaceProvider";
+import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
 
 const accentColor = " #000080  "; // Change as needed
 
@@ -31,6 +37,12 @@ function Notificationbar() {
   const location = useLocation();
   const [anchorEl, setAnchorEl] = useState(null);
   const open = Boolean(anchorEl);
+  const {
+    categories,
+    loading: marketplaceLoading,
+    selectedCountry,
+    setSelectedCountry,
+  } = useMarketplace();
 
   const handleProfileClick = (event) => {
     setAnchorEl(event.currentTarget);
@@ -83,6 +95,24 @@ function Notificationbar() {
             justifyContent: "flex-end",
           }}
         >
+          <LocalizationProvider dateAdapter={AdapterDayjs}>
+            {/* Preset Dropdown */}
+            <Box sx={{ paddingTop: "5px" }}>
+              <FormControl size="small" sx={{ minWidth: 130, pr: "9px" }}>
+                <InputLabel>Country</InputLabel>
+                <Select
+                  value={selectedCountry}
+                  label="Country"
+                  onChange={(e) => setSelectedCountry(e.target.value)}
+                >
+                  <MenuItem value="">All Countries</MenuItem>
+                  <MenuItem value="US">United States</MenuItem>
+                  <MenuItem value="UK">United Kingdom</MenuItem>
+                </Select>
+              </FormControl>
+            </Box>
+          </LocalizationProvider>
+
           {/* Notification Icon */}
           <ListItem sx={{ display: "flex", alignItems: "center", padding: 0 }}>
             <Notifications sx={{ fontSize: 28, color: "#fff" }} />

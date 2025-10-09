@@ -1015,23 +1015,7 @@
                       }}
                     />
                   </Box>
-                  <LocalizationProvider dateAdapter={AdapterDayjs}>
-                  {/* Preset Dropdown */}
-                  <Box sx={{ paddingTop: "5px" }}>
-                    <FormControl size="small" sx={{ minWidth: 130, pr: "9px" }}>
-                      <InputLabel>Country</InputLabel>
-                      <Select
-                        value={selectedCountry}
-                        label="Country"
-                        onChange={(e)=>setSelectedCountry(e.target.value)}
-                      >
-                      <MenuItem value='US'>United States</MenuItem>
-                      <MenuItem value='UK'>United Kingdom</MenuItem>
-
-                      </Select>
-                    </FormControl>
-                  </Box>
-                </LocalizationProvider>
+                 
                   {/* <Box sx={{ width: 160, position: "relative" }}>
                     <Autocomplete
                       multiple
