@@ -168,7 +168,7 @@ const TestCard = ({
     difference: {},
     bindGraph: [],
   });
-  const hasInitializedDates = useRef(false);
+  // const hasInitializedDates = useRef(false);
   const [tooltipData, setTooltipData] = useState(null);
   const [loading, setLoading] = useState(false);
   const [dataLoading, setDataLoading] = useState(false);
@@ -218,10 +218,6 @@ const TestCard = ({
 
   // Fetch data when dates change
   useEffect(() => {
-    if (!hasInitializedDates.current) {
-      hasInitializedDates.current = true;
-      return;
-    }
     fetchMetrics(currentDates.selectedDate, currentDates.displayDate);
   }, [
     currentDates.selectedDate,
