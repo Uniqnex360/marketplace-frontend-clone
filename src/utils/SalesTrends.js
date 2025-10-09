@@ -27,7 +27,7 @@ const ProductPerformanceContainer = ({
         `${process.env.REACT_APP_IP}getProductPerformanceSummary/`,
         {
           user_id: userId,
-          target_date: dayjs().format('DD/MM/YYYY'),
+          target_date: "01/09/2025",
           marketplace_id: marketPlaceId.id,
           brand_id,
           product_id,

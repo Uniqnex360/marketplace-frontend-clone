@@ -151,7 +151,7 @@ const TestCard = ({
   fulfillment_channel,
 }) => {
   const theme = useTheme();
-  const API_TODAY = dayjs("26/09/2025", "DD/MM/YYYY").tz(TIMEZONE);
+  const API_TODAY = dayjs("02/09/2025", "DD/MM/YYYY").tz(TIMEZONE);
 
   // Combined state for dates and preset
   const [currentDates, setCurrentDates] = useState({
@@ -240,7 +240,7 @@ const TestCard = ({
 
     try {
       const payload = {
-        target_date:"25/09/2025",
+        target_date:"01/09/2025",
         user_id: userId,
         preset: currentPreset,
         marketplace_id: marketPlaceId.id,

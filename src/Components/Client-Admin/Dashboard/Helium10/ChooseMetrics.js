@@ -151,7 +151,7 @@ const ChooseMetrics = ({
       const userId = userData?.id || "";
       const payload = {
         user_id: userId,
-        target_date: "25/09/2025",
+        target_date: "01/09/2025",
       };
       const response = await axios.post(
         `${process.env.REACT_APP_IP}get_metrics_by_date_range/`,

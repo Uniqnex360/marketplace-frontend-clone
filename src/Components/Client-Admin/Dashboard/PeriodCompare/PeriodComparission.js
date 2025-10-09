@@ -186,6 +186,7 @@ const periods = responseData || {};
   };
 
   let lastParamsRef = useRef("");
+const API_TODAY = dayjs("02/09/2025", "DD/MM/YYYY").tz('US/Pacific').format("MMM D, YYYY");
 
   useEffect(() => {
     const currentParams = JSON.stringify({
@@ -250,7 +251,7 @@ const periods = responseData || {};
             variant="body2"
             color="text.secondary"
           >
-            {dayjs().tz("US/Pacific").format("MMM D, YYYY")}
+            {API_TODAY}
           </Typography>
         </Box>
         <IconButton

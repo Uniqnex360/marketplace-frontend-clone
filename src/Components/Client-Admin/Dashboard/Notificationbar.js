@@ -98,7 +98,9 @@ function Notificationbar() {
           <LocalizationProvider dateAdapter={AdapterDayjs}>
             {/* Preset Dropdown */}
             <Box sx={{ paddingTop: "5px" }}>
-              <FormControl size="small" sx={{ minWidth: 130, pr: "9px" }}>
+              <FormControl size="small" sx={{ minWidth: 130, pr: "9px" ,"& .MuiInputLabel-root": {
+      color: "white", 
+    },}}>
                 <InputLabel>Country</InputLabel>
                 <Select
                   value={selectedCountry}
