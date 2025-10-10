@@ -448,7 +448,7 @@ const ProductTable = () => {
               }}
             />
 
-            <Tooltip title="Filter" arrow>
+            {/* <Tooltip title="Filter" arrow>
               <Button
                 variant="text"
                 color="primary"
@@ -471,7 +471,7 @@ const ProductTable = () => {
               >
                 <FilterListIcon sx={{ color: "white", fontSize: "20px" }} />
               </Button>
-            </Tooltip>
+            </Tooltip> */}
 
             <Tooltip title="Import" arrow>
               <Button

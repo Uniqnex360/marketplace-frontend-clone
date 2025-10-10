@@ -318,6 +318,7 @@ const getPastelColor = (name, index) => {
                   display: "flex",
                   justifyContent: "space-between",
                   alignItems: "center",
+                  px:4
                 }}
               >
                 <Typography
@@ -336,83 +337,111 @@ const getPastelColor = (name, index) => {
                 </Typography>
               </Box>
 
-              {totalOrders > 0 ? (
-                <ResponsiveContainer width="100%" height={250}>
-                  <PieChart>
-                    <Pie
-                      data={orderData}
-                      dataKey="value"
-                      nameKey="name"
-                      innerRadius={35}
-                      outerRadius={60}
-                      label={renderCustomLabel}
-                    >
-                      {orderData.map((entry, index) => (
-                        <Cell key={`cell-${index}`} fill={entry.color} />
-                      ))}
-                    </Pie>
-                    <Tooltip
-                      formatter={(value, name, props) => {
-                        const { payload } = props;
-                        let additionalInfo = "";
 
-                        if (payload) {
-                          // Find the corresponding marketplace data
-                          const marketplaceData = orderData.find(
-                            (item) => item.name === payload.name
-                          );
-                          if (marketplaceData) {
-                            const orderValue = marketplaceData.orderValue || 0;
-                            additionalInfo = `
-                                                Order Count: ${
-                                                  marketplaceData.value
-                                                } |
-                                                Order Value: ${formatCurrency(
-                                                  orderValue
-                                                )}
-                                            `;
-                          }
-                        }
-
-                        return [
-                          additionalInfo, // Show additional info (Order Count & Value)
-                        ];
-                      }}
-                      contentStyle={{ fontSize: "14px" }}
-                    />
-                    <Legend
-                      formatter={(value, entry) => (
-                        <span
-                          style={{ fontSize: "0.8rem", color: entry.color }}
-                        >
-                          {value} ({entry.payload.percentage}%)
-                        </span>
-                      )}
-                    />
-                  </PieChart>
-                </ResponsiveContainer>
-              ) : (
-                <Box
-                  sx={{
-                    display: "flex",
-                    justifyContent: "center",
-                    alignItems: "center",
-                    height: 200,
-                  }}
-                >
-                  <Typography
-                    variant="body2"
-                    sx={{
-                      textAlign: "center",
-                      fontSize: "1rem",
-                      fontWeight: "bold",
-                      color: "#888",
-                    }}
-                  >
-                    No total orders found
-                  </Typography>
-                </Box>
-              )}
+{totalOrders > 0 ? (
+  <Box sx={{ position: 'relative' }}>
+    <ResponsiveContainer width="100%" height={200}>
+      <PieChart>
+        <Pie
+          data={orderData}
+          dataKey="value"
+          nameKey="name"
+          innerRadius={35}
+          outerRadius={60}
+          cx="50%"
+          cy="50%"
+        >
+          {orderData.map((entry, index) => (
+            <Cell key={`cell-${index}`} fill={entry.color} />
+          ))}
+        </Pie>
+        <Tooltip
+          formatter={(value, name, props) => {
+            const { payload } = props;
+            if (payload) {
+              const marketplaceData = orderData.find(
+                (item) => item.name === payload.name
+              );
+              if (marketplaceData) {
+                const orderValue = marketplaceData.orderValue || 0;
+                return [
+                  `Order Count: ${marketplaceData.value} | Order Value: ${formatCurrency(orderValue)}`
+                ];
+              }
+            }
+            return [value];
+          }}
+          contentStyle={{ fontSize: "14px" }}
+        />
+      </PieChart>
+    </ResponsiveContainer>
+    
+    {/* Custom Legend Below Chart */}
+    <Box
+      sx={{
+        display: 'grid',
+        gridTemplateColumns: 'repeat(3, 1fr)',
+        gap: '12px',
+        mt: 2,
+        px: 2,
+      }}
+    >
+      {orderData.map((entry, index) => (
+        <Box
+          key={`legend-${index}`}
+          sx={{
+            display: 'flex',
+            alignItems: 'center',
+            gap: '8px',
+          }}
+        >
+          <Box
+            sx={{
+              width: 12,
+              height: 12,
+              backgroundColor: entry.color,
+              borderRadius: '50%',
+              flexShrink: 0,
+            }}
+          />
+          <Typography
+            variant="body2"
+            sx={{
+              fontSize: '0.75rem',
+              color: '#333',
+              overflow: 'hidden',
+              textOverflow: 'ellipsis',
+              whiteSpace: 'nowrap',
+            }}
+          >
+            {entry.name} ({entry.percentage}%)
+          </Typography>
+        </Box>
+      ))}
+    </Box>
+  </Box>
+) : (
+  <Box
+    sx={{
+      display: "flex",
+      justifyContent: "center",
+      alignItems: "center",
+      height: 200,
+    }}
+  >
+    <Typography
+      variant="body2"
+      sx={{
+        textAlign: "center",
+        fontSize: "1rem",
+        fontWeight: "bold",
+        color: "#888",
+      }}
+    >
+      No total orders found
+    </Typography>
+  </Box>
+)}
             </CardContent>
           </Card>
         </Grid>

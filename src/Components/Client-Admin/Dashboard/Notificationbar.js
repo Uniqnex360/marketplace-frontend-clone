@@ -139,7 +139,6 @@ function Notificationbar() {
     onChange={(e) => setSelectedCountry(e.target.value)}
     displayEmpty
   >
-    <MenuItem value="">All Countries</MenuItem>
     <MenuItem value="US">United States</MenuItem>
     <MenuItem value="UK">United Kingdom</MenuItem>
   </Select>

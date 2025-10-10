@@ -6,7 +6,7 @@ const MarketplaceContext = createContext()
 export const MarketplaceProvider = ({ userId, children }) => {
   const [categories, setCategories] = useState([])
   const [loading, setLoading] = useState(true)
-  const [selectedCountry,setSelectedCountry]=useState("")
+  const [selectedCountry,setSelectedCountry]=useState("US")
   const [error, setError] = useState(null)
 
 

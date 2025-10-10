@@ -22,6 +22,11 @@ import {
   Slide,
   Menu,
   IconButton,
+  Collapse,
+  CircularProgress,
+  ListItemText,
+  ListItemIcon,
+  FormControl,
 } from "@mui/material";
 import { FilterList, Refresh, Visibility } from "@mui/icons-material";
 import { Link, useNavigate, useLocation } from "react-router-dom";
@@ -29,22 +34,49 @@ import axios from "axios";
 import DottedCircleLoading from "../../Loading/DotLoading"; // Assuming this is your loading spinner component
 import AddIcon from "@mui/icons-material/Add"; // Import the AddIcon
 import FilterInventory from "../Inventory/FilterInventory";
-
+import { useEnhancedCategories } from "../../../utils/UseEnhancedCategories";
 import soon from "../../assets/soon.png"; // Fallback image
 import { MoreVert as MoreVertIcon } from "@mui/icons-material";
 import { toast } from "react-toastify";
+import ExpandLessIcon from "@mui/icons-material/ExpandLess";
+import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 import "react-toastify/dist/ReactToastify.css";
 import InventoryChannel from "./InventoryCahnnel";
+import { useMarketplace } from "../../../utils/MarketplaceProvider";
+import { ArrowDropDownIcon } from "@mui/x-date-pickers";
+import ImageIcon from "@mui/icons-material/Image";
 
 const InventoryList = ({ fetchOrdersFromParent }) => {
   const location = useLocation();
+   const {
+      categories,
+      loading: marketplaceLoading,
+    } = useMarketplace();
   const navigate = useNavigate();
+   const handleMenuOpen = (event) => {
+    setAnchorEl(event.currentTarget);
+  };
+  const handleMenuClose = () => {
+    setAnchorEl(null);
+    setExpandedCategories({});
+  };
+    const [expandedCategories, setExpandedCategories] = useState({});
+    const [selectedFulfillment, setselectFulfillment] = useState("");
+  
   const [inventoryList, setInventory] = useState([]);
+  const handleFulfillmentSelect = (category, fulfillment) => {
+    const { label, value } = fulfillment;
+    setselectFulfillment(value);
+    setSelectedCategory({ ...category, fulfillment: label });
+    handleMenuClose();
+  };
   const [currentColumn, setCurrentColumn] = useState("");
+  
   const [anchorEl, setAnchorEl] = useState(null);
   const [sortConfig, setSortConfig] = useState({ key: "", direction: "asc" });
   const [rowsPerPage, setRowsPerPage] = useState(25);
   const [filters, setFilters] = useState({});
+  const [isLoading, setIsLoading] = useState(true);
   const [totalPages, setTotalPages] = useState(1);
   const [orderCount, setOrderCount] = useState(0);
   const [customStatus, setCustomStatus] = useState([]);
@@ -56,7 +88,8 @@ const InventoryList = ({ fetchOrdersFromParent }) => {
     id: "all",
     name: "All Channels",
   });
-
+    const enhancedCategories = useEnhancedCategories(categories);
+  
   const [open, setOpen] = useState(false);
   const queryParams = new URLSearchParams(window.location.search);
 
@@ -69,6 +102,12 @@ const InventoryList = ({ fetchOrdersFromParent }) => {
     setOpen(false);
     // Re-fetch orders after modal close to ensure data is fresh if something was edited/added
     fetchOrderData(selectedCategory.id, page, rowsPerPage);
+  };
+  const toggleExpandCategory = (categoryId) => {
+    setExpandedCategories((prev) => ({
+      ...prev,
+      [categoryId]: !prev[categoryId],
+    }));
   };
 
   const handlePageChange = (event, newPage) => {
@@ -227,7 +266,15 @@ const InventoryList = ({ fetchOrdersFromParent }) => {
     setAnchorEl(event.currentTarget);
     setCurrentColumn(column); // Set column for sorting
   };
-
+   const handleMarketplaceSelect = (category) => {
+      setSelectedCategory(category);
+      const safeCategory={
+        id:category.id,
+        name:category.name
+      }
+      localStorage.setItem("selectedCategory", JSON.stringify(safeCategory));
+      setPage(1);
+    };  
   const handleSelectSort = (key, direction) => {
     setSortConfig({ key, direction });
     setPage(1); // Reset page to 1 when sorting is applied
@@ -249,6 +296,7 @@ const InventoryList = ({ fetchOrdersFromParent }) => {
     // You would typically re-fetch data with these new filters
     // This might require extending `fetchOrderData` to accept filter objects.
   };
+
 
  const handleResetChange = () => {
   console.log("Reset triggered");
@@ -298,8 +346,44 @@ const InventoryList = ({ fetchOrdersFromParent }) => {
         >
           {/* Inventory Channel component for marketplace selection */}
           <Box sx={{ marginTop: "-7px" }}>
-            <InventoryChannel handleProduct={handleProduct} />
-          </Box>
+              <FormControl size="small" sx={{ minWidth: 150 }}>
+                <Select
+                  value={selectedCategory?.id || "all"}
+                  onChange={(e) => {
+                    const selected = enhancedCategories.find(
+                      (cat) => cat.id === e.target.value
+                    );
+                    if (selected) {
+                      handleMarketplaceSelect(selected);
+                    }
+                  }}
+                  displayEmpty
+                >
+                  {marketplaceLoading ? (
+                    <MenuItem disabled>Loading...</MenuItem>
+                  ) : (
+                    enhancedCategories.map((category) => (
+                      <MenuItem key={category.id} value={category.id}>
+                        <Box display="flex" alignItems="center" gap={1}>
+                          {category.icon ||
+                            (category.imageUrl ? (
+                              <img
+                                src={category.imageUrl}
+                                alt={category.name}
+                                width={18}
+                                height={14}
+                              />
+                            ) : (
+                              <ImageIcon fontSize="small" />
+                            ))}
+                          <span>{category.name}</span>
+                        </Box>
+                      </MenuItem>
+                    ))
+                  )}
+                </Select>
+              </FormControl>
+            </Box>
 
           <TextField
             size="small"

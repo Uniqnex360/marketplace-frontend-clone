@@ -426,7 +426,7 @@ import { useEnhancedCategories } from "../../../utils/UseEnhancedCategories";
               width: "100%",
             }}
           >
-            <Box sx={{ marginTop: "-7px" }}>
+            <Box>
               <FormControl size="small" sx={{ minWidth: 150 }}>
                 <Select
                   value={selectedCategory?.id || "all"}
