@@ -29,6 +29,7 @@ dayjs.extend(utc);
 dayjs.extend(timezone);
 
 function PeriodComparission({
+  country,
   marketPlaceId,
   brand_id,
   product_id,
@@ -85,6 +86,7 @@ function PeriodComparission({
         `${process.env.REACT_APP_IP}getPeriodWiseDataXl/`,
         {
           brand_id: brand_id,
+          country:country,
           product_id: product_id,
           manufacturer_name: manufacturer_name,
           fulfillment_channel: fulfillment_channel,
@@ -113,6 +115,7 @@ function PeriodComparission({
         `${process.env.REACT_APP_IP}getPeriodWiseData/`,
         {
           user_id: userId,
+          country:country,
           marketplace_id: marketPlaceId.id,
           brand_id: brand_id,
           product_id: product_id,
@@ -195,6 +198,7 @@ const API_TODAY = dayjs("02/09/2025", "DD/MM/YYYY").tz('US/Pacific').format("MMM
       product_id,
       manufacturer_name,
       fulfillment_channel,
+      country
     });
 
     if (lastParamsRef.current !== currentParams) {
@@ -203,6 +207,7 @@ const API_TODAY = dayjs("02/09/2025", "DD/MM/YYYY").tz('US/Pacific').format("MMM
     }
   }, [
     marketPlaceId,
+    country,
     brand_id,
     product_id,
     manufacturer_name,

@@ -43,6 +43,7 @@ import utc from "dayjs/plugin/utc";
 
 const ProfitAndLoss = ({
   widgetData,
+  country,
   marketPlaceId,
   brand_id,
   product_id,
@@ -271,6 +272,7 @@ const ProfitAndLoss = ({
       marketPlaceId,
       widgetData,
       brand_id,
+      country,
       product_id,
       manufacturer_name,
       fulfillment_channel,
@@ -293,6 +295,7 @@ const ProfitAndLoss = ({
     fulfillment_channel,
     DateStartDate,
     DateEndDate,
+    country
   ]);
 
   const fetchProfitAndLossDetails = async () => {
@@ -301,6 +304,7 @@ const ProfitAndLoss = ({
       const response = await axios.post(
         `${process.env.REACT_APP_IP}getProfitAndLossDetails/`,
         {
+          country:country,
           preset: widgetData,
           start_date: DateStartDate,
           end_date: DateEndDate,
@@ -337,6 +341,7 @@ const ProfitAndLoss = ({
       const response = await axios.post(
         `${process.env.REACT_APP_IP}profit_loss_chart/`,
         {
+          country:country,
           preset: widgetData,
           marketplace_id: marketPlaceId.id,
           brand_id: brand_id,

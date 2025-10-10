@@ -15,7 +15,8 @@ const ProductPerformanceContainer = ({
   manufacturer_name,
   fulfillment_channel,
   DateStartDate,
-  DateEndDate
+  DateEndDate,
+  country
 }) => {
   const [performanceData, setPerformanceData] = useState({});
   const [loading, setLoading] = useState(true);
@@ -26,6 +27,7 @@ const ProductPerformanceContainer = ({
       const response = await axios.post(
         `${process.env.REACT_APP_IP}getProductPerformanceSummary/`,
         {
+          country:country,
           user_id: userId,
           target_date: "01/09/2025",
           marketplace_id: marketPlaceId.id,
@@ -48,7 +50,7 @@ const ProductPerformanceContainer = ({
 
   useEffect(() => {
     fetchProductPerformance();
-  }, [userId, marketPlaceId, brand_id, product_id, manufacturer_name, fulfillment_channel, DateStartDate, DateEndDate]);
+  }, [userId, marketPlaceId, brand_id, product_id, manufacturer_name, fulfillment_channel, DateStartDate, DateEndDate,country]);
 
   if (loading) {
     return (

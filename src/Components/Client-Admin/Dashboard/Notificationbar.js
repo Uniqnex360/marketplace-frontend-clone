@@ -29,9 +29,7 @@ import { Link, useLocation, useNavigate } from "react-router-dom";
 import { LocalizationProvider } from "@mui/x-date-pickers";
 import { useMarketplace } from "../../../utils/MarketplaceProvider";
 import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
-
-const accentColor = " #000080  "; // Change as needed
-
+const accentColor = " #000080  ";
 function Notificationbar() {
   const navigate = useNavigate();
   const location = useLocation();
@@ -43,21 +41,17 @@ function Notificationbar() {
     selectedCountry,
     setSelectedCountry,
   } = useMarketplace();
-
   const handleProfileClick = (event) => {
     setAnchorEl(event.currentTarget);
   };
-
   const handleClose = () => {
     setAnchorEl(null);
   };
-
   const handleLogout = () => {
     navigate("/");
     localStorage.removeItem("token");
     localStorage.removeItem("user");
   };
-
   return (
     <AppBar
       position="fixed"
@@ -67,7 +61,6 @@ function Notificationbar() {
         {/* <IconButton edge="start" color="inherit" aria-label="menu">
           <MenuIcon />
         </IconButton> */}
-
         <IconButton edge="start" color="inherit" aria-label="menu">
           <img
             src={require("../../assets/MarketLynxe.png")}
@@ -81,11 +74,9 @@ function Notificationbar() {
             }}
           />
         </IconButton>
-
         <Typography variant="h6" sx={{ flexGrow: 1, textAlign: "center" }}>
           MarketPlace Management
         </Typography>
-
         {/* Right-aligned Box */}
         <Box
           sx={{
@@ -98,59 +89,56 @@ function Notificationbar() {
           <LocalizationProvider dateAdapter={AdapterDayjs}>
             {/* Preset Dropdown */}
             <Box sx={{ paddingTop: "5px" }}>
-             <FormControl 
-  size="small" 
-  sx={{ 
-    minWidth: 130, 
-    pr: "9px",
-    "& .MuiInputLabel-root": {
-      color: "rgba(0, 0, 0, 0.6)", // Label color (default gray)
-      "&.Mui-focused": {
-        color: "#000080", // Label color when focused
-      },
-    },
-    "& .MuiOutlinedInput-root": {
-      backgroundColor: "white", // White background
-      "& fieldset": {
-        borderColor: "#cacaca", // Border color
-      },
-      "&:hover fieldset": {
-        borderColor: "#000080", // Border on hover
-      },
-      "&.Mui-focused fieldset": {
-        borderColor: "#000080", // Border when focused
-      },
-    },
-    "& .MuiSelect-select": {
-      color: "rgba(0, 0, 0, 0.87)", // Text color
-      backgroundColor: "white", // Ensure background is white
-      paddingTop: "8.5px", // Adjust vertical padding
-      paddingBottom: "8.5px",
-    },
-    "& .MuiSvgIcon-root": {
-      color: "rgba(0, 0, 0, 0.54)", // Dropdown arrow color
-    },
-  }}
->
-  <InputLabel shrink={selectedCountry !== ""}></InputLabel>
-  <Select
-    value={selectedCountry}
-    // label="Country"
-    onChange={(e) => setSelectedCountry(e.target.value)}
-    displayEmpty
-  >
-    <MenuItem value="US">United States</MenuItem>
-    <MenuItem value="UK">United Kingdom</MenuItem>
-  </Select>
-</FormControl>
+              <FormControl
+                size="small"
+                sx={{
+                  minWidth: 130,
+                  pr: "9px",
+                  "& .MuiInputLabel-root": {
+                    color: "rgba(0, 0, 0, 0.6)",
+                    "&.Mui-focused": {
+                      color: "#000080",
+                    },
+                  },
+                  "& .MuiOutlinedInput-root": {
+                    backgroundColor: "white",
+                    "& fieldset": {
+                      borderColor: "#cacaca",
+                    },
+                    "&:hover fieldset": {
+                      borderColor: "#000080",
+                    },
+                    "&.Mui-focused fieldset": {
+                      borderColor: "#000080",
+                    },
+                  },
+                  "& .MuiSelect-select": {
+                    color: "rgba(0, 0, 0, 0.87)",
+                    backgroundColor: "white",
+                    paddingTop: "8.5px",
+                    paddingBottom: "8.5px",
+                  },
+                  "& .MuiSvgIcon-root": {
+                    color: "rgba(0, 0, 0, 0.54)",
+                  },
+                }}
+              >
+                <InputLabel shrink={selectedCountry !== ""}></InputLabel>
+                <Select
+                  value={selectedCountry}
+                  onChange={(e) => setSelectedCountry(e.target.value)}
+                  displayEmpty
+                >
+                  <MenuItem value="US">United States</MenuItem>
+                  <MenuItem value="UK">United Kingdom</MenuItem>
+                </Select>
+              </FormControl>
             </Box>
           </LocalizationProvider>
-
           {/* Notification Icon */}
           <ListItem sx={{ display: "flex", alignItems: "center", padding: 0 }}>
             <Notifications sx={{ fontSize: 28, color: "#fff" }} />
           </ListItem>
-
           {/* Profile Section */}
           <List
             sx={{
@@ -177,7 +165,6 @@ function Notificationbar() {
           </List>
         </Box>
       </Toolbar>
-
       {/* Profile Dropdown Menu */}
       <Menu
         anchorEl={anchorEl}
@@ -221,5 +208,4 @@ function Notificationbar() {
     </AppBar>
   );
 }
-
 export default Notificationbar;

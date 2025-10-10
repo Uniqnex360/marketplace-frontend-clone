@@ -35,6 +35,7 @@ import { fetchMarketplaceList } from "../../../utils/marketplace";
 
 const TotalOrdersGraph = ({
   widgetData,
+  country,
   marketPlaceId,
   DateStartDate,
   DateEndDate,
@@ -117,6 +118,7 @@ const TotalOrdersGraph = ({
       const orderResponse = await axios.post(
         `${process.env.REACT_APP_IP}salesAnalytics/`,
         {
+          country:country,
           preset: widgetData,
           brand_id: brand_id,
           product_id: product_id,
@@ -154,6 +156,7 @@ const TotalOrdersGraph = ({
   fetchData();
 }, [
   widgetData,
+  country,
   marketPlaceId?.id,
   DateStartDate,
   DateEndDate,

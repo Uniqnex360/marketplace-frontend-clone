@@ -85,7 +85,12 @@ import { useEnhancedCategories } from "../../../utils/UseEnhancedCategories";
       id: "all",
       name: "All Channels",
     });
-    const { categories, loading: marketplaceLoading, error } = useMarketplace();
+    const {
+          categories,
+          loading: marketplaceLoading,
+          selectedCountry,
+          setSelectedCountry,
+        } = useMarketplace();
  const enhancedCategories = useEnhancedCategories(categories);
 
     const systemTimeZone = Intl.DateTimeFormat().resolvedOptions().timeZone;
@@ -180,6 +185,7 @@ import { useEnhancedCategories } from "../../../utils/UseEnhancedCategories";
 
 
         const payload = {
+          country:selectedCountry,
           user_id: userIds,
           skip: skip >= 0 ? skip : 0,
           limit: validRowsPerPage,
@@ -229,6 +235,7 @@ import { useEnhancedCategories } from "../../../utils/UseEnhancedCategories";
       sortConfig,
       searchQuery,
       selectedStatus,
+      selectedCountry
     });
     useEffect(() => {
       const shouldFetch =
@@ -238,7 +245,8 @@ import { useEnhancedCategories } from "../../../utils/UseEnhancedCategories";
         JSON.stringify(sortConfig) !==
           JSON.stringify(prevParams.current.sortConfig) ||
         searchQuery !== prevParams.current.searchQuery ||
-        selectedStatus !== prevParams.current.selectedStatus;
+        selectedStatus !== prevParams.current.selectedStatus||
+        selectedCountry !== prevParams.current.selectedCountry; 
       if (shouldFetch) {
         fetchOrderData(selectedCategory.id, page, rowsPerPage);
         prevParams.current = {
@@ -248,11 +256,13 @@ import { useEnhancedCategories } from "../../../utils/UseEnhancedCategories";
           sortConfig,
           searchQuery,
           selectedStatus,
+          selectedCountry
         };
       }
     }, [
       selectedCategory.id,
       page,
+      selectedCountry,
       rowsPerPage,
       sortConfig,
       searchQuery,
@@ -265,7 +275,7 @@ import { useEnhancedCategories } from "../../../utils/UseEnhancedCategories";
         setSelectedCategory(category);
       }
       fetchOrderData(selectedCategory.id, page, rowsPerPage);
-    }, []);
+    }, [selectedCountry]);
     const handleClose = () => {
       setOpen(false);
       fetchOrderData(selectedCategory.id, page, rowsPerPage);

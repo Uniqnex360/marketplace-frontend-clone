@@ -93,7 +93,7 @@ const getFormattedValue = (value, metricId) => {
   }
 };
 
-const CompareChart = ({ startDate, endDate, widgetData, marketPlaceId, brand_id, product_id, manufacturer_name, fulfillment_channel, DateStartDate, DateEndDate }) => {
+const CompareChart = ({ startDate, endDate, widgetData, marketPlaceId, brand_id,country, product_id, manufacturer_name, fulfillment_channel, DateStartDate, DateEndDate }) => {
   const [chartData, setChartData] = useState({});
   const [loading, setLoading] = useState(false);
   const [events, setEvents] = useState(true);
@@ -125,6 +125,7 @@ const CompareChart = ({ startDate, endDate, widgetData, marketPlaceId, brand_id,
     try {
       const payload = {
         preset: widgetData,
+        country:country,
         marketplace_id: marketPlaceId?.id, // Safely access id
         user_id: userId,
         compare_startdate: compareStart,

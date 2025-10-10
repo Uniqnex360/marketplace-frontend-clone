@@ -140,6 +140,7 @@ const metricLabels = {
 const CompareChart = ({
   startDate,
   endDate,
+  country,
   widgetData,
   marketPlaceId,
   brand_id,
@@ -197,6 +198,7 @@ const CompareChart = ({
       const userId = userData?.id || "";
       const payload = {
         preset: widgetData,
+        country:country,
         marketplace_id: marketPlaceId?.id, 
         user_id: userId,
         compare_startdate: selectedStartDate,
@@ -353,6 +355,7 @@ const CompareChart = ({
   useEffect(() => {
     const currentParams = JSON.stringify({
       value,
+      country,
       widgetData,
       marketPlaceId,
       selectedEndDate,
@@ -384,6 +387,7 @@ const CompareChart = ({
     fulfillment_channel,
     DateStartDate,
     DateEndDate,
+    country
   ]); 
   useEffect(() => {
     if (!chartData || Object.keys(chartData).length === 0) return;

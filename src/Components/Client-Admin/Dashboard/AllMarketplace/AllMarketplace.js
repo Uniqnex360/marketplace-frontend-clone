@@ -161,6 +161,7 @@ export default function AllMarketplace({
   widgetData,
   marketPlaceId,
   brand_id,
+  country,
   product_id,
   manufacturer_name,
   fulfillment_channel,
@@ -259,6 +260,7 @@ export default function AllMarketplace({
       const response = await axios.post(
         `${process.env.REACT_APP_IP}allMarketplaceData/`,
         {
+          country:country,
           user_id: userId,
           preset: widgetData,
           marketplace_id: marketPlaceId.id,
@@ -283,6 +285,7 @@ export default function AllMarketplace({
     const currentParams = JSON.stringify({
       widgetData,
       marketPlaceId,
+      country,
       brand_id,
       product_id,
       manufacturer_name,
@@ -299,6 +302,7 @@ export default function AllMarketplace({
     widgetData,
     marketPlaceId,
     brand_id,
+    country,
     manufacturer_name,
     fulfillment_channel,
     DateStartDate,
@@ -632,6 +636,7 @@ export default function AllMarketplace({
           {/* Right side - CardComponent instead of Orders Chart */}
           <Grid item xs={12} md={8}>
             <CardComponent
+            country={country}
               widgetData={widgetData}
               marketPlaceId={marketPlaceId}
               DateStartDate={DateStartDate}

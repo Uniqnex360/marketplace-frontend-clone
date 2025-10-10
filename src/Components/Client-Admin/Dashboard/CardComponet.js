@@ -34,6 +34,7 @@ import { useMarketplace } from "../../../utils/MarketplaceProvider";
 
 const CardComponent = ({
   widgetData,
+  country,
   marketPlaceId,
   DateStartDate,
   DateEndDate,
@@ -117,6 +118,7 @@ const CardComponent = ({
       const orderResponse = await axios.post(
         `${process.env.REACT_APP_IP}salesAnalytics/`,
         {
+          country:country,
           preset: widgetData,
           marketplace_id: marketPlaceId.id,
           date_range: filter,
@@ -149,6 +151,7 @@ const CardComponent = ({
         `${process.env.REACT_APP_IP}ordersCountForDashboard/`,
         {
           params: {
+            country:country,
             preset: widgetData,
             marketplace_id: marketPlaceId.id,
             start_date: DateStartDate,
@@ -214,6 +217,7 @@ const CardComponent = ({
   useEffect(() => {
     const currentParams = JSON.stringify({
       preset: widgetData,
+      country,
       marketplace_id: marketPlaceId?.id,
       start_date: DateStartDate,
       end_date: DateEndDate,
@@ -238,6 +242,7 @@ const CardComponent = ({
     brand_id,
     product_id,
     manufacturer_name,
+    country,
     JSON.stringify(product_id),
   ]);
 const PASTEL_COLORS = {

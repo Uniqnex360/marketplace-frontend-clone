@@ -65,7 +65,12 @@ const ProductTable = () => {
   const [totalPages, setTotalPages] = useState(1);
   const [productCount, setProductCount] = useState(0);
   const [isFetching, setIsFetching] = useState(false); // Flag to prevent multiple API calls
-  const { categories, loading: marketplaceLoading, error } = useMarketplace();
+   const {
+      categories,
+      loading: marketplaceLoading,
+      selectedCountry,
+      setSelectedCountry,
+    } = useMarketplace();
 
   const enhancedCategories = useEnhancedCategories(categories);
 
@@ -110,6 +115,7 @@ const ProductTable = () => {
     const currentParams = JSON.stringify({
       updatedList,
       UpdatedBrandId,
+      selectedCountry,
       page,
       rowsPerPage,
       sortConfig,
@@ -130,6 +136,7 @@ const ProductTable = () => {
     sortConfig,
     selectedCategory,
     searchQuery,
+    selectedCountry
   ]); // Dependency array
 
   // Effect to set search term from location state (for navigation)
@@ -185,6 +192,7 @@ const ProductTable = () => {
       const response = await axios.post(
         `${process.env.REACT_APP_IP}getProductList/`,
         {
+          country:selectedCountry,
           user_id: userIds,
           marketplace: selectedCategory?.id === "all" ? "all" : "",
           marketplace_id:

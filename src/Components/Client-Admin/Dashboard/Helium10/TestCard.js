@@ -142,6 +142,7 @@ const MetricItem = ({
 
 const TestCard = ({
   marketPlaceId,
+  country,
   brand_id,
   widgetData,
   product_id,
@@ -224,6 +225,7 @@ const TestCard = ({
     currentDates.displayDate,
     currentPreset,
     brand_id,
+    country,
     product_id,
     manufacturer_name,
     fulfillment_channel,
@@ -242,6 +244,7 @@ const TestCard = ({
       const payload = {
         target_date:"01/09/2025",
         user_id: userId,
+        country:country,
         preset: currentPreset,
         marketplace_id: marketPlaceId.id,
         brand_id: brand_id,

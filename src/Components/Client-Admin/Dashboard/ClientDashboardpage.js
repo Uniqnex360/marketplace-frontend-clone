@@ -72,6 +72,7 @@ function ClientDashboardpage() {
     setSelectedCountry,
   } = useMarketplace();
   const [isLoading, setIsLoading] = useState(true);
+  
   const [startDate, setStartDate] = useState(null);
   const [endDate, setEndDate] = useState(null);
   const [appliedStartDate, setAppliedStartDate] = useState(null);
@@ -368,6 +369,7 @@ function ClientDashboardpage() {
       const response = await axios.post(
         `${process.env.REACT_APP_IP}getproductIdlist/`,
         {
+          country:selectedCountry,
           marketplace_id: selectedCategory?.id,
           search_query: search,
           user_id: userIds,
@@ -487,6 +489,7 @@ function ClientDashboardpage() {
         `${process.env.REACT_APP_IP}getBrandListforfilter/`,
         {
           params: {
+            country:selectedCountry,
             marketplace_id: selectedCategory?.id,
             search_query: search,
             user_id: userIds,
@@ -542,6 +545,7 @@ function ClientDashboardpage() {
       const response = await axios.post(
         `${process.env.REACT_APP_IP}getSKUlist/`,
         {
+          country:selectedCountry,
           marketplace_id: selectedCategory?.id,
           search_query: searchText,
           user_id: userIds,
@@ -1446,6 +1450,7 @@ function ClientDashboardpage() {
         <Grid item xs={12} sm={12} sx={{ marginTop: "0%" }}>
           {/* <HeliumCard/> */}
           <TestCard
+          country={selectedCountry}
             marketPlaceId={
               selectedCategory == "all" ? selectedCategory : filterFinal
             }
@@ -1589,6 +1594,7 @@ function ClientDashboardpage() {
               <Box>
                 {tab === 0 && (
                   <CompareChart
+                  country={selectedCountry}
                     startDate={appliedStartDateHelium}
                     endDate={appliedEndDateHelium}
                     widgetData={appliedPreset}
@@ -1636,6 +1642,7 @@ function ClientDashboardpage() {
                 )}
                 {tab === 2 && (
                   <TotalOrdersGraph
+                  country={selectedCountry}
                     key={setResetCounter}
                     widgetData={appliedPreset}
                     marketPlaceId={
@@ -1670,6 +1677,7 @@ function ClientDashboardpage() {
         </Grid>
         <Grid item xs={12} sm={12}>
           <PeriodComparission
+          country={selectedCountry}
             marketPlaceId={
               selectedCategory === "all" ? selectedCategory : filterFinal
             }
@@ -1681,6 +1689,7 @@ function ClientDashboardpage() {
         </Grid>
         <Grid item xs={12} sm={12}>
           <MetricCard
+          country={selectedCountry}
             startDate={appliedStartDateHelium}
             endDate={appliedEndDateHelium}
             widgetData={appliedPreset}
@@ -1697,6 +1706,7 @@ function ClientDashboardpage() {
         </Grid>
         <Grid item xs={12} sm={12}>
           <ProductPerformanceContainer
+          country={selectedCountry}
             userId={userIds}
             marketPlaceId={
               selectedCategory === "all" ? selectedCategory : filterFinal
@@ -1710,6 +1720,7 @@ function ClientDashboardpage() {
           />
           <Grid item xs={12} sm={12} sx={{ width: "99%" }}>
             <AllMarketplace
+            country={selectedCountry}
               widgetData={appliedPreset}
               marketPlaceId={
                 selectedCategory === "all" ? selectedCategory : filterFinal
@@ -1724,6 +1735,8 @@ function ClientDashboardpage() {
           </Grid>
           <Grid item xs={12} sm={12} sx={{ width: "99%" }}>
             <ProfitAndLoss
+            country={selectedCountry}
+
               widgetData={appliedPreset}
               marketPlaceId={
                 selectedCategory == "all" ? selectedCategory : filterFinal

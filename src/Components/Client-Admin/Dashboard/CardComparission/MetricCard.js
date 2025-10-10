@@ -942,6 +942,7 @@ const MetricCard = ({
   startDate,
   endDate,
   widgetData,
+  country,
   marketPlaceId,
   brand_id,
   product_id,
@@ -959,6 +960,7 @@ const MetricCard = ({
       preset: widgetData,
       marketplace_id: marketPlaceId?.id,
       brand_id,
+      country,
       product_id,
       manufacturer_name,
       fulfillment_channel,
@@ -974,6 +976,7 @@ const MetricCard = ({
     widgetData,
     marketPlaceId,
     brand_id,
+    country,
     product_id,
     manufacturer_name,
     fulfillment_channel,
@@ -987,6 +990,7 @@ const MetricCard = ({
       const response = await axios.post(
         `${process.env.REACT_APP_IP}getPeriodWiseDataCustom/`,
         {
+          country:country,
           preset: widgetData,
           marketplace_id: marketPlaceId.id,
           brand_id: brand_id,
