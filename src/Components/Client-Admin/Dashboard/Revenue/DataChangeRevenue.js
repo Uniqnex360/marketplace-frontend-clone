@@ -42,6 +42,8 @@ import {
   Checkbox,
   FormGroup,
   FormControlLabel,
+  useTheme,
+  useMediaQuery,
 } from "@mui/material";
 import dayjs from "dayjs";
 import axios from "axios"; 
@@ -49,6 +51,7 @@ import NoteModel from "../NoteModel";
 import { parse, format, parseISO, isValid } from "date-fns";
 import { enUS } from "date-fns/locale";
 import DottedCircleLoading from "../../../Loading/DotLoading";
+
 const metricColors = {
   gross_revenue: "#00b894",
   gross_revenue_with_tax: "#2ecc71",
@@ -59,6 +62,7 @@ const metricColors = {
   refund_amount: "#e6770d",
   refund_quantity: "#600101",
 };
+
 const initialMetricConfig = [
   {
     id: "gross_revenue_with_tax",
@@ -127,6 +131,7 @@ const initialMetricConfig = [
     show: false,
   },
 ];
+
 const metricLabels = {
   gross_revenue: "Gross Revenue",
   gross_revenue_with_tax: "Gross Revenue",
@@ -137,6 +142,7 @@ const metricLabels = {
   refund_amount: "Refund Amount",
   refund_quantity: "Refund Quantity",
 };
+
 const CompareChart = ({
   startDate,
   endDate,
@@ -150,6 +156,11 @@ const CompareChart = ({
   DateStartDate,
   DateEndDate,
 }) => {
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
+  const isTablet = useMediaQuery(theme.breakpoints.down('md'));
+  const isDesktop = useMediaQuery(theme.breakpoints.up('lg'));
+
   const [chartData, setChartData] = useState({}); 
   const [loading, setLoading] = useState(false);
   const [tab, setTab] = useState(0);
@@ -184,13 +195,16 @@ const CompareChart = ({
   const [currentFinalDate, setCurrentFinalDate] = useState([]);
   const [CompareDateFilter, setCompareDateFilter] = useState([]);
   const [CompareTotal, setCompareTotal] = useState([]);
+  
   const options = [
     { key: "previous_period", label: "Previous period" },
     { key: "previous_week", label: "Previous week" },
     { key: "previous_month", label: "Previous month" },
     { key: "previous_year", label: "Previous year" },
   ];
+
   const handleClick = (event) => setAnchorEl(event.currentTarget);
+
   const fetchRevenue = async () => {
     setLoading(true);
     try {
@@ -266,10 +280,13 @@ const CompareChart = ({
       setLoading(false);
     }
   };
+
   const formatMetricDataKey = (id) => {
     return id.replace(/_([a-z])/g, (match, p1) => p1.toUpperCase());
   };
+
   const capitalize = (str) => str.charAt(0).toUpperCase() + str.slice(1);
+
   const handleMetricToggle = (metric) => {
     setVisibleMetrics((prev) =>
       prev.includes(metric)
@@ -277,20 +294,25 @@ const CompareChart = ({
         : [...prev, metric]
     );
   };
+
   const handleReset = () => {
     setVisibleMetrics([]);
   };
+
   const handleApply = () => {
     console.log("Applied Metrics:", visibleMetrics);
     handleClose();
   };
+
   const handleOpen = () => {
     setOpen(true);
   };
+
   const handleClose = () => {
     setOpen(false);
     fetchRevenue();
   };
+
   const formatDate = (dateInput) => {
     const date = new Date(dateInput); 
     const options = { month: "short", day: "numeric" };
@@ -298,6 +320,7 @@ const CompareChart = ({
     const year = date.getFullYear();
     return `${dayMonth}, ${year}`;
   };
+
   const handleChange = async (event) => {
     const value = event.target.value;
     setSelectedValue(value);
@@ -352,6 +375,7 @@ const CompareChart = ({
       setComparisonText("");
     }
   };
+
   useEffect(() => {
     const currentParams = JSON.stringify({
       value,
@@ -389,6 +413,7 @@ const CompareChart = ({
     DateEndDate,
     country
   ]); 
+
   useEffect(() => {
     if (!chartData || Object.keys(chartData).length === 0) return;
     const localGraphData = Object.values(chartData);
@@ -411,6 +436,7 @@ const CompareChart = ({
       setCompareDateFilter(displayRange); 
     }
   }, [chartData, widgetData]);
+
   const formattedData = useMemo(() => {
     if (!chartData || Object.keys(chartData).length === 0) {
       return [];
@@ -435,6 +461,7 @@ const CompareChart = ({
       compareRefundQuantity: item.compare_refund_quantity ?? null,
     }));
   }, [chartData]);
+
   const CustomTooltip = ({ active, payload, label }) => {
     if (!active || !payload || payload.length === 0) {
       return null;
@@ -503,12 +530,13 @@ const CompareChart = ({
     const CompareGraph = !!compareDateForHeader;
     return (
       <div
-        className="custom-tooltip bg-white p-3 border rounded shadow text-sm min-w-[320px]"
+        className="custom-tooltip bg-white p-3 border rounded shadow text-sm"
         style={{
           backgroundColor: "#fff",
           padding: "10px",
           border: "1px solid #ccc",
-          minWidth: "320px",
+          minWidth: isMobile ? "280px" : "320px",
+          maxWidth: isMobile ? "95vw" : "none",
         }}
       >
         {/* Header Dates */}
@@ -520,17 +548,17 @@ const CompareChart = ({
             marginBottom: "8px",
             paddingBottom: "4px",
             borderBottom: "1px solid #eee",
-            gap: "20px",
+            gap: isMobile ? "10px" : "20px",
           }}
         >
-          <span style={{ width: "130px" }}></span>
+          <span style={{ width: isMobile ? "100px" : "130px" }}></span>
           <span
             style={{
               color: "#485E75",
               fontFamily: "'Nunito Sans', sans-serif",
-              fontSize: "14px",
+              fontSize: isMobile ? "12px" : "14px",
               textAlign: "right",
-              minWidth: "100px",
+              minWidth: isMobile ? "80px" : "100px",
             }}
           >
             {safeFormatDateHeader(currentItemDate)}
@@ -540,9 +568,9 @@ const CompareChart = ({
               style={{
                 color: "#485E75",
                 fontFamily: "'Nunito Sans', sans-serif",
-                fontSize: "14px",
+                fontSize: isMobile ? "12px" : "14px",
                 textAlign: "right",
-                minWidth: "100px",
+                minWidth: isMobile ? "80px" : "100px",
               }}
             >
               {safeFormatDateHeader(compareDateForHeader)}
@@ -572,7 +600,7 @@ const CompareChart = ({
                   display: "flex",
                   alignItems: "center",
                   gap: "8px",
-                  minWidth: "130px",
+                  minWidth: isMobile ? "100px" : "130px",
                 }}
               >
                 <span
@@ -588,7 +616,7 @@ const CompareChart = ({
                   style={{
                     color: "#485E75",
                     fontFamily: "'Nunito Sans', sans-serif",
-                    fontSize: "14px",
+                    fontSize: isMobile ? "12px" : "14px",
                   }}
                 >
                   {key}
@@ -598,17 +626,17 @@ const CompareChart = ({
               <div
                 style={{
                   display: "flex",
-                  gap: "20px",
+                  gap: isMobile ? "10px" : "20px",
                   justifyContent: "flex-end",
                   flexGrow: 1,
                 }}
               >
                 {/* Current Value */}
-                <div style={{ textAlign: "right", minWidth: "100px" }}>
+                <div style={{ textAlign: "right", minWidth: isMobile ? "80px" : "100px" }}>
                   <span
                     style={{
                       fontWeight: "bold",
-                      fontSize: "14px",
+                      fontSize: isMobile ? "12px" : "14px",
                       color: "#333",
                     }}
                   >
@@ -617,11 +645,11 @@ const CompareChart = ({
                 </div>
                 {/* Compare Value — Only show if CompareGraph is active */}
                 {CompareGraph && (
-                  <div style={{ textAlign: "right", minWidth: "100px" }}>
+                  <div style={{ textAlign: "right", minWidth: isMobile ? "80px" : "100px" }}>
                     <span
                       style={{
                         color: "#888",
-                        fontSize: "14px",
+                        fontSize: isMobile ? "12px" : "14px",
                       }}
                     >
                       {formatValue(compareValue, key)}
@@ -635,6 +663,7 @@ const CompareChart = ({
       </div>
     );
   };
+
   const handleCheckboxChange = (event) => {
     const { name, checked } = event.target;
     setVisibleMetrics((prev) => {
@@ -645,6 +674,7 @@ const CompareChart = ({
       }
     });
   };
+
   const handleClosePill = () => {
     setSelectedValue(null);
     setSelectedEndDate("");
@@ -653,11 +683,14 @@ const CompareChart = ({
     setShowComparisonPill(false);
     setComparisonText("");
   };
+
   const formatDateRange = (start, end) => {
     if (!start || !end) return "";
     return `${start} - ${end}`;
   };
+
   const [compareDropDown, setCompareDropDown] = useState("Compare to past");
+
   if (loading) {
     return (
       <div
@@ -672,6 +705,7 @@ const CompareChart = ({
       </div>
     );
   }
+
   if (formattedData.length === 0) {
     return (
       <div className="text-center py-4">
@@ -679,16 +713,17 @@ const CompareChart = ({
       </div>
     );
   }
+
   return (
-    <Box sx={{ p: 2 }}>
-      <Grid container spacing={2} mt={2}>
+    <Box sx={{ p: isMobile ? 1 : 2 }}>
+      <Grid container spacing={isMobile ? 1 : 2} mt={isMobile ? 1 : 2}>
         {/* Metrics Grid */}
         <Grid
           item
           xs={12}
-          md={3}
+          md={visibleMetrics.length > 0 ? 3 : 12}
           sx={{
-            maxHeight: 450,
+            maxHeight: isMobile ? 300 : 450,
             overflowY: "auto",
             overflowX: "hidden",
             pr: 1,
@@ -723,9 +758,9 @@ const CompareChart = ({
                 <Card
                   key={index}
                   sx={{
-                    width: "300px",
-                    ml: "-28px",
-                    p: 1.2,
+                    width: isMobile ? "100%" : "300px",
+                    ml: isMobile ? 0 : "-28px",
+                    p: isMobile ? 1 : 1.2,
                     borderRadius: "10px",
                     boxShadow: "none",
                     cursor: "pointer",
@@ -780,7 +815,7 @@ const CompareChart = ({
                     <Typography
                       variant="subtitle2"
                       sx={{
-                        fontSize: "14px",
+                        fontSize: isMobile ? "12px" : "14px",
                         ml: 1,
                         color: "#485E75",
                         fontFamily:
@@ -796,12 +831,13 @@ const CompareChart = ({
                       alignItems: "flex-start",
                       ml: 3.5,
                       mt: 1,
+                      flexDirection: isMobile ? "column" : "row",
                     }}
                   >
                     <Typography
                       variant="h6"
                       sx={{
-                        fontSize: "24px",
+                        fontSize: isMobile ? "20px" : "24px",
                         fontWeight: 600,
                         color: "#13191",
                         fontFamily:
@@ -817,8 +853,8 @@ const CompareChart = ({
                         sx={{
                           display: "flex",
                           alignItems: "center",
-                          ml: 1,
-                          mt: 2,
+                          ml: isMobile ? 0 : 1,
+                          mt: isMobile ? 0.5 : 2,
                         }}
                       >
                         {(() => {
@@ -833,7 +869,7 @@ const CompareChart = ({
                             <Typography
                               variant="body2"
                               sx={{
-                                fontSize: "14px",
+                                fontSize: isMobile ? "12px" : "14px",
                                 fontWeight: 500,
                                 color: isPositive
                                   ? "green"
@@ -849,14 +885,18 @@ const CompareChart = ({
                               {Math.abs(cleanCompareValue).toFixed(2)}%
                               {isPositive && (
                                 <ArrowUpward
-                                  sx={{ color: "green", fontSize: 16, ml: 0.3 }}
+                                  sx={{ 
+                                    color: "green", 
+                                    fontSize: isMobile ? 14 : 16, 
+                                    ml: 0.3 
+                                  }}
                                 />
                               )}
                               {isNegative && (
                                 <ArrowDownward
                                   sx={{
                                     color: "#e14d2a",
-                                    fontSize: 16,
+                                    fontSize: isMobile ? 14 : 16,
                                     ml: 0.3,
                                   }}
                                 />
@@ -881,16 +921,22 @@ const CompareChart = ({
                 gap: 1,
                 cursor: "pointer",
                 p: 1,
-                height: "65px",
-                fontSize: 14,
+                height: isMobile ? "55px" : "65px",
+                fontSize: isMobile ? 12 : 14,
                 fontWeight: 600,
                 color: "#485E75",
+                width: isMobile ? "100%" : "auto",
               }}
             >
-              <SettingsIcon sx={{ fontSize: 18 }} />
+              <SettingsIcon sx={{ fontSize: isMobile ? 16 : 18 }} />
               Choose Metrics
             </Box>
-            <Dialog open={open} onClose={handleClose} maxWidth="600">
+            <Dialog 
+              open={open} 
+              onClose={handleClose} 
+              maxWidth="600"
+              fullScreen={isMobile}
+            >
               <DialogContent dividers>
                 <RevenueChooseMetrics
                   selectedMetrics={visibleMetrics}
@@ -903,6 +949,7 @@ const CompareChart = ({
             </Dialog>
           </Box>
         </Grid>
+
         {visibleMetrics.length > 0 && (
           <Grid item xs={12} md={9}>
             <Box
@@ -910,19 +957,26 @@ const CompareChart = ({
                 display: "flex",
                 marginBottom: "10px",
                 justifyContent: "space-between",
-                alignItems: "center",
+                alignItems: isMobile ? "flex-start" : "center",
+                flexDirection: isMobile ? "column" : "row",
+                gap: isMobile ? 2 : 0,
               }}
             >
               <Box
                 sx={{
                   display: "flex",
                   flexDirection: "column",
-                  alignItems: "flex-start",
+                  alignItems: isMobile ? "flex-start" : "flex-start",
+                  width: isMobile ? "100%" : "auto",
                 }}
               >
-                <Box sx={{ display: "flex", alignItems: "center" }}>
+                <Box sx={{ 
+                  display: "flex", 
+                  alignItems: "center",
+                  width: isMobile ? "100%" : "auto"
+                }}>
                   {!showComparisonPill ? (
-                    <Box sx={{ minWidth: 160 }}>
+                    <Box sx={{ minWidth: isMobile ? "100%" : 160 }}>
                       <Select
                         fullWidth
                         value={selectedValue}
@@ -989,10 +1043,17 @@ const CompareChart = ({
                         padding: "8px 12px",
                         fontWeight: 500,
                         color: "#1e88e5", 
+                        width: isMobile ? "100%" : "auto",
+                        justifyContent: "space-between",
                       }}
                     >
                       <Typography
-                        sx={{ fontSize: 16, color: "rgb(43, 57, 72)" }}
+                        sx={{ 
+                          fontSize: isMobile ? 14 : 16, 
+                          color: "rgb(43, 57, 72)",
+                          textAlign: isMobile ? "center" : "left",
+                          flex: 1
+                        }}
                       >{`Comparing to ${
                         options.find((opt) => opt.key === selectedValue)
                           ?.label || "Custom period"
@@ -1008,8 +1069,16 @@ const CompareChart = ({
                   )}
                 </Box>
                 {selectedValue && (
-                  <Box sx={{ mt: 1, ml: 1 }}>
-                    <Typography sx={{ fontSize: "16px", color: "#485E75" }}>
+                  <Box sx={{ 
+                    mt: 1, 
+                    ml: isMobile ? 0 : 1,
+                    width: isMobile ? "100%" : "auto"
+                  }}>
+                    <Typography sx={{ 
+                      fontSize: isMobile ? "14px" : "16px", 
+                      color: "#485E75",
+                      textAlign: isMobile ? "center" : "left"
+                    }}>
                       {CompareDateFilter} {" \u00A0 ... \u00A0 "}{" "}
                       {comparisonText}
                     </Typography>
@@ -1019,13 +1088,18 @@ const CompareChart = ({
               {/* Add Note and Events */}
               <Box
                 display="flex"
-                justifyContent="flex-end"
+                justifyContent={isMobile ? "space-between" : "flex-end"}
                 alignItems="center"
                 gap={2}
+                width={isMobile ? "100%" : "auto"}
+                mt={isMobile ? 1 : 0}
               >
                 <Typography
                   variant="body2"
-                  sx={{ fontSize: "14px", lineHeight: 1 }}
+                  sx={{ 
+                    fontSize: isMobile ? "12px" : "14px", 
+                    lineHeight: 1 
+                  }}
                 >
                   Events
                 </Typography>
@@ -1039,11 +1113,12 @@ const CompareChart = ({
                     variant="outlined"
                     size="small"
                     sx={{
-                      fontSize: "14px",
+                      fontSize: isMobile ? "12px" : "14px",
                       textTransform: "none",
                       padding: "4px 12px",
                       color: "black",
                       borderColor: "black",
+                      minWidth: "auto",
                     }}
                     onClick={() => setOpenNote(true)}
                   >
@@ -1051,13 +1126,17 @@ const CompareChart = ({
                   </Button>
                 )}
               </Box>
-              <NoteModel open={openNote} onClose={() => setOpenNote(false)} />
+              <NoteModel 
+                open={openNote} 
+                onClose={() => setOpenNote(false)} 
+                fullScreen={isMobile}
+              />
             </Box>
-            <ResponsiveContainer width="100%" height={500}>
+            <ResponsiveContainer width="100%" height={isMobile ? 300 : 500}>
               <LineChart data={formattedData}>
                 <XAxis
                   dataKey="date"
-                  padding={{ left: 20, right: 20 }}
+                  padding={{ left: 10, right: 10 }}
                   tickFormatter={(value) => {
                     const isPresentSingleDay=widgetData==='Today' || widgetData ==='Yesterday'
                     const isCustomSingleDay=DateStartDate && DateEndDate && 
@@ -1068,13 +1147,14 @@ const CompareChart = ({
                       return dayjs(value).format("MMM D"); 
                     }
                   }}
+                  tick={{ fontSize: isMobile ? 10 : 12 }}
                 />
                 {/* Left axis (default, always needed) */}
                 <YAxis
                   yAxisId="left"
                   hide={false}
                   style={{
-                    fontSize: "12px",
+                    fontSize: isMobile ? "10px" : "12px",
                     fontFamily: "'Nunito Sans', sans-serif",
                     color: "#485E75",
                   }}
@@ -1106,7 +1186,7 @@ const CompareChart = ({
                     )
                   }
                   style={{
-                    fontSize: "12px",
+                    fontSize: isMobile ? "10px" : "12px",
                     fontFamily: "'Nunito Sans', sans-serif",
                     color: metricColors.profit_margin,
                   }}
@@ -1133,7 +1213,7 @@ const CompareChart = ({
                     )
                   }
                   style={{
-                    fontSize: "12px",
+                    fontSize: isMobile ? "10px" : "12px",
                     fontFamily: "'Nunito Sans', sans-serif",
                     color: "#485E75",
                   }}
@@ -1323,4 +1403,5 @@ const CompareChart = ({
     </Box>
   );
 };
+
 export default CompareChart;

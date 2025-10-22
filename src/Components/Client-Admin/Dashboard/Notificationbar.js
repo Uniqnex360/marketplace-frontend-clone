@@ -16,110 +16,103 @@ import {
   FormControl,
   Select,
   InputLabel,
+  useMediaQuery,
 } from "@mui/material";
-import MenuIcon from "@mui/icons-material/Menu";
 import {
   Notifications,
   AccountCircle,
   ExitToApp,
   CreditCard,
   HelpOutline,
+  Menu as MenuIcon,
+  Language,
 } from "@mui/icons-material";
-import { Link, useLocation, useNavigate } from "react-router-dom";
+import { useTheme } from "@mui/material/styles";
 import { LocalizationProvider } from "@mui/x-date-pickers";
-import { useMarketplace } from "../../../utils/MarketplaceProvider";
 import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
-const accentColor = " #000080  ";
+import { useMarketplace } from "../../../utils/MarketplaceProvider";
+import { useNavigate } from "react-router-dom";
+
+const accentColor = "#000080";
+
 function Notificationbar() {
   const navigate = useNavigate();
-  const location = useLocation();
+  const theme = useTheme();
+
+  // Responsive breakpoint
+  const isSmall = useMediaQuery(theme.breakpoints.down("sm"));
+  const isMedium = useMediaQuery(theme.breakpoints.down("md"));
+
   const [anchorEl, setAnchorEl] = useState(null);
+  const [mobileMenuAnchor, setMobileMenuAnchor] = useState(null);
+
   const open = Boolean(anchorEl);
-  const {
-    categories,
-    loading: marketplaceLoading,
-    selectedCountry,
-    setSelectedCountry,
-  } = useMarketplace();
-  const handleProfileClick = (event) => {
-    setAnchorEl(event.currentTarget);
-  };
-  const handleClose = () => {
-    setAnchorEl(null);
-  };
+  const openMobileMenu = Boolean(mobileMenuAnchor);
+
+  const { selectedCountry, setSelectedCountry } = useMarketplace();
+
+  const handleProfileClick = (event) => setAnchorEl(event.currentTarget);
+  const handleProfileClose = () => setAnchorEl(null);
+
   const handleLogout = () => {
     navigate("/");
     localStorage.removeItem("token");
     localStorage.removeItem("user");
   };
+
+  const handleMobileMenu = (event) => setMobileMenuAnchor(event.currentTarget);
+  const handleMobileMenuClose = () => setMobileMenuAnchor(null);
+
   return (
-    <AppBar
-      position="fixed"
-      sx={{ backgroundColor: accentColor, zIndex: 1201 }}
-    >
-      <Toolbar>
-        {/* <IconButton edge="start" color="inherit" aria-label="menu">
-          <MenuIcon />
-        </IconButton> */}
-        <IconButton edge="start" color="inherit" aria-label="menu">
-          <img
-            src={require("../../assets/MarketLynxe.png")}
-            alt="Logo"
-            style={{
-              height: "40px",
-              width: "auto",
-              backgroundColor: "#fff",
-              padding: "2px",
-              borderRadius: "2px",
-            }}
-          />
-        </IconButton>
-        <Typography variant="h6" sx={{ flexGrow: 1, textAlign: "center" }}>
-          MarketPlace Management
-        </Typography>
-        {/* Right-aligned Box */}
-        <Box
-          sx={{
-            display: "flex",
-            alignItems: "center",
-            height: "67px",
-            justifyContent: "flex-end",
-          }}
-        >
-          <LocalizationProvider dateAdapter={AdapterDayjs}>
-            {/* Preset Dropdown */}
-            <Box sx={{ paddingTop: "5px" }}>
+    <AppBar position="fixed" sx={{ backgroundColor: accentColor, zIndex: 1201 }}>
+      <Toolbar sx={{ justifyContent: "space-between" }}>
+        {/* LEFT: Logo + (Optional) Drawer Trigger */}
+        <Box sx={{ display: "flex", alignItems: "center" }}>
+          {isSmall && (
+            <IconButton color="inherit" edge="start" onClick={handleMobileMenu}>
+              <MenuIcon />
+            </IconButton>
+          )}
+          <IconButton edge="start" color="inherit" aria-label="logo">
+            <img
+              src={require("../../assets/MarketLynxe.png")}
+              alt="Logo"
+              style={{
+                height: isSmall ? "32px" : "40px",
+                width: "auto",
+                backgroundColor: "#fff",
+                padding: "2px",
+                borderRadius: "2px",
+              }}
+            />
+          </IconButton>
+        </Box>
+
+        {/* CENTER: Title */}
+        {!isSmall && (
+          <Typography
+            variant={isMedium ? "subtitle1" : "h6"}
+            sx={{ flexGrow: 1, textAlign: "center", fontWeight: 600 }}
+          >
+            MarketPlace Management
+          </Typography>
+        )}
+
+        {/* RIGHT SECTION */}
+        <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+          {/* Country Selector */}
+          {!isSmall && (
+            <LocalizationProvider dateAdapter={AdapterDayjs}>
               <FormControl
                 size="small"
                 sx={{
                   minWidth: 130,
-                  pr: "9px",
-                  "& .MuiInputLabel-root": {
-                    color: "rgba(0, 0, 0, 0.6)",
-                    "&.Mui-focused": {
-                      color: "#000080",
-                    },
-                  },
+                  pr: 1,
                   "& .MuiOutlinedInput-root": {
                     backgroundColor: "white",
-                    "& fieldset": {
-                      borderColor: "#cacaca",
-                    },
-                    "&:hover fieldset": {
-                      borderColor: "#000080",
-                    },
-                    "&.Mui-focused fieldset": {
-                      borderColor: "#000080",
-                    },
-                  },
-                  "& .MuiSelect-select": {
-                    color: "rgba(0, 0, 0, 0.87)",
-                    backgroundColor: "white",
-                    paddingTop: "8.5px",
-                    paddingBottom: "8.5px",
-                  },
-                  "& .MuiSvgIcon-root": {
-                    color: "rgba(0, 0, 0, 0.54)",
+                    "& fieldset": { borderColor: "#cacaca" },
+                    "&:hover fieldset": { borderColor: accentColor },
+                    "&.Mui-focused fieldset": { borderColor: accentColor },
                   },
                 }}
               >
@@ -128,50 +121,33 @@ function Notificationbar() {
                   value={selectedCountry}
                   onChange={(e) => setSelectedCountry(e.target.value)}
                   displayEmpty
+                  inputProps={{ "aria-label": "country select" }}
                 >
                   <MenuItem value="US">United States</MenuItem>
                   <MenuItem value="UK">United Kingdom</MenuItem>
                 </Select>
               </FormControl>
-            </Box>
-          </LocalizationProvider>
+            </LocalizationProvider>
+          )}
+
           {/* Notification Icon */}
-          <ListItem sx={{ display: "flex", alignItems: "center", padding: 0 }}>
-            <Notifications sx={{ fontSize: 28, color: "#fff" }} />
-          </ListItem>
-          {/* Profile Section */}
-          <List
-            sx={{
-              width: "100%",
-              textAlign: "right",
-              marginTop: "13px",
-              marginBottom: 2,
-            }}
-          >
-            <ListItem
-              button
-              onClick={handleProfileClick}
-              sx={{
-                flexDirection: "column",
-                alignItems: "center",
-                padding: "10px",
-              }}
-            >
-              <Avatar sx={{ bgcolor: "white", color: "blue" }}>
-                <AccountCircle sx={{ fontSize: 28 }} />
-              </Avatar>
-              {/* <ListItemText primary="User" sx={{ color: "#fff", fontSize: "14px", marginTop: "4px" }} /> */}
-            </ListItem>
-          </List>
+          {!isSmall && (
+            <IconButton color="inherit">
+              <Notifications sx={{ fontSize: 26 }} />
+            </IconButton>
+          )}
+
+          {/* Profile */}
+          <IconButton color="inherit" onClick={handleProfileClick}>
+            <Avatar sx={{ bgcolor: "white", color: accentColor }}>
+              <AccountCircle />
+            </Avatar>
+          </IconButton>
         </Box>
       </Toolbar>
-      {/* Profile Dropdown Menu */}
-      <Menu
-        anchorEl={anchorEl}
-        open={open}
-        onClose={handleClose}
-        sx={{ mt: 1 }}
-      >
+
+      {/* --- Profile Menu --- */}
+      <Menu anchorEl={anchorEl} open={open} onClose={handleProfileClose}>
         <MenuItem disabled>
           <ListItemText
             primary="Hello, MarketPlace User01"
@@ -179,19 +155,19 @@ function Notificationbar() {
           />
         </MenuItem>
         <Divider />
-        <MenuItem onClick={handleClose}>
+        <MenuItem onClick={handleProfileClose}>
           <ListItemIcon>
             <AccountCircle />
           </ListItemIcon>
           <ListItemText primary="Profile" />
         </MenuItem>
-        <MenuItem onClick={handleClose}>
+        <MenuItem onClick={handleProfileClose}>
           <ListItemIcon>
             <CreditCard />
           </ListItemIcon>
           <ListItemText primary="Billing" />
         </MenuItem>
-        <MenuItem onClick={handleClose}>
+        <MenuItem onClick={handleProfileClose}>
           <ListItemIcon>
             <HelpOutline />
           </ListItemIcon>
@@ -205,7 +181,38 @@ function Notificationbar() {
           <ListItemText primary="Logout" />
         </MenuItem>
       </Menu>
+
+      {/* --- Mobile Menu (Hamburger) --- */}
+      <Menu
+        anchorEl={mobileMenuAnchor}
+        open={openMobileMenu}
+        onClose={handleMobileMenuClose}
+      >
+        <MenuItem>
+          <ListItemIcon>
+            <Language />
+          </ListItemIcon>
+          <FormControl size="small" sx={{ minWidth: 120 }}>
+            <Select
+              value={selectedCountry}
+              onChange={(e) => setSelectedCountry(e.target.value)}
+              displayEmpty
+            >
+              <MenuItem value="US">US</MenuItem>
+              <MenuItem value="UK">UK</MenuItem>
+            </Select>
+          </FormControl>
+        </MenuItem>
+
+        <MenuItem>
+          <ListItemIcon>
+            <Notifications />
+          </ListItemIcon>
+          <ListItemText primary="Notifications" />
+        </MenuItem>
+      </Menu>
     </AppBar>
   );
 }
+
 export default Notificationbar;

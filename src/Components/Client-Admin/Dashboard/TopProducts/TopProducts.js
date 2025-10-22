@@ -24,6 +24,8 @@ import {
   Paper,
   Grid,
   Tooltip as MuiTooltip,
+  useTheme,
+  useMediaQuery,
 } from "@mui/material";
 import { Info as InfoIcon } from "@mui/icons-material";
 import dayjs from "dayjs";
@@ -93,6 +95,9 @@ const CustomTooltip = ({
   tab,
   hoveredProductId,
 }) => {
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
+
   if (!active || !payload || payload.length === 0) return null;
 
   const filteredPayload = hoveredProductId
@@ -126,14 +131,15 @@ const CustomTooltip = ({
   return (
     <Paper
       sx={{
-        p: 2,
+        p: isMobile ? 1 : 2,
         borderRadius: 2,
         boxShadow: "none",
-        minWidth: 250,
+        minWidth: isMobile ? 200 : 250,
+        maxWidth: isMobile ? "90vw" : "none",
         border: "1px solid rgb(161, 173, 184)",
       }}
     >
-      <Typography fontWeight={600} fontSize={14} gutterBottom>
+      <Typography fontWeight={600} fontSize={isMobile ? 12 : 14} gutterBottom>
         {formattedDate}
       </Typography>
 
@@ -162,12 +168,12 @@ const CustomTooltip = ({
                     backgroundColor: product.color,
                   }}
                 />
-                <Typography fontSize={14} color="text.secondary">
+                <Typography fontSize={isMobile ? 12 : 14} color="text.secondary">
                   {product?.sku || "N/A"}
                 </Typography>
               </Stack>
 
-              <Typography fontWeight="bold" fontSize={14}>
+              <Typography fontWeight="bold" fontSize={isMobile ? 12 : 14}>
                 {formatTooltipValue(entry.value, tab)}
               </Typography>
             </Stack>
@@ -176,19 +182,18 @@ const CustomTooltip = ({
               <Avatar
                 src={product?.img}
                 variant="rounded"
-                sx={{ width: 30, height: 30 }}
+                sx={{ width: isMobile ? 24 : 30, height: isMobile ? 24 : 30 }}
               />
-              <Box>
+              <Box sx={{ maxWidth: isMobile ? 120 : 180 }}>
                 <Typography
-                  fontSize={14}
+                  fontSize={isMobile ? 12 : 14}
                   fontWeight={500}
                   noWrap
-                  maxWidth={180}
                   sx={{ fontWeight: "bold" }}
                 >
                   {product?.title || product?.name}
                 </Typography>
-                <Typography fontSize={14} color="text.secondary">
+                <Typography fontSize={isMobile ? 11 : 14} color="text.secondary">
                   {product?.asin}
                 </Typography>
               </Box>
@@ -211,6 +216,10 @@ export default function TopProductsChart({
   DateStartDate,
   DateEndDate,
 }) {
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
+  const isTablet = useMediaQuery(theme.breakpoints.down('md'));
+
   const [tab, setTab] = useState(0);
   const [productList, setProductList] = useState([]);
   const [activeProducts, setActiveProducts] = useState([]);
@@ -580,20 +589,22 @@ export default function TopProductsChart({
   }
 
   return (
-    <Box p={2}>
-      <Typography sx={{ fontSize: "20px" }} fontWeight="bold" mb={1}>
+    <Box p={isMobile ? 1 : 2}>
+      <Typography sx={{ fontSize: isMobile ? "18px" : "20px" }} fontWeight="bold" mb={1}>
         Top 10 Products
       </Typography>
 
-      <Grid container spacing={2}>
-        <Grid item xs={12} md={4} sx={{ marginLeft: "-13px" }}>
+      <Grid container spacing={isMobile ? 1 : 2}>
+        <Grid item xs={12} md={4} sx={{ marginLeft: isMobile ? 0 : "-13px" }}>
           <Box
             sx={{
               backgroundColor: "#e1e8f0",
               borderRadius: "16px", // Smaller border radius for tighter look
-              display: "inline-flex",
+              display: 'inline-flex',
+              width: isMobile ? '100%' : 'auto',
               p: "1px", // 🔽 Less padding for reduced height
               mb: 1.5, // Slightly less bottom margin
+              justifyContent: isMobile ? 'center' : 'flex-start',
             }}
           >
             <Tabs
@@ -611,7 +622,7 @@ export default function TopProductsChart({
                   key={index}
                   label={
                     <Typography
-                      fontSize="11px"
+                      fontSize={isMobile ? "10px" : "11px"}
                       fontWeight={tab === index ? 600 : "normal"}
                     >
                       {label}
@@ -622,11 +633,11 @@ export default function TopProductsChart({
                       'Nunito Sans, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen, Ubuntu, Cantarell, "Fira Sans", "Droid Sans", "Helvetica Neue", sans-serif',
                     minHeight: "20px",
                     minWidth: "auto",
-                    px: 1.2,
+                    px: isMobile ? 1 : 1.2,
                     py: 0.2,
                     borderRadius: "12px",
                     fontWeight: 500,
-                    fontSize: "14px !important",
+                    fontSize: isMobile ? "12px !important" : "14px !important",
                     textTransform: "none",
                     color: "#2b2f3c",
                     backgroundColor: tab === index ? "#fff" : "transparent",
@@ -651,7 +662,7 @@ export default function TopProductsChart({
             direction="column"
             spacing={0.5}
             sx={{
-              maxHeight: 400,
+              maxHeight: isMobile ? 300 : 400,
               overflowX: "hidden",
               overflowY: "auto",
               pr: 0.5,
@@ -682,7 +693,7 @@ export default function TopProductsChart({
                 <Stack
                   key={product.id}
                   direction="row"
-                  alignItems="center"
+                  alignItems="flex-start"
                   spacing={1}
                   sx={{ paddingBottom: "3px" }}
                 >
@@ -719,10 +730,10 @@ export default function TopProductsChart({
                         <CheckIcon sx={{ fontSize: 14 }} />
                       </span>
                     }
-                    sx={{ p: 0, color: product.color }}
+                    sx={{ p: 0, color: product.color, mt: isMobile ? 0.5 : 0 }}
                   />
-                  <Avatar src={product.img} sx={{ width: 28, height: 28 }} />
-                  <Box sx={{ flexGrow: 1 }}>
+                  <Avatar src={product.img} sx={{ width: isMobile ? 24 : 28, height: isMobile ? 24 : 28, mt: isMobile ? 0.5 : 0 }} />
+                  <Box sx={{ flexGrow: 1, minWidth: 0 }}> {/* Added minWidth: 0 for text truncation */}
                     <TooltipName
                       title={product?.title || product?.name}
                       onRunCerebro={runCerebro}
@@ -739,7 +750,7 @@ export default function TopProductsChart({
                         }}
                       >
                         <Typography
-                          fontSize="14px"
+                          fontSize={isMobile ? "12px" : "14px"}
                           fontWeight={600}
                           sx={{
                             display: "-webkit-box",
@@ -762,20 +773,21 @@ export default function TopProductsChart({
                     </TooltipName>
 
                     <Box
-                      sx={{ display: "flex", alignItems: "center", mt: 0.3 }}
+                      sx={{ display: "flex", alignItems: "center", mt: 0.3, flexWrap: isMobile ? 'wrap' : 'nowrap' }}
                     >
                       <img
                         src="https://re-cdn.helium10.com/container/static/Flag-united-states-ksqXwksC.svg"
                         alt="Country Flag"
-                        width={27}
-                        height={16}
+                        width={isMobile ? 20 : 27}
+                        height={isMobile ? 12 : 16}
                         style={{ marginRight: 6 }}
                       />
 
                       <Typography
-                        fontSize="14px"
+                        fontSize={isMobile ? "12px" : "14px"}
                         color="text.secondary"
                         mr={0.5}
+                        sx={{ wordBreak: 'break-all' }}
                       >
                         {product?.asin}
                       </Typography>
@@ -789,10 +801,10 @@ export default function TopProductsChart({
                           <IconButton
                             onClick={() => handleCopy(product.asin)}
                             size="small"
-                            sx={{ mr: 0.5 }}
+                            sx={{ mr: 0.5, p: isMobile ? 0.25 : 0.5 }}
                           >
                             <ContentCopyIcon
-                              sx={{ fontSize: "14px", color: "#757575" }}
+                              sx={{ fontSize: isMobile ? "12px" : "14px", color: "#757575" }}
                             />
                           </IconButton>
                         </MuiTooltip>
@@ -802,14 +814,14 @@ export default function TopProductsChart({
                           placement="top"
                           arrow
                         >
-                          <IconButton size="small" sx={{ p: 0.5 }}>
+                          <IconButton size="small" sx={{ p: isMobile ? 0.25 : 0.5 }}>
                             •{" "}
                             <InfoOutlinedIcon
                               fontSize="inherit"
                               sx={{
                                 paddingLeft: "3px",
-                                height: "16px",
-                                width: "16px",
+                                height: isMobile ? "14px" : "16px",
+                                width: isMobile ? "14px" : "16px",
                               }}
                             />
                           </IconButton>
@@ -825,18 +837,19 @@ export default function TopProductsChart({
 
         <Grid item xs={12} md={8}>
           {/* Add Note and Events */}
-          <Box display="flex" justifyContent="flex-end">
-            <Box display="flex" alignItems="center" gap={2}>
+          <Box display="flex" justifyContent={isMobile ? "space-between" : "flex-end"} alignItems="center" mb={2}>
+            <Box display="flex" alignItems="center" gap={isMobile ? 1 : 2} flexDirection={isMobile ? "row-reverse" : "row"}>
               {events && (
                 <Button
                   variant="outlined"
                   size="small"
                   sx={{
-                    fontSize: "14px",
+                    fontSize: isMobile ? "12px" : "14px",
                     textTransform: "none",
-                    padding: "4px 12px",
+                    padding: isMobile ? "2px 8px" : "4px 12px",
                     color: "black", // 👈 sets the text color to black
                     borderColor: "black", // optional: sets the border color to black as well
+                    minWidth: "auto",
                   }}
                   onClick={() => setOpenNote(true)}
                 >
@@ -846,7 +859,7 @@ export default function TopProductsChart({
 
               <Typography
                 variant="body2"
-                sx={{ fontSize: "14px", lineHeight: 1 }}
+                sx={{ fontSize: isMobile ? "12px" : "14px", lineHeight: 1 }}
               >
                 Events
               </Typography>
@@ -854,17 +867,22 @@ export default function TopProductsChart({
               <Switch
                 checked={events}
                 onChange={() => setEvents(!events)}
-                size="small"
+                size={isMobile ? "small" : "medium"}
               />
             </Box>
           </Box>
 
           <NoteModel open={openNote} onClose={() => setOpenNote(false)} />
 
-          <ResponsiveContainer width="100%" height={400}>
+          <ResponsiveContainer width="100%" height={isMobile ? 300 : 400}>
             <LineChart
               data={bindGraph}
-              margin={{ top: 20, right: 30, left: 0, bottom: 20 }}
+              margin={{ 
+                top: 20, 
+                right: isMobile ? 10 : 30, 
+                left: isMobile ? 0 : 0, 
+                bottom: 20 
+              }}
             >
               {/* Grid lines */}
               <CartesianGrid
@@ -875,8 +893,8 @@ export default function TopProductsChart({
               {/* No vertical line on left */}
               <XAxis
                 dataKey="date"
-                tick={{ fontSize: "12px", fill: "#666" }}
-                padding={{ left: 20, right: 20 }}
+                tick={{ fontSize: isMobile ? "10px" : "12px", fill: "#666" }}
+                padding={{ left: 10, right: 10 }}
                 tickFormatter={(val) => {
                   if (isTodayOrYesterday) {
                     // For hourly data, val is already in Pacific time format
@@ -886,15 +904,17 @@ export default function TopProductsChart({
                     return dayjs(val).format("MMM D");
                   }
                 }}
+                interval={isMobile ? "preserveStartEnd" : 0}
               />
               {/* Y Axis with dynamic formatting based on tab */}
               <YAxis
-                tick={{ fontSize: "12px", fill: "#666" }}
+                tick={{ fontSize: isMobile ? "10px" : "12px", fill: "#666" }}
                 tickFormatter={formatYAxisTick}
                 axisLine={false}
                 tickLine={false}
                 domain={["auto", "auto"]}
-                tickCount={5} // Increased from 2 to show better price ranges
+                tickCount={isMobile ? 4 : 5} // Reduced tick count on mobile for better readability
+                width={isMobile ? 40 : undefined}
               />
               {/* Tooltip */}
               <Tooltip
@@ -919,15 +939,15 @@ export default function TopProductsChart({
                     type="linear"
                     dataKey={product.id} // This is the ID that will appear in payload.dataKey
                     stroke={product.color}
-                    strokeWidth={2.5}
+                    strokeWidth={isMobile ? 2 : 2.5}
                     strokeLinecap="butt"
                     strokeLinejoin="mitter"
                     connectNulls={true}
                     isAnimationActive={false}
                     dot={
-                      Object.keys(product.chart).length <= 2 ? { r: 4 } : false
+                      Object.keys(product.chart).length <= 2 ? { r: isMobile ? 3 : 4 } : false
                     }
-                    activeDot={{ r: 6, strokeWidth: 0 }}
+                    activeDot={{ r: isMobile ? 4 : 6, strokeWidth: 0 }}
                     // These are crucial for setting the hovered product
                     onMouseEnter={() => setHoveredProductId(product.id)}
                     onMouseLeave={() => setHoveredProductId(null)} // Reset when leaving this specific line
