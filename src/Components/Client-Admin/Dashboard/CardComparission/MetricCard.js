@@ -1166,6 +1166,26 @@ const MetricCard = ({
           <DottedCircleLoading />
         </Box>
       ) : (
+        <>
+          <Box
+          sx={{
+            px: 2,
+            py: 2,
+            textAlign: "left",
+          }}
+        >
+          <Typography
+            variant="h5"  // Or "h4" for larger text
+            fontWeight="bold"
+            color="#13191F"  // Matches your card title color
+            sx={{
+              fontFamily: "'Nunito Sans', sans-serif",
+              fontSize: "20px",  // Adjust size as needed
+            }}
+          >
+            Performance Summary  {/* Main header - Change text if desired */}
+          </Typography>
+          </Box>
         <Grid container spacing={2}>
           {processedData.map((cardData, idx) => (
             <Grid item xs={12} sm={6} md={6} xl={3} key={idx}>
@@ -1173,7 +1193,10 @@ const MetricCard = ({
             </Grid>
           ))}
         </Grid>
+        </>
+
       )}
+      
     </Container>
   );
 };

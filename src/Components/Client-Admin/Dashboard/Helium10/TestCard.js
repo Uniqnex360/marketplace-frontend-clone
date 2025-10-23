@@ -695,6 +695,27 @@ const TestCard = ({
           <SkeletonLoadingUI />
         </Box>
       ) : (
+        <>
+        <Box
+          sx={{
+            px: 2,
+            py: 1.5,
+            borderBottom: "1px solid #e0e0e0", // Separator line
+            textAlign: "left",
+          }}
+        >
+          <Typography
+            variant="h6"
+            fontWeight="bold"
+            color="#020202ff"
+            sx={{
+              fontFamily: "'Nunito Sans', sans-serif",
+              fontSize: 18,
+            }}
+          >
+            Summary  {/* Main header text - Change to "Key Metrics Summary" or whatever fits */}
+          </Typography>
+        </Box>
         <Box
           sx={{
             display: "flex",
@@ -1133,6 +1154,7 @@ const TestCard = ({
             </DialogContent>
           </Dialog>
         </Box>
+        </>
       )}
     </Box>
   );
