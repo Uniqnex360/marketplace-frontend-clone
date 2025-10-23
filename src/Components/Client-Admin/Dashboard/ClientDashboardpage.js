@@ -772,7 +772,7 @@ function ClientDashboardpage() {
     >
       <Box
         sx={{
-          fontSize: "24px",
+          fontSize: "20px",
           fontFamily:
             "'Nunito Sans', -apple-system, 'Segoe UI', 'Roboto', 'Helvetica Neue', 'Arial', sans-serif",
           fontWeight: 500,
