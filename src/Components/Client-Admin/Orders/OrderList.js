@@ -1,481 +1,496 @@
-  import React, { useState, useEffect, useRef } from "react";
-  import {
-    Box,
-    Card,
-    CardContent,
-    Typography,
-    Button,
-    Table,
-    TableBody,
-    TableCell,
-    TableContainer,
-    TableHead,
-    TableRow,
-    Paper,
-    TextField,
-    Select,
-    MenuItem,
-    Pagination,
-    Tooltip,
-    Grid,
-    Modal,
-    Slide,
-    Menu,
-    IconButton,
-    FormControl,
-    InputLabel,
-    CircularProgress,
-    Stack,
-    Divider,
-    Chip,
-  } from "@mui/material";
-  import { LocalizationProvider, DatePicker } from "@mui/x-date-pickers";
-  import { AdapterDateFns } from "@mui/x-date-pickers/AdapterDateFns";
-  import { FilterList, Refresh, Visibility } from "@mui/icons-material";
-  import { Link, useNavigate, useLocation } from "react-router-dom";
-  import axios from "axios";
-  import DottedCircleLoading from "../../Loading/DotLoading";
-  import AddIcon from "@mui/icons-material/Add";
-  import MannualOrder from "./MannualOrder";
-  import FilterOrders from "./FilterOrders";
-  import MarketplaceOption from "../Products/MarketplaceOption";
-  import ChannelOrder from "./ChannelOrder";
-  import { MoreVert as MoreVertIcon } from "@mui/icons-material";
-  import { toast } from "react-toastify";
-  import "react-toastify/dist/ReactToastify.css";
-  import BrandSelector from "../../../utils/BrandSelector";
-  import { useMarketplace } from "../../../utils/MarketplaceProvider";
-  import AppsIcon from "@mui/icons-material/Apps"; // Icon for "All Channels"
-  import ShoppingCartIcon from "@mui/icons-material/ShoppingCart";
-  import ImageIcon from "@mui/icons-material/Image";
+import React, { useState, useEffect, useRef } from "react";
+import {
+  Box,
+  Card,
+  CardContent,
+  Typography,
+  Button,
+  Table,
+  TableBody,
+  TableCell,
+  TableContainer,
+  TableHead,
+  TableRow,
+  Paper,
+  TextField,
+  Select,
+  MenuItem,
+  Pagination,
+  Tooltip,
+  Grid,
+  Modal,
+  Slide,
+  Menu,
+  IconButton,
+  FormControl,
+  InputLabel,
+  CircularProgress,
+  Stack,
+  Divider,
+  Chip,
+  useMediaQuery,
+  useTheme,
+} from "@mui/material";
+import { LocalizationProvider, DatePicker } from "@mui/x-date-pickers";
+import { AdapterDateFns } from "@mui/x-date-pickers/AdapterDateFns";
+import { FilterList, Refresh, Visibility } from "@mui/icons-material";
+import { Link, useNavigate, useLocation } from "react-router-dom";
+import axios from "axios";
+import DottedCircleLoading from "../../Loading/DotLoading";
+import AddIcon from "@mui/icons-material/Add";
+import MannualOrder from "./MannualOrder";
+import FilterOrders from "./FilterOrders";
+import MarketplaceOption from "../Products/MarketplaceOption";
+import ChannelOrder from "./ChannelOrder";
+import { MoreVert as MoreVertIcon } from "@mui/icons-material";
+import { toast } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
+import BrandSelector from "../../../utils/BrandSelector";
+import { useMarketplace } from "../../../utils/MarketplaceProvider";
+import AppsIcon from "@mui/icons-material/Apps";
+import ShoppingCartIcon from "@mui/icons-material/ShoppingCart";
+import ImageIcon from "@mui/icons-material/Image";
 import { useEnhancedCategories } from "../../../utils/UseEnhancedCategories";
 
+const OrderList = ({ fetchOrdersFromParent }) => {
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down('md'));
+  const isSmallMobile = useMediaQuery(theme.breakpoints.down('sm'));
+  
+  const location = useLocation();
+  const navigate = useNavigate();
+  const [orders, setOrders] = useState([]);
+  const [currentColumn, setCurrentColumn] = useState("");
+  const [anchorEl, setAnchorEl] = useState(null);
+  const [sortConfig, setSortConfig] = useState({ key: "", direction: "asc" });
+  const [manualOrders, setManualOrders] = useState([]);
+  const [selectedBrand, setSelectedBrand] = useState([]);
+  const [inputValueBrand, setInputValueBrand] = useState("");
+  const [brandList, setBrandList] = useState([]);
+  const [brandLimit, setBrandLimit] = useState(10);
+  const [isLoading, setIsLoading] = useState(false);
+  const [hasMore, setHasMore] = useState(true);
+  const [rowsPerPage, setRowsPerPage] = useState(25);
+  const [filters, setFilters] = useState({});
+  const [totalPages, setTotalPages] = useState(1);
+  const [orderCount, setOrderCount] = useState(0);
+  const [selectedStatus, setSelectedStatus] = useState("all");
 
-  const OrderList = ({ fetchOrdersFromParent }) => {
-    const location = useLocation();
-    const navigate = useNavigate();
-    const [orders, setOrders] = useState([]);
-    const [currentColumn, setCurrentColumn] = useState("");
-    const [anchorEl, setAnchorEl] = useState(null);
-    const [sortConfig, setSortConfig] = useState({ key: "", direction: "asc" });
-    const [manualOrders, setManualOrders] = useState([]);
-    const [selectedBrand, setSelectedBrand] = useState([]);
-    const [inputValueBrand, setInputValueBrand] = useState("");
-    const [brandList, setBrandList] = useState([]);
-    const [brandLimit, setBrandLimit] = useState(10);
-    const [isLoading, setIsLoading] = useState(false);
-    const [hasMore, setHasMore] = useState(true);
-    const [rowsPerPage, setRowsPerPage] = useState(25);
-    const [filters, setFilters] = useState({});
-    const [totalPages, setTotalPages] = useState(1);
-    const [orderCount, setOrderCount] = useState(0);
-    const [selectedStatus, setSelectedStatus] = useState("all");
+  const [customStatus, setCustomStatus] = useState([]);
+  const [downloadModalOpen, setDownloadModalOpen] = useState(false);
+  const [downloadStartDate, setDownloadStartDate] = useState("");
+  const [downloadEndDate, setDownloadEndDate] = useState("");
+  const [downloadFormat, setDownloadFormat] = useState("csv");
+  const [searchTerm, setSearchTerm] = useState("");
+  const [logoMarket, setLogoMarket] = useState([]);
+  const [loading, setLoading] = useState(false);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [showFilter, setShowFilter] = useState(false);
+  const [selectedCategory, setSelectedCategory] = useState({
+    id: "all",
+    name: "All Channels",
+  });
+  const {
+        categories,
+        loading: marketplaceLoading,
+        selectedCountry,
+        setSelectedCountry,
+      } = useMarketplace();
+const enhancedCategories = useEnhancedCategories(categories);
 
-    const [customStatus, setCustomStatus] = useState([]);
-    const [downloadModalOpen, setDownloadModalOpen] = useState(false);
-    const [downloadStartDate, setDownloadStartDate] = useState("");
-    const [downloadEndDate, setDownloadEndDate] = useState("");
-    const [downloadFormat, setDownloadFormat] = useState("csv");
-    const [searchTerm, setSearchTerm] = useState("");
-    const [logoMarket, setLogoMarket] = useState([]);
-    const [loading, setLoading] = useState(false);
-    const [searchQuery, setSearchQuery] = useState("");
-    const [showFilter, setShowFilter] = useState(false);
-    const [selectedCategory, setSelectedCategory] = useState({
-      id: "all",
-      name: "All Channels",
+  const systemTimeZone = Intl.DateTimeFormat().resolvedOptions().timeZone;
+  const handleClearFilter = () => {
+    setSelectedBrand([]);
+    toast.success("Brands reset successfully!", {
+      position: "top-right",
+      autoClose: 2000,
+      hideProgressBar: false,
+      closeOnClick: true,
     });
-    const {
-          categories,
-          loading: marketplaceLoading,
-          selectedCountry,
-          setSelectedCountry,
-        } = useMarketplace();
- const enhancedCategories = useEnhancedCategories(categories);
-
-    const systemTimeZone = Intl.DateTimeFormat().resolvedOptions().timeZone;
-    const handleClearFilter = () => {
-      setSelectedBrand([]);
-      toast.success("Brands reset successfully!", {
-        position: "top-right",
-        autoClose: 2000,
-        hideProgressBar: false,
-        closeOnClick: true,
-      });
-    };
-    useEffect(() => {
-      const storedCategory = localStorage.getItem("selectedCategory");
-      if (storedCategory) {
-        const parsedCategory = JSON.parse(storedCategory);
-        setSelectedCategory(parsedCategory);
-      }
-    }, []);
-    const userData = localStorage.getItem("user");
-    let userIds = "";
-    if (userData) {
-      const data = JSON.parse(userData);
-      userIds = data.id;
+  };
+  useEffect(() => {
+    const storedCategory = localStorage.getItem("selectedCategory");
+    if (storedCategory) {
+      const parsedCategory = JSON.parse(storedCategory);
+      setSelectedCategory(parsedCategory);
     }
-    const handleMarketplaceSelect = (category) => {
-      setSelectedCategory(category);
-      const safeCategory={
-        id:category.id,
-        name:category.name
-      }
-      localStorage.setItem("selectedCategory", JSON.stringify(safeCategory));
-      setPage(1);
-    };  
-    const queryParams = new URLSearchParams(window.location.search);
-    const initialPage = parseInt(queryParams.get("page")) || 1;
-    const initialRowsPerPage = parseInt(queryParams.get("rowsPerPage"), 10) || 25;
-    const [page, setPage] = useState(initialPage);
-    const [market, setMarket] = useState(null);
-    const [open, setOpen] = useState(false);
-    const handleOpen = () => setOpen(true);
-    const handlePageChange = (event, newPage) => {
-      setPage(newPage);
-      navigate(`/Home/orders?page=${newPage}&rowsPerPage=${rowsPerPage}`);
-    };
-    const handleRowsPerPageChange = (event) => {
-      setRowsPerPage(parseInt(event.target.value, 10));
-      navigate(`/Home/orders?page=${page}&rowsPerPage=${event.target.value}`);
-      setPage(1);
-    };
-    useEffect(() => {
-      setRowsPerPage(initialRowsPerPage);
-    }, [location.search]);
-    useEffect(() => {
-      if (location.state && location.state.searchQuery) {
-        setSearchTerm(location.state.searchQuery);
-      }
-    }, [location.state]);
-    useEffect(() => {
-      const fetchBrands = async () => {
-        setIsLoading(true);
-        try {
-          const response = await axios.get(
-            `${process.env.REACT_APP_IP}getBrandListforfilter/`,
-            {
-              params: {
-                search_query: inputValueBrand,
-                user_id: userIds,
-                limit: brandLimit,
-              },
-            }
-          );
-          const names = response.data.data.brand_list || [];
-          setBrandList(names);
-          setHasMore(names.length >= brandLimit);
-        } catch (error) {
-          console.error("Error fetching brands:", error);
-          setHasMore(false);
-          setBrandList([]);
-        } finally {
-          setIsLoading(false);
-        }
-      };
-      fetchBrands();
-    }, [inputValueBrand, brandLimit, userIds]);
-    const fetchOrderData = async (marketId = "all", page, rowsPerPage) => {
-      setLoading(true);
-      const validRowsPerPage = rowsPerPage && rowsPerPage > 0 ? rowsPerPage : 25;
-      const skip = (page - 1) * validRowsPerPage;
+  }, []);
+  const userData = localStorage.getItem("user");
+  let userIds = "";
+  if (userData) {
+    const data = JSON.parse(userData);
+    userIds = data.id;
+  }
+  const handleMarketplaceSelect = (category) => {
+    setSelectedCategory(category);
+    const safeCategory={
+      id:category.id,
+      name:category.name
+    }
+    localStorage.setItem("selectedCategory", JSON.stringify(safeCategory));
+    setPage(1);
+  };  
+  const queryParams = new URLSearchParams(window.location.search);
+  const initialPage = parseInt(queryParams.get("page")) || 1;
+  const initialRowsPerPage = parseInt(queryParams.get("rowsPerPage"), 10) || 25;
+  const [page, setPage] = useState(initialPage);
+  const [market, setMarket] = useState(null);
+  const [open, setOpen] = useState(false);
+  const handleOpen = () => setOpen(true);
+  const handlePageChange = (event, newPage) => {
+    setPage(newPage);
+    navigate(`/Home/orders?page=${newPage}&rowsPerPage=${rowsPerPage}`);
+  };
+  const handleRowsPerPageChange = (event) => {
+    setRowsPerPage(parseInt(event.target.value, 10));
+    navigate(`/Home/orders?page=${page}&rowsPerPage=${event.target.value}`);
+    setPage(1);
+  };
+  useEffect(() => {
+    setRowsPerPage(initialRowsPerPage);
+  }, [location.search]);
+  useEffect(() => {
+    if (location.state && location.state.searchQuery) {
+      setSearchTerm(location.state.searchQuery);
+    }
+  }, [location.state]);
+  useEffect(() => {
+    const fetchBrands = async () => {
+      setIsLoading(true);
       try {
-        const marketplaceId = selectedCategory?.id || "all";
-
-
-        const payload = {
-          country:selectedCountry,
-          user_id: userIds,
-          skip: skip >= 0 ? skip : 0,
-          limit: validRowsPerPage,
-          marketplace_id: marketplaceId,
-          search_query: searchQuery,
-          sort_by: sortConfig.key,
-          sort_by_value: sortConfig.direction === "asc" ? 1 : -1,
-          timezone: "US/Pacific",
-        };
-        if (selectedStatus && selectedStatus !== "all") {
-          payload.order_status = selectedStatus;
-        }
-        const response = await axios.post(
-          `${process.env.REACT_APP_IP}fetchAllorders/`,
-          payload
-        );
-
-        const responseData = response.data || {};
-        setOrders(Array.isArray(responseData.orders) ? responseData.orders : []);
-        setLogoMarket(
-          Array.isArray(responseData.marketplace_list)
-            ? responseData.marketplace_list
-            : []
-        );
-        setOrderCount(responseData.total_count || 0);
-        setTotalPages(
-          Math.ceil((responseData.total_count || 0) / validRowsPerPage)
-        );
-        setCustomStatus(responseData.status || "");
-        setManualOrders([]);
-      } catch (error) {
-        console.error("Error fetching orders:", error);
-        toast.error("Failed to load orders. Please try again.");
-        setOrders([]);
-        setManualOrders([]);
-        setLogoMarket([]);
-        setOrderCount(0);
-        setTotalPages(1);
-      } finally {
-        setLoading(false);
-      }
-    };
-    const prevParams = useRef({
-      selectedCategoryId: selectedCategory.id,
-      page,
-      rowsPerPage,
-      sortConfig,
-      searchQuery,
-      selectedStatus,
-      selectedCountry
-    });
-    useEffect(() => {
-      const shouldFetch =
-        selectedCategory.id !== prevParams.current.selectedCategoryId ||
-        page !== prevParams.current.page ||
-        rowsPerPage !== prevParams.current.rowsPerPage ||
-        JSON.stringify(sortConfig) !==
-          JSON.stringify(prevParams.current.sortConfig) ||
-        searchQuery !== prevParams.current.searchQuery ||
-        selectedStatus !== prevParams.current.selectedStatus||
-        selectedCountry !== prevParams.current.selectedCountry; 
-      if (shouldFetch) {
-        fetchOrderData(selectedCategory.id, page, rowsPerPage);
-        prevParams.current = {
-          selectedCategoryId: selectedCategory.id,
-          page,
-          rowsPerPage,
-          sortConfig,
-          searchQuery,
-          selectedStatus,
-          selectedCountry
-        };
-      }
-    }, [
-      selectedCategory.id,
-      page,
-      selectedCountry,
-      rowsPerPage,
-      sortConfig,
-      searchQuery,
-      selectedStatus,
-    ]);
-    useEffect(() => {
-      const storedCategory = localStorage.getItem("selectedCategory");
-      if (storedCategory) {
-        const category = JSON.parse(storedCategory);
-        setSelectedCategory(category);
-      }
-      fetchOrderData(selectedCategory.id, page, rowsPerPage);
-    }, [selectedCountry]);
-    const handleClose = () => {
-      setOpen(false);
-      fetchOrderData(selectedCategory.id, page, rowsPerPage);
-    };
-    const filteredOrders = orders.filter((order) => {
-      const purchaseOrderId = order.purchaseOrderId
-        ? order.purchaseOrderId.toLowerCase()
-        : "";
-      const customerOrderId = order.customerOrderId
-        ? order.customerOrderId.toLowerCase()
-        : "";
-      return (
-        purchaseOrderId.includes(searchQuery.toLowerCase()) ||
-        customerOrderId.includes(searchQuery.toLowerCase())
-      );
-    });
-    const handleSearchChange = (e) => {
-      setSearchQuery(e.target.value);
-    };
-    const handleChangePage = (event, newPage) => {
-      navigate(`/Home/orders?page=${newPage}&rowsPerPage=${rowsPerPage}`);
-      setPage(newPage);
-    };
-    const handleOpenMenu = (event, column) => {
-      setAnchorEl(event.currentTarget);
-      setCurrentColumn(column);
-    };
-    const handleSelectSort = (key, direction) => {
-      setSortConfig({ key, direction });
-      setAnchorEl(null);
-    };
-    const handleCloseMenu = () => {
-      setAnchorEl(null);
-    };
-    const handleProduct = (category) => {
-      setSelectedCategory(category);
-    };
-    const handleFilterChange = (newFilters) => {
-      setFilters(newFilters);
-    };
-    const handleResetChange = () => {
-      setSearchQuery("");
-      setSortConfig({ key: "", direction: "asc" });
-      setSelectedCategory({ id: "all", name: "All Channels" });
-      localStorage.setItem(
-        "selectedCategory",
-        JSON.stringify({ id: "all", name: "All Channels" })
-      );
-      setPage(1);
-      setSelectedStatus("all");
-      toast.success("Reset Successfully", {
-        position: "top-right",
-        autoClose: 2000,
-        hideProgressBar: false,
-        closeOnClick: true,
-        pauseOnHover: true,
-        draggable: true,
-      });
-    };
-    const handleDownload = async () => {
-      try {
-        if (
-          selectedBrand.length === 0 &&
-          (!downloadStartDate || !downloadEndDate)
-        ) {
-          toast.error("Please select at least one brand OR a valid date range");
-          return;
-        }
-        if (
-          downloadStartDate &&
-          downloadEndDate &&
-          new Date(downloadEndDate) < new Date(downloadStartDate)
-        ) {
-          toast.error("End date must be after start date");
-          return;
-        }
-        const brandIds = selectedBrand.map((b) => b.id);
-        const requestData = {};
-        if (selectedBrand.length > 0) {
-          requestData.brands = selectedBrand.map((b) => b.id);
-        }
-        if (downloadStartDate && downloadEndDate) {
-          const formatLocalDate = (date) => {
-            if (!date) return null;
-            const year = date.getFullYear();
-            const month = (date.getMonth() + 1).toString().padStart(2, "0");
-            const day = date.getDate().toString().padStart(2, "0");
-            return `${year}-${month}-${day}`;
-          };
-          requestData.start_date = formatLocalDate(downloadStartDate);
-          requestData.end_date = formatLocalDate(downloadEndDate);
-        }
-        requestData.format = downloadFormat;
-        requestData.user_id = userIds;
-        setIsLoading(true);
-        const response = await axios.post(
-          `${process.env.REACT_APP_IP}downloadOrders/`,
-          requestData,
+        const response = await axios.get(
+          `${process.env.REACT_APP_IP}getBrandListforfilter/`,
           {
-            responseType: "blob",
-            headers: {
-              "Content-Type": "application/json",
+            params: {
+              search_query: inputValueBrand,
+              user_id: userIds,
+              limit: brandLimit,
             },
           }
         );
-        const url = window.URL.createObjectURL(new Blob([response.data]));
-        const link = document.createElement("a");
-        link.href = url;
-        link.setAttribute(
-          "download",
-          `orders_${new Date().toISOString().split("T")[0]}.${downloadFormat}`
-        );
-        document.body.appendChild(link);
-        link.click();
-        link.remove();
-        window.URL.revokeObjectURL(url);
-        setDownloadModalOpen(false);
-        setSelectedBrand([]);
-        setDownloadStartDate(null);
-        setDownloadEndDate(null);
-        setDownloadFormat("csv");
-        toast.success("Download started successfully");
+        const names = response.data.data.brand_list || [];
+        setBrandList(names);
+        setHasMore(names.length >= brandLimit);
       } catch (error) {
-        console.error("Download error:", error);
-        toast.error("Failed to download orders. Please try again.");
+        console.error("Error fetching brands:", error);
+        setHasMore(false);
+        setBrandList([]);
       } finally {
         setIsLoading(false);
       }
     };
+    fetchBrands();
+  }, [inputValueBrand, brandLimit, userIds]);
+  const fetchOrderData = async (marketId = "all", page, rowsPerPage) => {
+    setLoading(true);
+    const validRowsPerPage = rowsPerPage && rowsPerPage > 0 ? rowsPerPage : 25;
+    const skip = (page - 1) * validRowsPerPage;
+    try {
+      const marketplaceId = selectedCategory?.id || "all";
+
+
+      const payload = {
+        country:selectedCountry,
+        user_id: userIds,
+        skip: skip >= 0 ? skip : 0,
+        limit: validRowsPerPage,
+        marketplace_id: marketplaceId,
+        search_query: searchQuery,
+        sort_by: sortConfig.key,
+        sort_by_value: sortConfig.direction === "asc" ? 1 : -1,
+        timezone: "US/Pacific",
+      };
+      if (selectedStatus && selectedStatus !== "all") {
+        payload.order_status = selectedStatus;
+      }
+      const response = await axios.post(
+        `${process.env.REACT_APP_IP}fetchAllorders/`,
+        payload
+      );
+
+      const responseData = response.data || {};
+      setOrders(Array.isArray(responseData.orders) ? responseData.orders : []);
+      setLogoMarket(
+        Array.isArray(responseData.marketplace_list)
+          ? responseData.marketplace_list
+          : []
+      );
+      setOrderCount(responseData.total_count || 0);
+      setTotalPages(
+        Math.ceil((responseData.total_count || 0) / validRowsPerPage)
+      );
+      setCustomStatus(responseData.status || "");
+      setManualOrders([]);
+    } catch (error) {
+      console.error("Error fetching orders:", error);
+      toast.error("Failed to load orders. Please try again.");
+      setOrders([]);
+      setManualOrders([]);
+      setLogoMarket([]);
+      setOrderCount(0);
+      setTotalPages(1);
+    } finally {
+      setLoading(false);
+    }
+  };
+  const prevParams = useRef({
+    selectedCategoryId: selectedCategory.id,
+    page,
+    rowsPerPage,
+    sortConfig,
+    searchQuery,
+    selectedStatus,
+    selectedCountry
+  });
+  useEffect(() => {
+    const shouldFetch =
+      selectedCategory.id !== prevParams.current.selectedCategoryId ||
+      page !== prevParams.current.page ||
+      rowsPerPage !== prevParams.current.rowsPerPage ||
+      JSON.stringify(sortConfig) !==
+        JSON.stringify(prevParams.current.sortConfig) ||
+      searchQuery !== prevParams.current.searchQuery ||
+      selectedStatus !== prevParams.current.selectedStatus||
+      selectedCountry !== prevParams.current.selectedCountry; 
+    if (shouldFetch) {
+      fetchOrderData(selectedCategory.id, page, rowsPerPage);
+      prevParams.current = {
+        selectedCategoryId: selectedCategory.id,
+        page,
+        rowsPerPage,
+        sortConfig,
+        searchQuery,
+        selectedStatus,
+        selectedCountry
+      };
+    }
+  }, [
+    selectedCategory.id,
+    page,
+    selectedCountry,
+    rowsPerPage,
+    sortConfig,
+    searchQuery,
+    selectedStatus,
+  ]);
+  useEffect(() => {
+    const storedCategory = localStorage.getItem("selectedCategory");
+    if (storedCategory) {
+      const category = JSON.parse(storedCategory);
+      setSelectedCategory(category);
+    }
+    fetchOrderData(selectedCategory.id, page, rowsPerPage);
+  }, [selectedCountry]);
+  const handleClose = () => {
+    setOpen(false);
+    fetchOrderData(selectedCategory.id, page, rowsPerPage);
+  };
+  const filteredOrders = orders.filter((order) => {
+    const purchaseOrderId = order.purchaseOrderId
+      ? order.purchaseOrderId.toLowerCase()
+      : "";
+    const customerOrderId = order.customerOrderId
+      ? order.customerOrderId.toLowerCase()
+      : "";
     return (
-      <Box sx={{ flex: 1, width: "100%" }}>
+      purchaseOrderId.includes(searchQuery.toLowerCase()) ||
+      customerOrderId.includes(searchQuery.toLowerCase())
+    );
+  });
+  const handleSearchChange = (e) => {
+    setSearchQuery(e.target.value);
+  };
+  const handleChangePage = (event, newPage) => {
+    navigate(`/Home/orders?page=${newPage}&rowsPerPage=${rowsPerPage}`);
+    setPage(newPage);
+  };
+  const handleOpenMenu = (event, column) => {
+    setAnchorEl(event.currentTarget);
+    setCurrentColumn(column);
+  };
+  const handleSelectSort = (key, direction) => {
+    setSortConfig({ key, direction });
+    setAnchorEl(null);
+  };
+  const handleCloseMenu = () => {
+    setAnchorEl(null);
+  };
+  const handleProduct = (category) => {
+    setSelectedCategory(category);
+  };
+  const handleFilterChange = (newFilters) => {
+    setFilters(newFilters);
+  };
+  const handleResetChange = () => {
+    setSearchQuery("");
+    setSortConfig({ key: "", direction: "asc" });
+    setSelectedCategory({ id: "all", name: "All Channels" });
+    localStorage.setItem(
+      "selectedCategory",
+      JSON.stringify({ id: "all", name: "All Channels" })
+    );
+    setPage(1);
+    setSelectedStatus("all");
+    toast.success("Reset Successfully", {
+      position: "top-right",
+      autoClose: 2000,
+      hideProgressBar: false,
+      closeOnClick: true,
+      pauseOnHover: true,
+      draggable: true,
+    });
+  };
+  const handleDownload = async () => {
+    try {
+      if (
+        selectedBrand.length === 0 &&
+        (!downloadStartDate || !downloadEndDate)
+      ) {
+        toast.error("Please select at least one brand OR a valid date range");
+        return;
+      }
+      if (
+        downloadStartDate &&
+        downloadEndDate &&
+        new Date(downloadEndDate) < new Date(downloadStartDate)
+      ) {
+        toast.error("End date must be after start date");
+        return;
+      }
+      const brandIds = selectedBrand.map((b) => b.id);
+      const requestData = {};
+      if (selectedBrand.length > 0) {
+        requestData.brands = selectedBrand.map((b) => b.id);
+      }
+      if (downloadStartDate && downloadEndDate) {
+        const formatLocalDate = (date) => {
+          if (!date) return null;
+          const year = date.getFullYear();
+          const month = (date.getMonth() + 1).toString().padStart(2, "0");
+          const day = date.getDate().toString().padStart(2, "0");
+          return `${year}-${month}-${day}`;
+        };
+        requestData.start_date = formatLocalDate(downloadStartDate);
+        requestData.end_date = formatLocalDate(downloadEndDate);
+      }
+      requestData.format = downloadFormat;
+      requestData.user_id = userIds;
+      setIsLoading(true);
+      const response = await axios.post(
+        `${process.env.REACT_APP_IP}downloadOrders/`,
+        requestData,
+        {
+          responseType: "blob",
+          headers: {
+            "Content-Type": "application/json",
+          },
+        }
+      );
+      const url = window.URL.createObjectURL(new Blob([response.data]));
+      const link = document.createElement("a");
+      link.href = url;
+      link.setAttribute(
+        "download",
+        `orders_${new Date().toISOString().split("T")[0]}.${downloadFormat}`
+      );
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      window.URL.revokeObjectURL(url);
+      setDownloadModalOpen(false);
+      setSelectedBrand([]);
+      setDownloadStartDate(null);
+      setDownloadEndDate(null);
+      setDownloadFormat("csv");
+      toast.success("Download started successfully");
+    } catch (error) {
+      console.error("Download error:", error);
+      toast.error("Failed to download orders. Please try again.");
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  return (
+    <Box sx={{ flex: 1, width: "100%", px: { xs: 1, sm: 2 } }}>
+      {/* Header Section - Made Responsive */}
+      <Box
+        sx={{
+          display: "flex",
+          flexDirection: "column",
+          gap: 2,
+          my: 2,
+          justifyContent: "flex-end",
+          alignItems: "center",
+          position: "fixed",
+          top: 0,
+          right: 0,
+          marginTop: { xs: "10px", md: "20px" },
+          width: { xs: "100%", md: "108%" },
+          backgroundColor: "white",
+          zIndex: 100,
+          px: { xs: 2, md: 0 },
+          pb: 2,
+          boxShadow: { xs: "0 2px 4px rgba(0,0,0,0.1)", md: "none" },
+        }}
+      >
         <Box
           sx={{
             display: "flex",
-            flexDirection: "column",
-            gap: 2,
+            flexDirection: { xs: "column", md: "row" },
+            gap: { xs: 1, md: 2 },
             my: 2,
-            justifyContent: "flex-end",
-            alignItems: "center",
-            position: "fixed",
-            top: 0,
-            right: 0,
-            marginTop: "20px",
-            width: "108%",
-            backgroundColor: "white",
-            zIndex: 100,
+            marginRight: { xs: 0, md: "4%" },
+            justifyContent: { xs: "center", md: "flex-end" },
+            alignItems: { xs: "stretch", md: "center" },
+            marginTop: { xs: "4%", md: "6%" },
+            width: "100%",
           }}
         >
-          <Box
-            sx={{
-              display: "flex",
-              gap: 2,
-              my: 2,
-              marginRight: "4%",
-              justifyContent: "flex-end",
-              alignItems: "center",
-              marginTop: "6%",
-              width: "100%",
-            }}
-          >
-            <Box>
-              <FormControl size="small" sx={{ minWidth: 150 }}>
-                <Select
-                  value={selectedCategory?.id || "all"}
-                  onChange={(e) => {
-                    const selected = enhancedCategories.find(
-                      (cat) => cat.id === e.target.value
-                    );
-                    if (selected) {
-                      handleMarketplaceSelect(selected);
-                    }
-                  }}
-                  displayEmpty
-                >
-                  {marketplaceLoading ? (
-                    <MenuItem disabled>Loading...</MenuItem>
-                  ) : (
-                    enhancedCategories.map((category) => (
-                      <MenuItem key={category.id} value={category.id}>
-                        <Box display="flex" alignItems="center" gap={1}>
-                          {category.icon ||
-                            (category.imageUrl ? (
-                              <img
-                                src={category.imageUrl}
-                                alt={category.name}
-                                width={18}
-                                height={14}
-                              />
-                            ) : (
-                              <ImageIcon fontSize="small" />
-                            ))}
-                          <span>{category.name}</span>
-                        </Box>
-                      </MenuItem>
-                    ))
-                  )}
-                </Select>
-              </FormControl>
-            </Box>
-            <FormControl size="small" sx={{ widhth: 150 }}>
+          {/* Marketplace Selector */}
+          <Box sx={{ width: { xs: "100%", md: "auto" } }}>
+            <FormControl size="small" sx={{ width: { xs: "100%", md: 150 } }}>
+              <Select
+                value={selectedCategory?.id || "all"}
+                onChange={(e) => {
+                  const selected = enhancedCategories.find(
+                    (cat) => cat.id === e.target.value
+                  );
+                  if (selected) {
+                    handleMarketplaceSelect(selected);
+                  }
+                }}
+                displayEmpty
+              >
+                {marketplaceLoading ? (
+                  <MenuItem disabled>Loading...</MenuItem>
+                ) : (
+                  enhancedCategories.map((category) => (
+                    <MenuItem key={category.id} value={category.id}>
+                      <Box display="flex" alignItems="center" gap={1}>
+                        {category.icon ||
+                          (category.imageUrl ? (
+                            <img
+                              src={category.imageUrl}
+                              alt={category.name}
+                              width={18}
+                              height={14}
+                            />
+                          ) : (
+                            <ImageIcon fontSize="small" />
+                          ))}
+                        <span>{category.name}</span>
+                      </Box>
+                    </MenuItem>
+                  ))
+                )}
+              </Select>
+            </FormControl>
+          </Box>
+
+          {/* Status Filter */}
+          <Box sx={{ width: { xs: "100%", md: "auto" },p:{xs:2,md:0} }}>
+            <FormControl size="small" sx={{ width: { xs: "100%", md: 150 } }}>
               <InputLabel>Status</InputLabel>
               <Select
                 value={selectedStatus}
@@ -488,56 +503,82 @@ import { useEnhancedCategories } from "../../../utils/UseEnhancedCategories";
                 <MenuItem value="Canceled">Canceled</MenuItem>
               </Select>
             </FormControl>
+          </Box>
 
-            <TextField
-              size="small"
-              placeholder="Search Purchase Order ID"
-              value={searchQuery}
-              onChange={handleSearchChange}
-              sx={{
-                width: 300,
-                "& input": {
-                  fontSize: "14px",
-                },
-              }}
-            />
+          {/* Search Field */}
+          <TextField
+            size="small"
+            placeholder="Search Purchase Order ID"
+            value={searchQuery}
+            onChange={handleSearchChange}
+            sx={{
+              width: { xs: "100%", md: 300 },
+              "& input": {
+                fontSize: "14px",
+              },
+              p:{xs:2,md:0} 
+            }}
+          />
+
+          {/* Action Buttons */}
+          <Box sx={{ 
+            display: "flex", 
+            gap: 1, 
+            width: { xs: "100%", md: "auto" },
+            justifyContent: { xs: "space-between", md: "flex-start" }
+          }}>
             {selectedCategory.id == "custom" && (
               <Button
                 variant="text"
                 color="primary"
                 sx={{
                   backgroundColor: "#000080",
-                  fontSize: "14px",
+                  fontSize: { xs: "12px", md: "14px" },
                   color: "white",
                   fontWeight: 400,
                   minWidth: "auto",
-                  padding: "8px 17px",
+                  padding: { xs: "6px 12px", md: "8px 17px" },
                   textTransform: "capitalize",
                   height: "35px",
+                  flex: { xs: 1, md: "none" },
                   "&:hover": {
                     backgroundColor: "darkblue",
                   },
                 }}
                 onClick={handleOpen}
               >
-                <AddIcon sx={{ marginRight: "3px" }} />
-                Create Order
+                <AddIcon sx={{ marginRight: "3px", fontSize: { xs: "16px", md: "20px" } }} />
+                <Box component="span" sx={{ display: { xs: "none", sm: "inline" } }}>
+                  Create Order
+                </Box>
+                <Box component="span" sx={{ display: { xs: "inline", sm: "none" } }}>
+                  Create
+                </Box>
               </Button>
             )}
+            
             <Button
               variant="contained"
               color="primary"
               onClick={() => setDownloadModalOpen(true)}
               sx={{
-                marginLeft: "10px",
+                marginLeft: { xs: 0, md: "10px" },
                 backgroundColor: "#000080",
+                fontSize: { xs: "12px", md: "14px" },
+                flex: { xs: 1, md: "none" },
                 "&:hover": {
                   backgroundColor: "darkblue",
                 },
               }}
             >
-              Download orders
+              <Box component="span" sx={{ display: { xs: "none", sm: "inline" } }}>
+                Download orders
+              </Box>
+              <Box component="span" sx={{ display: { xs: "inline", sm: "none" } }}>
+                Download
+              </Box>
             </Button>
+
             <Tooltip title="Reset" arrow>
               <Button
                 variant="outlined"
@@ -548,195 +589,383 @@ import { useEnhancedCategories } from "../../../utils/UseEnhancedCategories";
                   display: "flex",
                   justifyContent: "center",
                   alignItems: "center",
+                  flex: { xs: "none", md: "none" },
+                  width: { xs: "48px", md: "auto" },
                   "&:hover": {
                     backgroundColor: "darkblue",
                   },
                 }}
                 onClick={handleResetChange}
               >
-                <Refresh sx={{ color: "white", fontSize: "20px" }} />
+                <Refresh sx={{ color: "white", fontSize: { xs: "18px", md: "20px" } }} />
               </Button>
             </Tooltip>
-            <Typography variant="body2">
-              Total Orders: {orderCount ? orderCount : "0"}
-            </Typography>
           </Box>
+
+          {/* Order Count */}
+          <Typography variant="body2" sx={{ 
+            textAlign: { xs: "center", md: "left" },
+            width: { xs: "100%", md: "auto" },
+            mt: { xs: 1, md: 0 }
+          }}>
+            Total Orders: {orderCount ? orderCount : "0"}
+          </Typography>
         </Box>
-        <Button
-          variant="contained"
-          color="primary"
-          onClick={() => setDownloadModalOpen(true)}
-          sx={{ margin: "16px 0" }}
-        >
-          Download orders
-        </Button>
-        <Box sx={{ paddingTop: "150px" }}>
-          {customStatus === "custom" ? (
-            <TableContainer
-              component={Paper}
-              sx={{
-                maxHeight: "70vh",
-                display: "flex",
-                justifyContent: "center",
-                overflowY: "overlay",
-                overflowX: "overlay",
-                "&::-webkit-scrollbar": {
-                  height: "2px",
-                  width: "2px",
-                },
-                "&::-webkit-scrollbar-thumb": {
-                  backgroundColor: "#888",
-                  borderRadius: "10px",
-                },
-                "&::-webkit-scrollbar-thumb:hover": {
-                  backgroundColor: "#555",
-                },
-                "&::-webkit-scrollbar-track": {
-                  backgroundColor: "#f1f1f1",
-                  borderRadius: "10px",
-                },
-              }}
-            >
-              <Table sx={{ minWidth: 650, margin: "0 auto" }}>
-                <TableHead
-                  sx={{
-                    position: "sticky",
-                    top: 0,
-                    zIndex: 1,
-                    backgroundColor: "#f6f6f6",
-                  }}
-                >
+      </Box>
+
+      {/* Main Content */}
+      <Box sx={{ paddingTop: { xs: "180px", md: "150px" } }}>
+        {customStatus === "custom" ? (
+          <TableContainer
+            component={Paper}
+            sx={{
+              maxHeight: { xs: "60vh", md: "70vh" },
+              display: "flex",
+              justifyContent: "center",
+              overflowX: "auto",
+              "&::-webkit-scrollbar": {
+                height: "4px",
+                width: "4px",
+              },
+              "&::-webkit-scrollbar-thumb": {
+                backgroundColor: "#888",
+                borderRadius: "10px",
+              },
+              "&::-webkit-scrollbar-thumb:hover": {
+                backgroundColor: "#555",
+              },
+              "&::-webkit-scrollbar-track": {
+                backgroundColor: "#f1f1f1",
+                borderRadius: "10px",
+              },
+            }}
+          >
+            <Table sx={{ minWidth: isMobile ? 800 : 650 }}>
+              <TableHead
+                sx={{
+                  position: "sticky",
+                  top: 0,
+                  zIndex: 1,
+                  backgroundColor: "#f6f6f6",
+                }}
+              >
+                <TableRow>
+                  {[
+                    { label: "Purchase Order Id", key: "purchaseOrderId" },
+                    { label: "Customer Name", key: "customerName" },
+                    { label: "Order Date", key: "orderDate" },
+                    { label: "Currency", key: "currency" },
+                    { label: "Quantity", key: "total_quantity", sortable: true },
+                    { label: "Order Value", key: "total_price", sortable: true },
+                    { label: "Status", key: "status" },
+                    { label: "Actions", key: "actions" },
+                  ].map(({ label, key, sortable }) => (
+                    <TableCell
+                      key={key}
+                      sx={{
+                        fontWeight: "bold",
+                        textAlign: "center",
+                        backgroundColor: "#f6f6f6",
+                        fontSize: { xs: "0.8rem", md: "0.9rem" },
+                        px: { xs: 1, md: 2 },
+                      }}
+                    >
+                      {label}
+                      {sortable && (
+                        <IconButton
+                          onClick={(e) => handleOpenMenu(e, key)}
+                          size="small"
+                        >
+                          <MoreVertIcon sx={{ fontSize: { xs: "12px", md: "14px" } }} />
+                        </IconButton>
+                      )}
+                    </TableCell>
+                  ))}
+                </TableRow>
+              </TableHead>
+              <TableBody>
+                {loading ? (
                   <TableRow>
-                    <TableCell
-                      sx={{
-                        fontWeight: "bold",
-                        textAlign: "center",
-                        backgroundColor: "#f6f6f6",
-                      }}
-                    >
-                      Purchase Order Id
-                    </TableCell>
-                    <TableCell
-                      sx={{
-                        fontWeight: "bold",
-                        textAlign: "center",
-                        backgroundColor: "#f6f6f6",
-                      }}
-                    >
-                      Customer Name
-                    </TableCell>
-                    <TableCell
-                      sx={{
-                        fontWeight: "bold",
-                        textAlign: "center",
-                        backgroundColor: "#f6f6f6",
-                      }}
-                    >
-                      Order Date
-                    </TableCell>
-                    <TableCell
-                      sx={{
-                        fontWeight: "bold",
-                        textAlign: "center",
-                        backgroundColor: "#f6f6f6",
-                      }}
-                    >
-                      Currency
-                    </TableCell>
-                    <TableCell
-                      align="center"
-                      sx={{ fontWeight: "bold", backgroundColor: "#f6f6f6" }}
-                    >
-                      Quantity
-                      <IconButton
-                        onClick={(e) => handleOpenMenu(e, "total_quantity")}
-                      >
-                        <MoreVertIcon
-                          sx={{ fontSize: "14px", paddingRight: "3px" }}
-                        />
-                      </IconButton>
-                    </TableCell>
-                    <TableCell
-                      align="center"
-                      sx={{ fontWeight: "bold", backgroundColor: "#f6f6f6" }}
-                    >
-                      Order Value
-                      <IconButton
-                        onClick={(e) => handleOpenMenu(e, "total_price")}
-                      >
-                        <MoreVertIcon sx={{ fontSize: "14px" }} />
-                      </IconButton>
-                    </TableCell>
-                    <TableCell
-                      sx={{
-                        fontWeight: "bold",
-                        textAlign: "center",
-                        backgroundColor: "#f6f6f6",
-                      }}
-                    >
-                      Status
-                    </TableCell>
-                    <TableCell
-                      sx={{
-                        fontWeight: "bold",
-                        textAlign: "center",
-                        backgroundColor: "#f6f6f6",
-                      }}
-                    >
-                      Actions
+                    <TableCell colSpan={8} align="center">
+                      <DottedCircleLoading />
                     </TableCell>
                   </TableRow>
-                </TableHead>
-                <TableBody>
-                  {loading ? (
-                    <TableRow>
-                      <TableCell colSpan={8} align="center">
-                        <DottedCircleLoading />
+                ) : manualOrders && manualOrders.length > 0 ? (
+                  manualOrders.map((order, index) => (
+                    <TableRow
+                      key={index}
+                      hover
+                      onClick={() =>
+                        navigate(
+                          `/Home/orders/customList/${order.id}?page=${page}`
+                        )
+                      }
+                      style={{ cursor: "pointer" }}
+                    >
+                      <TableCell
+                        sx={{
+                          textAlign: "center",
+                          minWidth: 140,
+                          wordBreak: "break-word",
+                          whiteSpace: "normal",
+                          fontSize: { xs: "0.8rem", md: "0.9rem" },
+                          px: { xs: 1, md: 2 },
+                        }}
+                      >
+                        {order.order_id ? order.order_id : "N/A"}
+                      </TableCell>
+                      <TableCell
+                        sx={{
+                          textAlign: "center",
+                          minWidth: 120,
+                          wordBreak: "break-word",
+                          whiteSpace: "normal",
+                          fontSize: { xs: "0.8rem", md: "0.9rem" },
+                          px: { xs: 1, md: 2 },
+                        }}
+                      >
+                        {order.customer_name ? order.customer_name : "N/A"}
+                      </TableCell>
+                      <TableCell
+                        sx={{ 
+                          textAlign: "center", 
+                          minWidth: 120,
+                          fontSize: { xs: "0.8rem", md: "0.9rem" },
+                          px: { xs: 1, md: 2 },
+                        }}
+                      >
+                        {order.purchase_order_date
+                          ? new Date(order.purchase_order_date).toLocaleString(
+                              undefined,
+                              {
+                                day: "2-digit",
+                                month: "2-digit",
+                                year: "numeric",
+                                hour: "2-digit",
+                                minute: "2-digit",
+                                hour12: true,
+                                timeZone: systemTimeZone,
+                              }
+                            )
+                          : "N/A"}
+                      </TableCell>
+                      <TableCell align="center" sx={{ fontSize: { xs: "0.8rem", md: "0.9rem" } }}>
+                        {order.currency ? order.currency : "USD"}
+                      </TableCell>
+                      <TableCell
+                        align="center"
+                        sx={{ 
+                          paddingLeft: "3px", 
+                          minWidth: 130,
+                          fontSize: { xs: "0.8rem", md: "0.9rem" },
+                        }}
+                      >
+                        {order.total_quantity ? order.total_quantity : "N/A"}
+                      </TableCell>
+                      <TableCell align="center" sx={{ paddingLeft: "3px", fontSize: { xs: "0.8rem", md: "0.9rem" } }}>
+                        {order.total_price && !isNaN(order.total_price)
+                          ? `$${order.total_price.toFixed(2)}`
+                          : "N/A"}
+                      </TableCell>
+                      <TableCell
+                        sx={{
+                          textAlign: "center",
+                          minWidth: 120,
+                          wordBreak: "break-word",
+                          whiteSpace: "normal",
+                          fontSize: { xs: "0.8rem", md: "0.9rem" },
+                          px: { xs: 1, md: 2 },
+                        }}
+                      >
+                        {order.order_status ? order.order_status : "N/A"}
+                      </TableCell>
+                      <TableCell sx={{ textAlign: "center" }}>
+                        <Tooltip title="View Order Details" arrow>
+                          <Button
+                            variant="text"
+                            sx={{ color: "#000080" }}
+                            onClick={() => handleOpen}
+                            size="small"
+                          >
+                            <Visibility sx={{ fontSize: { xs: 18, md: 20 } }} />
+                          </Button>
+                        </Tooltip>
                       </TableCell>
                     </TableRow>
-                  ) : manualOrders && manualOrders.length > 0 ? (
-                    manualOrders.map((order, index) => (
+                  ))
+                ) : !loading && (!manualOrders || manualOrders.length === 0) ? (
+                  <TableRow>
+                    <TableCell
+                      colSpan={8}
+                      align="center"
+                      sx={{ fontWeight: "bold", color: "red", fontSize: { xs: "0.8rem", md: "0.9rem" } }}
+                    >
+                      No Custom Orders Found
+                    </TableCell>
+                  </TableRow>
+                ) : null}
+              </TableBody>
+            </Table>
+          </TableContainer>
+        ) : null}
+
+        {customStatus !== "custom" ? (
+          <TableContainer
+            component={Paper}
+            sx={{
+              maxHeight: { xs: "60vh", md: "70vh" },
+              overflowX: "auto",
+              "&::-webkit-scrollbar": {
+                height: "4px",
+                width: "4px",
+              },
+              "&::-webkit-scrollbar-thumb": {
+                backgroundColor: "#888",
+                borderRadius: "10px",
+              },
+              "&::-webkit-scrollbar-thumb:hover": {
+                backgroundColor: "#555",
+              },
+              "&::-webkit-scrollbar-track": {
+                backgroundColor: "#f1f1f1",
+                borderRadius: "10px",
+              },
+            }}
+          >
+            <Table sx={{ minWidth: isMobile ? 800 : 650 }}>
+              <TableHead
+                sx={{
+                  position: "sticky",
+                  top: 0,
+                  zIndex: 1,
+                  backgroundColor: "#f6f6f6",
+                }}
+              >
+                <TableRow>
+                  {[
+                    { label: "Purchase Order ID", key: "purchaseOrderId" },
+                    { label: "Channel Name", key: "channelName" },
+                    { label: "Order Date", key: "order_date", sortable: true },
+                    { label: "Currency", key: "currency" },
+                    { label: "Quantity", key: "items_order_quantity", sortable: true },
+                    { label: "Order Value", key: "order_total", sortable: true },
+                    { label: "Status", key: "order_status", sortable: true },
+                    { label: "Actions", key: "actions" },
+                  ].map(({ label, key, sortable }) => (
+                    <TableCell
+                      key={key}
+                      sx={{
+                        fontWeight: "bold",
+                        textAlign: "center",
+                        backgroundColor: "#f6f6f6",
+                        fontSize: { xs: "0.8rem", md: "0.9rem" },
+                        px: { xs: 1, md: 2 },
+                      }}
+                    >
+                      {label}
+                      {sortable && (
+                        <IconButton
+                          onClick={(e) => handleOpenMenu(e, key)}
+                          size="small"
+                        >
+                          <MoreVertIcon sx={{ fontSize: { xs: "12px", md: "14px" } }} />
+                        </IconButton>
+                      )}
+                    </TableCell>
+                  ))}
+                </TableRow>
+              </TableHead>
+              <TableBody>
+                {loading ? (
+                  <TableRow>
+                    <TableCell colSpan={8} align="center">
+                      <DottedCircleLoading />
+                    </TableCell>
+                  </TableRow>
+                ) : orders.length === 0 ? (
+                  <TableRow>
+                    <TableCell
+                      colSpan={8}
+                      align="center"
+                      sx={{ fontWeight: "bold", color: "red", fontSize: { xs: "0.8rem", md: "0.9rem" } }}
+                    >
+                      No Orders To Show
+                    </TableCell>
+                  </TableRow>
+                ) : (
+                  orders.map((order) => {
+                    const marketplace = logoMarket.find(
+                      (market) => market.name === order.marketplace_name
+                    );
+                    return (
                       <TableRow
-                        key={index}
+                        key={order.id}
                         hover
                         onClick={() =>
                           navigate(
-                            `/Home/orders/customList/${order.id}?page=${page}`
+                            `/Home/orders/details/${order.id}?page=${page}&rowsPerPage=${rowsPerPage}`
                           )
                         }
+                        state={{ searchQuery: searchTerm }}
                         style={{ cursor: "pointer" }}
                       >
-                        <TableCell
-                          sx={{
-                            textAlign: "center",
-                            minWidth: 140,
-                            width: 140,
-                            wordBreak: "break-word",
-                            whiteSpace: "normal",
-                            overflow: "hidden",
-                            textOverflow: "ellipsis",
-                          }}
-                        >
-                          {order.order_id ? order.order_id : "N/A"}
+                        <TableCell sx={{ 
+                          textAlign: "center", 
+                          fontSize: { xs: "0.8rem", md: "0.9rem" },
+                          px: { xs: 1, md: 2 },
+                        }}>
+                          {order.purchase_order_id}
+                        </TableCell>
+                        <TableCell sx={{ 
+                          textAlign: "center", 
+                          fontSize: { xs: "0.8rem", md: "0.9rem" },
+                          px: { xs: 1, md: 2 },
+                        }}>
+                          {marketplace && (
+                            <div
+                              style={{
+                                display: "flex",
+                                alignItems: "center",
+                                justifyContent: "center",
+                              }}
+                            >
+                              {marketplace.image_url ? (
+                                <img
+                                  src={marketplace.image_url}
+                                  alt={marketplace.name}
+                                  style={{
+                                    width: 20,
+                                    height: 20,
+                                    marginRight: 8,
+                                  }}
+                                />
+                              ) : (
+                                <div
+                                  style={{
+                                    width: 20,
+                                    height: 20,
+                                    marginRight: 8,
+                                    backgroundColor: "#ccc",
+                                  }}
+                                />
+                              )}
+                              <Box component="span" sx={{ display: { xs: "none", sm: "inline" } }}>
+                                {marketplace.marketplace_name}
+                              </Box>
+                            </div>
+                          )}
+                          {!marketplace && order.marketplace_name}
                         </TableCell>
                         <TableCell
-                          sx={{
-                            textAlign: "center",
-                            minWidth: 120,
-                            width: 120,
-                            wordBreak: "break-word",
-                            whiteSpace: "normal",
-                            overflow: "hidden",
-                            textOverflow: "ellipsis",
+                          sx={{ 
+                            textAlign: "center", 
+                            paddingLeft: "3px",
+                            fontSize: { xs: "0.8rem", md: "0.9rem" },
+                            px: { xs: 1, md: 2 },
                           }}
                         >
-                          {order.customer_name ? order.customer_name : "N/A"}
-                        </TableCell>
-                        <TableCell
-                          sx={{ textAlign: "center", minWidth: 120, width: 120 }}
-                        >
-                          {order.purchase_order_date
-                            ? new Date(order.purchase_order_date).toLocaleString(
+                          {order.order_date
+                            ? new Date(order.order_date).toLocaleString(
                                 undefined,
                                 {
                                   day: "2-digit",
@@ -745,605 +974,373 @@ import { useEnhancedCategories } from "../../../utils/UseEnhancedCategories";
                                   hour: "2-digit",
                                   minute: "2-digit",
                                   hour12: true,
-                                  timeZone: systemTimeZone,
+                                  timeZone: "US/Pacific",
                                 }
                               )
                             : "N/A"}
                         </TableCell>
-                        <TableCell align="center">
-                          {order.currency ? order.currency : "USD"}
+                        <TableCell sx={{ 
+                          textAlign: "center", 
+                          fontSize: { xs: "0.8rem", md: "0.9rem" },
+                          px: { xs: 1, md: 2 },
+                        }}>
+                          {order.currency}
                         </TableCell>
                         <TableCell
-                          align="center"
-                          sx={{ paddingLeft: "3px", minWidth: 130, width: 130 }}
+                          sx={{ 
+                            textAlign: "center", 
+                            paddingLeft: "3px",
+                            fontSize: { xs: "0.8rem", md: "0.9rem" },
+                            px: { xs: 1, md: 2 },
+                          }}
                         >
-                          {order.total_quantity ? order.total_quantity : "N/A"}
-                        </TableCell>
-                        <TableCell align="center" sx={{ paddingLeft: "3px" }}>
-                          {order.total_price && !isNaN(order.total_price)
-                            ? `$${order.total_price.toFixed(2)}`
+                          {order.items_order_quantity
+                            ? order.items_order_quantity
                             : "N/A"}
                         </TableCell>
                         <TableCell
-                          sx={{
-                            textAlign: "center",
-                            minWidth: 120,
-                            width: 120,
-                            wordBreak: "break-word",
-                            whiteSpace: "normal",
-                            overflow: "hidden",
-                            textOverflow: "ellipsis",
+                          sx={{ 
+                            textAlign: "center", 
+                            paddingLeft: "3px",
+                            fontSize: { xs: "0.8rem", md: "0.9rem" },
+                            px: { xs: 1, md: 2 },
                           }}
                         >
-                          {order.order_status ? order.order_status : "N/A"}
+                          $
+                          {order.order_total && !isNaN(order.order_total)
+                            ? order.order_total.toFixed(2)
+                            : "N/A"}
+                        </TableCell>
+                        <TableCell sx={{ 
+                          textAlign: "center", 
+                          fontSize: { xs: "0.8rem", md: "0.9rem" },
+                          px: { xs: 1, md: 2 },
+                        }}>
+                          {order.order_status || "N/A"}
                         </TableCell>
                         <TableCell sx={{ textAlign: "center" }}>
                           <Tooltip title="View Order Details" arrow>
-                            <Button
-                              variant="text"
-                              sx={{ color: "#000080" }}
-                              onClick={() => handleOpen}
-                            >
-                              <Visibility sx={{ fontSize: 20 }} />
+                            <Button variant="text" sx={{ color: "#000080" }} size="small">
+                              <Visibility sx={{ fontSize: { xs: 18, md: 20 } }} />
                             </Button>
                           </Tooltip>
                         </TableCell>
                       </TableRow>
-                    ))
-                  ) : !loading && (!manualOrders || manualOrders.length === 0) ? (
-                    <TableRow>
-                      <TableCell
-                        colSpan={8}
-                        align="center"
-                        sx={{ fontWeight: "bold", color: "red" }}
-                      >
-                        No Custom Orders Found
-                      </TableCell>
-                    </TableRow>
-                  ) : null}
-                </TableBody>
-              </Table>
-            </TableContainer>
-          ) : null}
-          {customStatus !== "custom" ? (
-            <TableContainer
-              component={Paper}
-              sx={{
-                maxHeight: "70vh",
-                overflowY: "overlay",
-                overflowX: "overlay",
-                "&::-webkit-scrollbar": {
-                  height: "2px",
-                  width: "2px",
-                },
-                "&::-webkit-scrollbar-thumb": {
-                  backgroundColor: "#888",
-                  borderRadius: "10px",
-                },
-                "&::-webkit-scrollbar-thumb:hover": {
-                  backgroundColor: "#555",
-                },
-                "&::-webkit-scrollbar-track": {
-                  backgroundColor: "#f1f1f1",
-                  borderRadius: "10px",
-                },
-              }}
-            >
-              <Table sx={{ minWidth: 650 }}>
-                <TableHead
-                  sx={{
-                    position: "sticky",
-                    top: 0,
-                    zIndex: 1,
-                    backgroundColor: "#f6f6f6",
-                  }}
-                >
-                  <TableRow>
-                    <TableCell
-                      sx={{
-                        fontWeight: "bold",
-                        textAlign: "center",
-                        backgroundColor: "#f6f6f6",
-                      }}
-                    >
-                      Purchase Order ID
-                    </TableCell>
-                    <TableCell
-                      sx={{
-                        fontWeight: "bold",
-                        textAlign: "center",
-                        backgroundColor: "#f6f6f6",
-                      }}
-                    >
-                      Channel Name
-                    </TableCell>
-                    <TableCell
-                      sx={{
-                        fontWeight: "bold",
-                        textAlign: "center",
-                        backgroundColor: "#f6f6f6",
-                      }}
-                    >
-                      Order Date
-                      <IconButton
-                        onClick={(e) => handleOpenMenu(e, "order_date")}
-                      >
-                        <MoreVertIcon sx={{ fontSize: "14px" }} />
-                      </IconButton>
-                    </TableCell>
-                    <TableCell
-                      sx={{
-                        fontWeight: "bold",
-                        textAlign: "center",
-                        backgroundColor: "#f6f6f6",
-                      }}
-                    >
-                      Currency
-                    </TableCell>
-                    <TableCell
-                      sx={{
-                        fontWeight: "bold",
-                        textAlign: "center",
-                        backgroundColor: "#f6f6f6",
-                      }}
-                    >
-                      Quantity
-                      <IconButton
-                        onClick={(e) => handleOpenMenu(e, "items_order_quantity")}
-                      >
-                        <MoreVertIcon sx={{ fontSize: "14px" }} />
-                      </IconButton>
-                    </TableCell>
-                    <TableCell
-                      sx={{
-                        fontWeight: "bold",
-                        textAlign: "center",
-                        backgroundColor: "#f6f6f6",
-                      }}
-                    >
-                      Order Value
-                      <IconButton
-                        onClick={(e) => handleOpenMenu(e, "order_total")}
-                      >
-                        <MoreVertIcon sx={{ fontSize: "14px" }} />
-                      </IconButton>
-                    </TableCell>
-                    <TableCell
-                      sx={{
-                        fontWeight: "bold",
-                        textAlign: "center",
-                        backgroundColor: "#f6f6f6",
-                      }}
-                    >
-                      Status
-                      <IconButton
-                        onClick={(e) => handleOpenMenu(e, "order_status")}
-                      >
-                        <MoreVertIcon sx={{ fontSize: "14px" }} />
-                      </IconButton>
-                    </TableCell>
-                    <TableCell
-                      sx={{
-                        fontWeight: "bold",
-                        textAlign: "center",
-                        backgroundColor: "#f6f6f6",
-                      }}
-                    >
-                      Actions
-                    </TableCell>
-                  </TableRow>
-                </TableHead>
-                <TableBody>
-                  {loading ? (
-                    <TableRow>
-                      <TableCell colSpan={8} align="center">
-                        <DottedCircleLoading />
-                      </TableCell>
-                    </TableRow>
-                  ) : orders.length === 0 ? (
-                    <TableRow>
-                      <TableCell
-                        colSpan={8}
-                        align="center"
-                        sx={{ fontWeight: "bold", color: "red" }}
-                      >
-                        No Orders To Show
-                      </TableCell>
-                    </TableRow>
-                  ) : (
-                    orders.map((order) => {
-                      const marketplace = logoMarket.find(
-                        (market) => market.name === order.marketplace_name
-                      );
-                      return (
-                        <TableRow
-                          key={order.id}
-                          hover
-                          onClick={() =>
-                            navigate(
-                              `/Home/orders/details/${order.id}?page=${page}&rowsPerPage=${rowsPerPage}`
-                            )
-                          }
-                          state={{ searchQuery: searchTerm }}
-                          style={{ cursor: "pointer" }}
-                        >
-                          <TableCell sx={{ textAlign: "center" }}>
-                            {order.purchase_order_id}
-                          </TableCell>
-                          <TableCell sx={{ textAlign: "center" }}>
-                            {marketplace && (
-                              <div
-                                style={{
-                                  display: "flex",
-                                  alignItems: "center",
-                                  justifyContent: "center",
-                                }}
-                              >
-                                {marketplace.image_url ? (
-                                  <img
-                                    src={marketplace.image_url}
-                                    alt={marketplace.name}
-                                    style={{
-                                      width: 20,
-                                      height: 20,
-                                      marginRight: 8,
-                                    }}
-                                  />
-                                ) : (
-                                  <div
-                                    style={{
-                                      width: 20,
-                                      height: 20,
-                                      marginRight: 8,
-                                      backgroundColor: "#ccc",
-                                    }}
-                                  />
-                                )}
-                                {marketplace.marketplace_name}
-                              </div>
-                            )}
-                            {order.marketplace_name}
-                          </TableCell>
-                          <TableCell
-                            sx={{ textAlign: "center", paddingLeft: "3px" }}
-                          >
-                            {order.order_date
-                              ? new Date(order.order_date).toLocaleString(
-                                  undefined,
-                                  {
-                                    day: "2-digit",
-                                    month: "2-digit",
-                                    year: "numeric",
-                                    hour: "2-digit",
-                                    minute: "2-digit",
-                                    hour12: true,
-                                    timeZone: "US/Pacific",
-                                  }
-                                )
-                              : "N/A"}
-                          </TableCell>
-                          <TableCell sx={{ textAlign: "center" }}>
-                            {order.currency}
-                          </TableCell>
-                          <TableCell
-                            sx={{ textAlign: "center", paddingLeft: "3px" }}
-                          >
-                            {order.items_order_quantity
-                              ? order.items_order_quantity
-                              : "N/A"}
-                          </TableCell>
-                          <TableCell
-                            sx={{ textAlign: "center", paddingLeft: "3px" }}
-                          >
-                            $
-                            {order.order_total && !isNaN(order.order_total)
-                              ? order.order_total.toFixed(2)
-                              : "N/A"}
-                          </TableCell>
-                          <TableCell sx={{ textAlign: "center" }}>
-                            {order.order_status || "N/A"}
-                          </TableCell>
-                          <TableCell sx={{ textAlign: "center" }}>
-                            <Tooltip title="View Order Details" arrow>
-                              <Button variant="text" sx={{ color: "#000080" }}>
-                                <Visibility sx={{ fontSize: 20 }} />
-                              </Button>
-                            </Tooltip>
-                          </TableCell>
-                        </TableRow>
-                      );
-                    })
-                  )}
-                </TableBody>
-              </Table>
-            </TableContainer>
-          ) : null}
-        </Box>
-        <Box
-          sx={{
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "flex-end",
-            mt: 2,
+                    );
+                  })
+                )}
+              </TableBody>
+            </Table>
+          </TableContainer>
+        ) : null}
+      </Box>
+
+      {/* Pagination - Made Responsive */}
+      <Box
+        sx={{
+          display: "flex",
+          flexDirection: { xs: "column", md: "row" },
+          alignItems: { xs: "stretch", md: "center" },
+          justifyContent: "flex-end",
+          mt: 2,
+          gap: { xs: 2, md: 1 },
+        }}
+      >
+        <Select
+          value={rowsPerPage}
+          onChange={handleRowsPerPageChange}
+          size="small"
+          sx={{ 
+            minWidth: 70,
+            width: { xs: "100%", md: "auto" }
           }}
         >
-          <Select
-            value={rowsPerPage}
-            onChange={handleRowsPerPageChange}
-            size="small"
-            sx={{ minWidth: 70 }}
-          >
-            <MenuItem value={25}>25/page</MenuItem>
-            <MenuItem value={50}>50/page</MenuItem>
-            <MenuItem value={75}>75/page</MenuItem>
-          </Select>
-          <Pagination
-            count={totalPages}
-            page={page}
-            onChange={handlePageChange}
-            rowsPerPage={rowsPerPage}
-            onPageChange={handleChangePage}
-            color="primary"
-            size="small"
-            onRowsPerPageChange={(event) => {
-              setRowsPerPage(parseInt(event.target.value, 10));
-              setPage(1);
-            }}
-          />
-        </Box>
-        <Modal open={open} onClose={handleClose}>
-          <Slide direction="left" in={open} mountOnEnter unmountOnExit>
-            <Box
-              sx={{
-                position: "absolute",
-                top: 0,
-                right: 0,
-                width: 900,
-                height: "100vh",
-                bgcolor: "background.paper",
-                boxShadow: 24,
-                p: 3,
-              }}
-            >
-              <MannualOrder handleClose={handleClose} />
-            </Box>
-          </Slide>
-        </Modal>
-        <Menu
-          anchorEl={anchorEl}
-          open={Boolean(anchorEl)}
-          onClose={handleCloseMenu}
-        >
-          {currentColumn === "customer_name" && (
-            <>
-              <MenuItem onClick={() => handleSelectSort("customer_name", "asc")}>
-                Sort A-Z
-              </MenuItem>
-              <MenuItem onClick={() => handleSelectSort("customer_name", "desc")}>
-                Sort Z-A
-              </MenuItem>
-            </>
-          )}
-          {currentColumn === "total_price" && (
-            <>
-              <MenuItem onClick={() => handleSelectSort("total_price", "asc")}>
-                Sort Low to High
-              </MenuItem>
-              <MenuItem onClick={() => handleSelectSort("total_price", "desc")}>
-                Sort High to Low
-              </MenuItem>
-            </>
-          )}
-          {currentColumn === "items_order_quantity" && (
-            <>
-              <MenuItem
-                onClick={() => handleSelectSort("items_order_quantity", "asc")}
-              >
-                Sort Low to High
-              </MenuItem>
-              <MenuItem
-                onClick={() => handleSelectSort("items_order_quantity", "desc")}
-              >
-                Sort High to Low
-              </MenuItem>
-            </>
-          )}
-          {currentColumn === "order_date" && (
-            <>
-              <MenuItem onClick={() => handleSelectSort("order_date", "asc")}>
-                Oldest
-              </MenuItem>
-              <MenuItem onClick={() => handleSelectSort("order_date", "desc")}>
-                Latest
-              </MenuItem>
-            </>
-          )}
-          {currentColumn === "order_total" && (
-            <>
-              <MenuItem onClick={() => handleSelectSort("order_total", "asc")}>
-                Sort Low to High
-              </MenuItem>
-              <MenuItem onClick={() => handleSelectSort("order_total", "desc")}>
-                Sort High to Low
-              </MenuItem>
-            </>
-          )}
-          {currentColumn === "order_status" && (
-            <>
-              <MenuItem onClick={() => handleSelectSort("order_status", "asc")}>
-                Sort A-Z
-              </MenuItem>
-              <MenuItem onClick={() => handleSelectSort("order_status", "desc")}>
-                Sort Z-A
-              </MenuItem>
-            </>
-          )}
-          {currentColumn === "total_quantity" && (
-            <>
-              <MenuItem onClick={() => handleSelectSort("total_quantity", "asc")}>
-                Sort Low to High
-              </MenuItem>
-              <MenuItem
-                onClick={() => handleSelectSort("total_quantity", "desc")}
-              >
-                Sort High to Low
-              </MenuItem>
-            </>
-          )}
-        </Menu>
-        <Modal
-          open={downloadModalOpen}
-          onClose={() => setDownloadModalOpen(false)}
-        >
+          <MenuItem value={25}>25/page</MenuItem>
+          <MenuItem value={50}>50/page</MenuItem>
+          <MenuItem value={75}>75/page</MenuItem>
+        </Select>
+        <Pagination
+          count={totalPages}
+          page={page}
+          onChange={handlePageChange}
+          rowsPerPage={rowsPerPage}
+          onPageChange={handleChangePage}
+          color="primary"
+          size="small"
+          sx={{
+            "& .MuiPagination-ul": {
+              justifyContent: { xs: "center", md: "flex-start" },
+              flexWrap: "wrap",
+            }
+          }}
+          onRowsPerPageChange={(event) => {
+            setRowsPerPage(parseInt(event.target.value, 10));
+            setPage(1);
+          }}
+        />
+      </Box>
+
+      {/* Modals */}
+      <Modal open={open} onClose={handleClose}>
+        <Slide direction="left" in={open} mountOnEnter unmountOnExit>
           <Box
             sx={{
               position: "absolute",
-              top: "50%",
-              left: "50%",
-              transform: "translate(-50%, -50%)",
-              width: 400,
+              top: 0,
+              right: 0,
+              width: { xs: "100%", md: 900 },
+              height: "100vh",
               bgcolor: "background.paper",
               boxShadow: 24,
-              p: 4,
-              borderRadius: 2,
+              p: { xs: 2, md: 3 },
             }}
           >
-            <Stack spacing={2}>
-              <Typography variant="h6" gutterBottom>
-                Download Orders
-              </Typography>
-              {selectedBrand.length > 0 && (
+            <MannualOrder handleClose={handleClose} />
+          </Box>
+        </Slide>
+      </Modal>
+
+      <Menu
+        anchorEl={anchorEl}
+        open={Boolean(anchorEl)}
+        onClose={handleCloseMenu}
+      >
+        {currentColumn === "customer_name" && (
+          <>
+            <MenuItem onClick={() => handleSelectSort("customer_name", "asc")}>
+              Sort A-Z
+            </MenuItem>
+            <MenuItem onClick={() => handleSelectSort("customer_name", "desc")}>
+              Sort Z-A
+            </MenuItem>
+          </>
+        )}
+        {currentColumn === "total_price" && (
+          <>
+            <MenuItem onClick={() => handleSelectSort("total_price", "asc")}>
+              Sort Low to High
+            </MenuItem>
+            <MenuItem onClick={() => handleSelectSort("total_price", "desc")}>
+              Sort High to Low
+            </MenuItem>
+          </>
+        )}
+        {currentColumn === "items_order_quantity" && (
+          <>
+            <MenuItem
+              onClick={() => handleSelectSort("items_order_quantity", "asc")}
+            >
+              Sort Low to High
+            </MenuItem>
+            <MenuItem
+              onClick={() => handleSelectSort("items_order_quantity", "desc")}
+            >
+              Sort High to Low
+            </MenuItem>
+          </>
+        )}
+        {currentColumn === "order_date" && (
+          <>
+            <MenuItem onClick={() => handleSelectSort("order_date", "asc")}>
+              Oldest
+            </MenuItem>
+            <MenuItem onClick={() => handleSelectSort("order_date", "desc")}>
+              Latest
+            </MenuItem>
+          </>
+        )}
+        {currentColumn === "order_total" && (
+          <>
+            <MenuItem onClick={() => handleSelectSort("order_total", "asc")}>
+              Sort Low to High
+            </MenuItem>
+            <MenuItem onClick={() => handleSelectSort("order_total", "desc")}>
+              Sort High to Low
+            </MenuItem>
+          </>
+        )}
+        {currentColumn === "order_status" && (
+          <>
+            <MenuItem onClick={() => handleSelectSort("order_status", "asc")}>
+              Sort A-Z
+            </MenuItem>
+            <MenuItem onClick={() => handleSelectSort("order_status", "desc")}>
+              Sort Z-A
+            </MenuItem>
+          </>
+        )}
+        {currentColumn === "total_quantity" && (
+          <>
+            <MenuItem onClick={() => handleSelectSort("total_quantity", "asc")}>
+              Sort Low to High
+            </MenuItem>
+            <MenuItem
+              onClick={() => handleSelectSort("total_quantity", "desc")}
+            >
+              Sort High to Low
+            </MenuItem>
+          </>
+        )}
+      </Menu>
+
+      <Modal
+        open={downloadModalOpen}
+        onClose={() => setDownloadModalOpen(false)}
+      >
+        <Box
+          sx={{
+            position: "absolute",
+            top: "50%",
+            left: "50%",
+            transform: "translate(-50%, -50%)",
+            width: { xs: "90%", sm: 400 },
+            bgcolor: "background.paper",
+            boxShadow: 24,
+            p: { xs: 2, md: 4 },
+            borderRadius: 2,
+            maxHeight: { xs: "80vh", md: "auto" },
+            overflow: "auto",
+          }}
+        >
+          <Stack spacing={2}>
+            <Typography variant="h6" gutterBottom sx={{ fontSize: { xs: "1.2rem", md: "1.5rem" } }}>
+              Download Orders
+            </Typography>
+            {selectedBrand.length > 0 && (
+              <Box
+                sx={{
+                  p: 1.5,
+                  border: "1px solid",
+                  borderColor: "divider",
+                  borderRadius: 2,
+                  bgcolor: "action.hover",
+                }}
+              >
                 <Box
                   sx={{
-                    p: 1.5,
-                    border: "1px solid",
-                    borderColor: "divider",
-                    borderRadius: 2,
-                    bgcolor: "action.hover",
+                    display: "flex",
+                    justifyContent: "space-between",
+                    alignItems: "center",
+                    mb: 1,
                   }}
                 >
-                  <Box
-                    sx={{
-                      display: "flex",
-                      justifyContent: "space-between",
-                      alignItems: "center",
-                      mb: 1,
-                    }}
+                  <Typography variant="body2" sx={{ fontWeight: "bold" }}>
+                    Selected Brands ({selectedBrand.length})
+                  </Typography>
+                  <Button
+                    size="small"
+                    onClick={() => setSelectedBrand([])}
+                    sx={{ textTransform: "none" }}
                   >
-                    <Typography variant="body2" sx={{ fontWeight: "bold" }}>
-                      Selected Brands ({selectedBrand.length})
-                    </Typography>
-                    <Button
-                      size="small"
-                      onClick={() => setSelectedBrand([])}
-                      sx={{ textTransform: "none" }}
-                    >
-                      Clear All
-                    </Button>
-                  </Box>
-                  <Box sx={{ display: "flex", gap: 1, flexWrap: "wrap" }}>
-                    {selectedBrand.map((brand) => (
-                      <Chip
-                        key={brand.id}
-                        label={brand.name}
-                        size="small"
-                        onDelete={() =>
-                          setSelectedBrand((prev) =>
-                            prev.filter((b) => b.id !== brand.id)
-                          )
-                        }
-                      />
-                    ))}
-                  </Box>
+                    Clear All
+                  </Button>
                 </Box>
-              )}
-              <BrandSelector
-                selectedBrand={selectedBrand}
-                setSelectedBrand={setSelectedBrand}
-                brandList={brandList}
-                inputValueBrand={inputValueBrand}
-                setInputValueBrand={setInputValueBrand}
-                brandLimit={brandLimit}
-                setBrandLimit={setBrandLimit}
-                isLoading={isLoading}
-                hasMore={hasMore}
-                toggleSelection={(option) => {
-                  const isSelected = selectedBrand.some(
-                    (b) => b.id === option.id
+                <Box sx={{ display: "flex", gap: 1, flexWrap: "wrap" }}>
+                  {selectedBrand.map((brand) => (
+                    <Chip
+                      key={brand.id}
+                      label={brand.name}
+                      size="small"
+                      onDelete={() =>
+                        setSelectedBrand((prev) =>
+                          prev.filter((b) => b.id !== brand.id)
+                        )
+                      }
+                    />
+                  ))}
+                </Box>
+              </Box>
+            )}
+            <BrandSelector
+              selectedBrand={selectedBrand}
+              setSelectedBrand={setSelectedBrand}
+              brandList={brandList}
+              inputValueBrand={inputValueBrand}
+              setInputValueBrand={setInputValueBrand}
+              brandLimit={brandLimit}
+              setBrandLimit={setBrandLimit}
+              isLoading={isLoading}
+              hasMore={hasMore}
+              toggleSelection={(option) => {
+                const isSelected = selectedBrand.some(
+                  (b) => b.id === option.id
+                );
+                if (isSelected) {
+                  setSelectedBrand(
+                    selectedBrand.filter((b) => b.id !== option.id)
                   );
-                  if (isSelected) {
-                    setSelectedBrand(
-                      selectedBrand.filter((b) => b.id !== option.id)
-                    );
-                  } else {
-                    setSelectedBrand([...selectedBrand, option]);
-                  }
-                }}
-                label="Brands"
-                width="100%"
-              />
-              <Divider>
-                <Typography variant="overline">OR</Typography>
-              </Divider>
-              <LocalizationProvider dateAdapter={AdapterDateFns}>
-                <DatePicker
-                  label="Start Date"
-                  value={downloadStartDate}
-                  onChange={(newValue) => setDownloadStartDate(newValue)}
-                  renderInput={(params) => (
-                    <TextField
-                      {...params}
-                      fullWidth
-                      InputLabelProps={{ required: false }}
-                    />
-                  )}
-                  maxDate={new Date(downloadEndDate)}
-                />
-                <DatePicker
-                  label="End Date"
-                  value={downloadEndDate}
-                  onChange={(newValue) => setDownloadEndDate(newValue)}
-                  renderInput={(params) => (
-                    <TextField
-                      {...params}
-                      fullWidth
-                      InputLabelProps={{ required: false }}
-                    />
-                  )}
-                  minDate={new Date(downloadStartDate)}
-                />
-              </LocalizationProvider>
-              <FormControl fullWidth>
-                <InputLabel>Format</InputLabel>
-                <Select
-                  value={downloadFormat}
-                  label="Format"
-                  onChange={(e) => setDownloadFormat(e.target.value)}
-                >
-                  <MenuItem value="csv">CSV</MenuItem>
-                  <MenuItem value="xlsx">Excel (XLSX)</MenuItem>
-                  <MenuItem value="txt">Text</MenuItem>
-                </Select>
-              </FormControl>
-              <Button
-                variant="contained"
-                color="primary"
-                onClick={handleDownload}
-                fullWidth
-                disabled={
-                  (selectedBrand.length === 0 &&
-                    (!downloadStartDate || !downloadEndDate)) ||
-                  isLoading
+                } else {
+                  setSelectedBrand([...selectedBrand, option]);
                 }
-                startIcon={isLoading ? <CircularProgress size={20} /> : null}
-                sx={{ mt: 1 }}
+              }}
+              label="Brands"
+              width="100%"
+            />
+            <Divider>
+              <Typography variant="overline">OR</Typography>
+            </Divider>
+            <LocalizationProvider dateAdapter={AdapterDateFns}>
+              <DatePicker
+                label="Start Date"
+                value={downloadStartDate}
+                onChange={(newValue) => setDownloadStartDate(newValue)}
+                renderInput={(params) => (
+                  <TextField
+                    {...params}
+                    fullWidth
+                    InputLabelProps={{ required: false }}
+                    size="small"
+                  />
+                )}
+                maxDate={new Date(downloadEndDate)}
+              />
+              <DatePicker
+                label="End Date"
+                value={downloadEndDate}
+                onChange={(newValue) => setDownloadEndDate(newValue)}
+                renderInput={(params) => (
+                  <TextField
+                    {...params}
+                    fullWidth
+                    InputLabelProps={{ required: false }}
+                    size="small"
+                  />
+                )}
+                minDate={new Date(downloadStartDate)}
+              />
+            </LocalizationProvider>
+            <FormControl fullWidth>
+              <InputLabel>Format</InputLabel>
+              <Select
+                value={downloadFormat}
+                label="Format"
+                onChange={(e) => setDownloadFormat(e.target.value)}
+                size="small"
               >
-                {isLoading ? "Preparing Download..." : "Download"}
-              </Button>
-            </Stack>
-          </Box>
-        </Modal>
-      </Box>
-    );
-  };
-  export default OrderList;
+                <MenuItem value="csv">CSV</MenuItem>
+                <MenuItem value="xlsx">Excel (XLSX)</MenuItem>
+                <MenuItem value="txt">Text</MenuItem>
+              </Select>
+            </FormControl>
+            <Button
+              variant="contained"
+              color="primary"
+              onClick={handleDownload}
+              fullWidth
+              disabled={
+                (selectedBrand.length === 0 &&
+                  (!downloadStartDate || !downloadEndDate)) ||
+                isLoading
+              }
+              startIcon={isLoading ? <CircularProgress size={20} /> : null}
+              sx={{ mt: 1 }}
+            >
+              {isLoading ? "Preparing Download..." : "Download"}
+            </Button>
+          </Stack>
+        </Box>
+      </Modal>
+    </Box>
+  );
+};
+export default OrderList;

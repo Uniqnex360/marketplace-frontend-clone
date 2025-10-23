@@ -20,6 +20,9 @@ import {
   Tooltip,
   ListItemText,
   Avatar,
+  useTheme,
+  useMediaQuery,
+  TableContainer,
 } from "@mui/material";
 import {
   Download,
@@ -46,16 +49,16 @@ const fontStyles = {
     "'Nunito Sans', -apple-system, 'Segoe UI', 'Roboto', 'Helvetica Neue', 'Arial', sans-serif",
 };
 
-function MarketplaceRow({ row, index }) {
+function MarketplaceRow({ row, index, isMobile }) {
   const [open, setOpen] = useState(false);
   const isFirstRow = index === 0;
   const cellStyle = {
     ...fontStyles,
     color: "black",
     fontWeight: 600,
-    fontSize: "14px",
+    fontSize: isMobile ? "12px" : "14px",
+    padding: isMobile ? "4px" : "8px",
   };
-
 
   return (
     <>
@@ -73,8 +76,10 @@ function MarketplaceRow({ row, index }) {
             alignItems: "center",
             fontWeight: "600",
             color: "#485E75",
+            fontSize: isMobile ? "12px" : "14px",
             pb: open && !isFirstRow ? "4px" : 0,
             borderBottom: "none",
+            minWidth: isMobile ? "100px" : "auto",
           }}
         >
           {row.image && (
@@ -82,12 +87,12 @@ function MarketplaceRow({ row, index }) {
               src={row.image}
               alt={row.marketplace}
               sx={{
-                width: 20,
-                height: 20,
+                width: isMobile ? 16 : 20,
+                height: isMobile ? 16 : 20,
                 color: "#485E75",
                 fontFamily:
                   "'Nunito Sans', -apple-system, 'Segoe UI', 'Roboto', 'Helvetica Neue', 'Arial', sans-serif",
-                fontSize: "14px",
+                fontSize: isMobile ? "12px" : "14px",
                 fontWeight: "800",
                 mr: 1,
               }}
@@ -175,6 +180,12 @@ export default function AllMarketplace({
   const [openTooltip, setOpenTooltip] = useState(false);
   const [loading, setLoading] = useState(false);
   const lastParamsRef = useRef("");
+
+  // Add theme and media query hooks
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
+  const isTablet = useMediaQuery(theme.breakpoints.between('sm', 'md'));
+  const isSmallScreen = useMediaQuery(theme.breakpoints.down('md'));
 
   const handleTooltipOpen = () => {
     setOpenTooltip(true);
@@ -326,17 +337,21 @@ export default function AllMarketplace({
         elevation={3}
         sx={{
           boxShadow: "none",
-          p: 4,
+          p: { xs: 2, sm: 3, md: 4 },
           border: "1px solid #e0e0e0",
           borderRadius: "8px",
         }}
       >
         {/* Header Section */}
         <Box
-          display="flex"
-          justifyContent="space-between"
-          alignItems="center"
-          mb={3}
+          sx={{
+            display: "flex",
+            flexDirection: { xs: "column", sm: "row" },
+            justifyContent: "space-between",
+            alignItems: { xs: "flex-start", sm: "center" },
+            mb: 3,
+            gap: { xs: 2, sm: 0 },
+          }}
         >
           <Box>
             <Typography
@@ -344,19 +359,32 @@ export default function AllMarketplace({
               sx={{
                 ...fontStyles,
                 fontWeight: 600,
-                fontSize: "20px",
+                fontSize: { xs: "18px", sm: "20px" },
                 color: "#111827",
               }}
             >
               All Marketplaces
             </Typography>
-            <Typography sx={{ ...fontStyles, fontSize: "14px", mb: 0.5 }}>
+            <Typography 
+              sx={{ 
+                ...fontStyles, 
+                fontSize: { xs: "12px", sm: "14px" }, 
+                mb: 0.5 
+              }}
+            >
               {widgetData === "Today" || widgetData === "Yesterday"
                 ? formattedCurrentDate
                 : formattedDateRange}
             </Typography>
           </Box>
-          <Box display="flex" alignItems="center">
+          <Box 
+            sx={{
+              display: "flex",
+              alignItems: "center",
+              width: { xs: "100%", sm: "auto" },
+              justifyContent: { xs: "space-between", sm: "flex-end" },
+            }}
+          >
             <Tooltip
               title={
                 <Typography
@@ -383,7 +411,7 @@ export default function AllMarketplace({
                     border: "1px solid #ccc",
                     borderRadius: "4px",
                     color: "#485E75",
-                    fontSize: "14px",
+                    fontSize: { xs: "12px", sm: "14px" },
                     fontFamily:
                       "'Nunito Sans', -apple-system, 'Segoe UI', 'Roboto', 'Helvetica Neue', 'Arial', sans-serif",
                   },
@@ -397,7 +425,7 @@ export default function AllMarketplace({
                 label="Converted to $ USD"
                 size="small"
                 sx={{
-                  fontSize: "12px",
+                  fontSize: { xs: "10px", sm: "12px" },
                   fontFamily:
                     "'Nunito Sans', -apple-system, 'Segoe UI', 'Roboto', 'Helvetica Neue', 'Arial', sans-serif",
                   backgroundColor: "rgb(227, 214, 245)",
@@ -419,7 +447,7 @@ export default function AllMarketplace({
               onClose={handleMenuClose}
               PaperProps={{
                 style: {
-                  width: 200,
+                  width: isMobile ? 180 : 200,
                   borderRadius: 10,
                   zIndex: 1200,
                   boxShadow: "0 4px 20px rgba(0,0,0,0.1)",
@@ -434,7 +462,7 @@ export default function AllMarketplace({
                 sx={{
                   color: "rgb(72, 94, 117)",
                   fontFamily: "'Nunito Sans', sans-serif",
-                  fontSize: 14,
+                  fontSize: { xs: 12, sm: 14 },
                 }}
               >
                 <ListItemIcon sx={{ color: "rgb(72, 94, 117)", minWidth: 36 }}>
@@ -459,7 +487,7 @@ export default function AllMarketplace({
                 sx={{
                   color: "rgb(72, 94, 117)",
                   fontFamily: "'Nunito Sans', sans-serif",
-                  fontSize: 14,
+                  fontSize: { xs: 12, sm: 14 },
                 }}
               >
                 <ListItemIcon sx={{ color: "rgb(72, 94, 117)", minWidth: 36 }}>
@@ -481,7 +509,7 @@ export default function AllMarketplace({
                 sx={{
                   color: "rgb(72, 94, 117)",
                   fontFamily: "'Nunito Sans', sans-serif",
-                  fontSize: 14,
+                  fontSize: { xs: 12, sm: 14 },
                 }}
               >
                 <ListItemIcon sx={{ color: "rgb(72, 94, 117)", minWidth: 36 }}>
@@ -503,11 +531,11 @@ export default function AllMarketplace({
         </Box>
 
         {/* Main Content Grid */}
-        <Grid container spacing={3} mb={3}>
+        <Grid container spacing={{ xs: 2, sm: 3 }} mb={3}>
           {/* Left side - Metrics */}
           <Grid item xs={12} md={4}>
             {!loading && (
-              <Grid container spacing={3}>
+              <Grid container spacing={{ xs: 2, sm: 3 }}>
                 {[
                   {
                     title: "Gross Revenue",
@@ -569,25 +597,32 @@ export default function AllMarketplace({
                 ].map((item, idx) => (
                   <Grid
                     item
-                    xs={12}
+                    xs={6}
                     sm={6}
                     key={idx}
                     sx={{
                       borderLeft:
-                        idx !== 0 && idx % 2 === 0
+                        !isMobile && idx !== 0 && idx % 2 === 0
                           ? "1px solid #e0e0e0"
                           : "none",
-                      pl: idx !== 0 && idx % 2 === 0 ? 3 : 0,
+                      pl: !isMobile && idx !== 0 && idx % 2 === 0 ? 3 : 0,
                     }}
                   >
-                    <Typography sx={{ ...fontStyles, fontWeight: 500, mb: 1 }}>
+                    <Typography 
+                      sx={{ 
+                        ...fontStyles, 
+                        fontWeight: 500, 
+                        mb: 1,
+                        fontSize: { xs: "14px", sm: "16px" },
+                      }}
+                    >
                       {item.title}
                     </Typography>
                     <Typography
                       variant="h4"
                       sx={{
                         fontFamily: fontStyles.fontFamily,
-                        fontSize: "28px",
+                        fontSize: { xs: "20px", sm: "24px", md: "28px" },
                         color: "#111827",
                       }}
                     >
@@ -596,7 +631,7 @@ export default function AllMarketplace({
                     <Typography
                       variant="body2"
                       sx={{
-                        fontSize: "14px",
+                        fontSize: { xs: "12px", sm: "14px" },
                         fontFamily: fontStyles.fontFamily,
                         color: "#485E75",
                         display: "flex",
@@ -610,18 +645,18 @@ export default function AllMarketplace({
                         sx={{
                           color:
                             item.changeType === "down" ? "#dc2626" : "#16a34a",
-                          fontSize: "14px",
+                          fontSize: { xs: "12px", sm: "14px" },
                           ml: 0.5,
                         }}
                       >
                         {item.changeType === "down" ? (
                           <ArrowDownwardIcon
-                            sx={{ fontSize: "14px", color: "red" }}
+                            sx={{ fontSize: { xs: "12px", sm: "14px" }, color: "red" }}
                           />
                         ) : (
                           <ArrowUpwardIcon
                             sx={{
-                              fontSize: "14px",
+                              fontSize: { xs: "12px", sm: "14px" },
                               color: "rgb(51, 204, 153)",
                             }}
                           />
@@ -637,7 +672,7 @@ export default function AllMarketplace({
           {/* Right side - CardComponent instead of Orders Chart */}
           <Grid item xs={12} md={8}>
             <CardComponent
-            country={country}
+              country={country}
               widgetData={widgetData}
               marketPlaceId={marketPlaceId}
               DateStartDate={DateStartDate}
@@ -670,7 +705,7 @@ export default function AllMarketplace({
             variant="h6"
             sx={{
               ...fontStyles,
-              fontSize: "14px",
+              fontSize: { xs: "12px", sm: "14px" },
               fontWeight: 600,
               color: "rgb(10, 111, 232)",
               "&:hover": { color: "rgb(2, 83, 182)" },
@@ -694,7 +729,7 @@ export default function AllMarketplace({
                   display: "flex",
                   justifyContent: "center",
                   alignItems: "center",
-                  minHeight: 300,
+                  minHeight: { xs: 200, sm: 300 },
                   width: "100%",
                   height: "100%",
                 }}
@@ -704,76 +739,124 @@ export default function AllMarketplace({
                 </Box>
               </Box>
             ) : (
-              <Table size="small">
-                <TableHead
-                  sx={{
-                    backgroundColor: "#f3f4f6",
-                    "& .MuiTableCell-root": {
-                      borderTop: "none",
-                      borderBottom: "none",
-                    },
-                  }}
-                >
-                  <TableRow>
-                    <TableCell padding="none"></TableCell>
-                    <TableCell
-                      sx={{
-                        ...fontStyles,
-                        fontSize: "12px",
-                        color: "#485E75",
+              <TableContainer sx={{ maxWidth: "100%", overflowX: "auto" }}>
+                <Table size={isMobile ? "small" : "small"}>
+                  <TableHead
+                    sx={{
+                      backgroundColor: "#f3f4f6",
+                      "& .MuiTableCell-root": {
                         borderTop: "none",
-                      }}
-                    >
-                      Marketplace
-                    </TableCell>
-                    <TableCell
-                      sx={{ ...fontStyles, fontSize: "12px", color: "#485E75" }}
-                    >
-                      Gross Revenue
-                    </TableCell>
-                    <TableCell
-                      sx={{ ...fontStyles, fontSize: "12px", color: "#485E75" }}
-                    >
-                      Expenses
-                    </TableCell>
-                    <TableCell
-                      sx={{ ...fontStyles, fontSize: "12px", color: "#485E75" }}
-                    >
-                      COGS
-                    </TableCell>
-                    <TableCell
-                      sx={{ ...fontStyles, fontSize: "12px", color: "#485E75" }}
-                    >
-                      Net Profit
-                    </TableCell>
-                    <TableCell
-                      sx={{ ...fontStyles, fontSize: "12px", color: "#485E75" }}
-                    >
-                      Margin
-                    </TableCell>
-                    <TableCell
-                      sx={{ ...fontStyles, fontSize: "12px", color: "#485E75" }}
-                    >
-                      ROI
-                    </TableCell>
-                    <TableCell
-                      sx={{ ...fontStyles, fontSize: "12px", color: "#485E75" }}
-                    >
-                      Refunds
-                    </TableCell>
-                    <TableCell
-                      sx={{ ...fontStyles, fontSize: "12px", color: "#485E75" }}
-                    >
-                      Units Sold
-                    </TableCell>
-                  </TableRow>
-                </TableHead>
-                <TableBody>
-                  {rows.map((row, index) => (
-                    <MarketplaceRow key={index} row={row} index={index} />
-                  ))}
-                </TableBody>
-              </Table>
+                        borderBottom: "none",
+                      },
+                    }}
+                  >
+                    <TableRow>
+                      <TableCell padding="none"></TableCell>
+                      <TableCell
+                        sx={{
+                          ...fontStyles,
+                          fontSize: { xs: "10px", sm: "12px" },
+                          color: "#485E75",
+                          borderTop: "none",
+                          minWidth: isMobile ? "100px" : "auto",
+                        }}
+                      >
+                        Marketplace
+                      </TableCell>
+                      <TableCell
+                        sx={{ 
+                          ...fontStyles, 
+                          fontSize: { xs: "10px", sm: "12px" }, 
+                          color: "#485E75",
+                          minWidth: isMobile ? "80px" : "auto",
+                        }}
+                      >
+                        Gross Revenue
+                      </TableCell>
+                      <TableCell
+                        sx={{ 
+                          ...fontStyles, 
+                          fontSize: { xs: "10px", sm: "12px" }, 
+                          color: "#485E75",
+                          minWidth: isMobile ? "80px" : "auto",
+                        }}
+                      >
+                        Expenses
+                      </TableCell>
+                      <TableCell
+                        sx={{ 
+                          ...fontStyles, 
+                          fontSize: { xs: "10px", sm: "12px" }, 
+                          color: "#485E75",
+                          minWidth: isMobile ? "60px" : "auto",
+                        }}
+                      >
+                        COGS
+                      </TableCell>
+                      <TableCell
+                        sx={{ 
+                          ...fontStyles, 
+                          fontSize: { xs: "10px", sm: "12px" }, 
+                          color: "#485E75",
+                          minWidth: isMobile ? "80px" : "auto",
+                        }}
+                      >
+                        Net Profit
+                      </TableCell>
+                      <TableCell
+                        sx={{ 
+                          ...fontStyles, 
+                          fontSize: { xs: "10px", sm: "12px" }, 
+                          color: "#485E75",
+                          minWidth: isMobile ? "60px" : "auto",
+                        }}
+                      >
+                        Margin
+                      </TableCell>
+                      <TableCell
+                        sx={{ 
+                          ...fontStyles, 
+                          fontSize: { xs: "10px", sm: "12px" }, 
+                          color: "#485E75",
+                          minWidth: isMobile ? "50px" : "auto",
+                        }}
+                      >
+                        ROI
+                      </TableCell>
+                      <TableCell
+                        sx={{ 
+                          ...fontStyles, 
+                          fontSize: { xs: "10px", sm: "12px" }, 
+                          color: "#485E75",
+                          minWidth: isMobile ? "60px" : "auto",
+                        }}
+                      >
+                        Refunds
+                      </TableCell>
+                      <TableCell
+                        sx={{ 
+                          ...fontStyles, 
+                          fontSize: { xs: "10px", sm: "12px" }, 
+                          color: "#485E75",
+                          minWidth: isMobile ? "70px" : "auto",
+                        }}
+                      >
+                        Units Sold
+                      </TableCell>
+                    </TableRow>
+                  </TableHead>
+                  <TableBody>
+                    {rows.map((row, index) => (
+                      <MarketplaceRow 
+                        key={index} 
+                        row={row} 
+                        index={index} 
+                        isMobile={isMobile}
+                      />
+                    ))}
+                  </TableBody>
+                </Table>
+              </TableContainer>
             )}
           </Box>
         </Collapse>

@@ -15,6 +15,8 @@ import {
   MenuItem,
   ListItemIcon,
   ListItemText,
+  useTheme,
+  useMediaQuery,
 } from "@mui/material";
 import { Download, Delete } from "@mui/icons-material";
 import MoreVertIcon from "@mui/icons-material/MoreVert";
@@ -40,6 +42,12 @@ function PeriodComparission({
   const [anchorEl, setAnchorEl] = useState(null);
   const open = Boolean(anchorEl);
   const [loading, setLoading] = useState(false);
+
+  // Add responsive hooks
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
+  const isTablet = useMediaQuery(theme.breakpoints.between('sm', 'md'));
+  const isSmallScreen = useMediaQuery(theme.breakpoints.down('md'));
 
   const handleClick = (event) => {
     setAnchorEl(event.currentTarget);
@@ -219,7 +227,7 @@ const API_TODAY = dayjs("02/09/2025", "DD/MM/YYYY").tz('US/Pacific').format("MMM
       elevation={2}
       sx={{
         borderRadius: 1,
-        width: "99%",
+        width: { xs: "100%", sm: "99%" },
         boxShadow: "none",
         border: "solid 1px #ddd",
       }}
@@ -227,10 +235,12 @@ const API_TODAY = dayjs("02/09/2025", "DD/MM/YYYY").tz('US/Pacific').format("MMM
       <Box
         sx={{
           display: "flex",
+          flexDirection: { xs: "column", sm: "row" },
           justifyContent: "space-between",
-          alignItems: "center",
-          p: 2,
+          alignItems: { xs: "flex-start", sm: "center" },
+          p: { xs: 1.5, sm: 2 },
           borderBottom: "1px solid #eee",
+          gap: { xs: 1, sm: 0 },
         }}
       >
         <Box>
@@ -240,15 +250,16 @@ const API_TODAY = dayjs("02/09/2025", "DD/MM/YYYY").tz('US/Pacific').format("MMM
             sx={{
               fontFamily:
                 "'Nunito Sans', -apple-system, 'Segoe UI', 'Roboto', 'Helvetica Neue', 'Arial', sans-serif",
-              fontSize: "20px",
+              fontSize: { xs: "18px", sm: "20px" },
               fontWeight: 600,
+              mb: { xs: 0.5, sm: 1 },
             }}
           >
             Period Comparison
           </Typography>
           <Typography
             sx={{
-              fontSize: "14px",
+              fontSize: { xs: "12px", sm: "14px" },
               color: "#485E75",
               fontFamily:
                 "'Nunito Sans', -apple-system, 'Segoe UI', 'Roboto', 'Helvetica Neue', 'Arial', sans-serif",
@@ -266,6 +277,7 @@ const API_TODAY = dayjs("02/09/2025", "DD/MM/YYYY").tz('US/Pacific').format("MMM
           aria-expanded={open ? "true" : undefined}
           aria-haspopup="true"
           onClick={handleClick}
+          sx={{ alignSelf: { xs: "flex-end", sm: "center" } }}
         >
           <MoreVertIcon />
         </IconButton>
@@ -279,7 +291,7 @@ const API_TODAY = dayjs("02/09/2025", "DD/MM/YYYY").tz('US/Pacific').format("MMM
           onClose={handleClose}
           PaperProps={{
             style: {
-              width: 200,
+              width: isMobile ? 180 : 200,
               borderRadius: 10,
               boxShadow: "0 4px 20px rgba(0,0,0,0.1)",
             },
@@ -293,7 +305,7 @@ const API_TODAY = dayjs("02/09/2025", "DD/MM/YYYY").tz('US/Pacific').format("MMM
             sx={{
               color: "#485E75",
               fontFamily: "'Nunito Sans', sans-serif",
-              fontSize: 14,
+              fontSize: { xs: 12, sm: 14 },
             }}
           >
             <ListItemIcon sx={{ color: "#485E75", minWidth: 36 }}>
@@ -312,7 +324,7 @@ const API_TODAY = dayjs("02/09/2025", "DD/MM/YYYY").tz('US/Pacific').format("MMM
             sx={{
               color: "#485E75",
               fontFamily: "'Nunito Sans', sans-serif",
-              fontSize: 14,
+              fontSize: { xs: 12, sm: 14 },
             }}
           >
             <ListItemIcon sx={{ color: "#485E75", minWidth: 36 }}>
@@ -326,7 +338,7 @@ const API_TODAY = dayjs("02/09/2025", "DD/MM/YYYY").tz('US/Pacific').format("MMM
             sx={{
               color: "#485E75",
               fontFamily: "'Nunito Sans', sans-serif",
-              fontSize: 14,
+              fontSize: { xs: 12, sm: 14 },
             }}
           >
             <ListItemIcon sx={{ color: "#485E75", minWidth: 36 }}>
@@ -339,8 +351,9 @@ const API_TODAY = dayjs("02/09/2025", "DD/MM/YYYY").tz('US/Pacific').format("MMM
       <TableContainer
         sx={{
           overflowX: "auto",
+          maxWidth: "100%",
           "&::-webkit-scrollbar": {
-            height: 4, // 🔽 Reduced from 4 to 2
+            height: 4,
           },
           "&::-webkit-scrollbar-thumb": {
             backgroundColor: "rgb(166, 183, 201)",
@@ -364,8 +377,7 @@ const API_TODAY = dayjs("02/09/2025", "DD/MM/YYYY").tz('US/Pacific').format("MMM
               display: "flex",
               justifyContent: "center",
               alignItems: "center",
-              minHeight: 300,
-
+              minHeight: { xs: 200, sm: 300 },
               width: "100%",
               height: "100%",
             }}
@@ -375,7 +387,12 @@ const API_TODAY = dayjs("02/09/2025", "DD/MM/YYYY").tz('US/Pacific').format("MMM
             </Box>
           </Box>
         ) : (
-          <Table sx={{ minWidth: 1200 }} aria-label="period comparison table">
+          <Table 
+            sx={{ 
+              minWidth: { xs: 800, sm: 1200 } 
+            }} 
+            aria-label="period comparison table"
+          >
             <TableHead>
               <TableRow>
                 {[
@@ -396,12 +413,14 @@ const API_TODAY = dayjs("02/09/2025", "DD/MM/YYYY").tz('US/Pacific').format("MMM
                     key={label}
                     sx={{
                       fontWeight: 600,
-                      fontSize: 12,
-                      textAlign: idx === 0 ? "start" : "end", // Only 'Period' is left-aligned
+                      fontSize: { xs: 10, sm: 12 },
+                      textAlign: idx === 0 ? "start" : "end",
                       backgroundColor: "rgb(242, 245, 247)",
                       color: "#485E75",
                       fontFamily:
                         "'Nunito Sans', -apple-system, 'Segoe UI', 'Roboto', 'Helvetica Neue', 'Arial', sans-serif",
+                      padding: { xs: "8px 4px", sm: "16px" },
+                      whiteSpace: "nowrap",
                     }}
                   >
                     {label}
@@ -415,18 +434,19 @@ const API_TODAY = dayjs("02/09/2025", "DD/MM/YYYY").tz('US/Pacific').format("MMM
                 <TableRow key={row.period}>
                   <TableCell
                     sx={{
-                      fontSize: "14px",
+                      fontSize: { xs: "12px", sm: "14px" },
                       color: "#485E75",
-                      width: "145px",
+                      width: { xs: "120px", sm: "145px" },
                       fontFamily:
                         "'Nunito Sans', -apple-system, 'Segoe UI', 'Roboto', 'Helvetica Neue', 'Arial', sans-serif",
+                      padding: { xs: "8px 4px", sm: "16px" },
                     }}
                   >
                     <Typography
                       variant="subtitle2"
                       sx={{
                         textAlign: "start",
-                        fontSize: "16px",
+                        fontSize: { xs: "14px", sm: "16px" },
                         color: "#13191F",
                         fontFamily:
                           "'Nunito Sans', -apple-system, 'Segoe UI', 'Roboto', 'Helvetica Neue', 'Arial', sans-serif",
@@ -438,7 +458,7 @@ const API_TODAY = dayjs("02/09/2025", "DD/MM/YYYY").tz('US/Pacific').format("MMM
                       variant="caption"
                       sx={{
                         textAlign: "start",
-                        fontSize: "14px",
+                        fontSize: { xs: "11px", sm: "14px" },
                         color: "#6b7280",
                         fontFamily:
                           "'Nunito Sans', -apple-system, 'Segoe UI', 'Roboto', 'Helvetica Neue', 'Arial', sans-serif",
@@ -461,10 +481,11 @@ const API_TODAY = dayjs("02/09/2025", "DD/MM/YYYY").tz('US/Pacific').format("MMM
                   <TableCell
                     sx={{
                       textAlign: "end",
-                      fontSize: "14px",
+                      fontSize: { xs: "12px", sm: "14px" },
                       color: "#485E75",
                       fontFamily:
                         "'Nunito Sans', -apple-system, 'Segoe UI', 'Roboto', 'Helvetica Neue', 'Arial', sans-serif",
+                      padding: { xs: "8px 4px", sm: "16px" },
                     }}
                   >
                     $
@@ -477,11 +498,12 @@ const API_TODAY = dayjs("02/09/2025", "DD/MM/YYYY").tz('US/Pacific').format("MMM
                     <TableCell
                       key={i}
                       sx={{
-                        fontSize: "14px",
+                        fontSize: { xs: "12px", sm: "14px" },
                         color: "#485E75",
                         fontFamily:
                           "'Nunito Sans', -apple-system, 'Segoe UI', 'Roboto', 'Helvetica Neue', 'Arial', sans-serif",
-                         textAlign: 'end', // Center-aligns the text
+                        textAlign: 'end',
+                        padding: { xs: "8px 4px", sm: "16px" },
                       }}
                     >
                       $
@@ -499,18 +521,17 @@ const API_TODAY = dayjs("02/09/2025", "DD/MM/YYYY").tz('US/Pacific').format("MMM
                     row.skuCount.toLocaleString(),
                     row.pageViews.toLocaleString(),
                     row.sessions.toLocaleString(),
-                    // row.unitsessions.toLocaleString(),
                     `${row.unitsessions?.toFixed(2)}%`,
-                    // `${row.conversionRate?.toFixed(2)}%`,
                   ].map((val, i) => (
                     <TableCell
                       key={i + 2}
                       sx={{
                         textAlign: "end",
-                        fontSize: "14px",
+                        fontSize: { xs: "12px", sm: "14px" },
                         color: "#485E75",
                         fontFamily:
                           "'Nunito Sans', -apple-system, 'Segoe UI', 'Roboto', 'Helvetica Neue', 'Arial', sans-serif",
+                        padding: { xs: "8px 4px", sm: "16px" },
                       }}
                     >
                       {val}

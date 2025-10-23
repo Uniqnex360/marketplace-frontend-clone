@@ -11,7 +11,6 @@ const PrivateRoute = ({ children, allowedRoles }) => {
   }
 
   const userRole = user.role_name;
-  console.log('User Role:', userRole); // Debugging line
 
   if (allowedRoles.includes(userRole)) {
     // If user role matches allowed roles, render the children

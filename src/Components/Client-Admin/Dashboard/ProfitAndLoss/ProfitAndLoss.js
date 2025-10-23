@@ -22,6 +22,8 @@ import {
   IconButton,
   ListItemIcon,
   Menu,
+  useTheme,
+  useMediaQuery,
 } from "@mui/material";
 import InsertDriveFileIcon from "@mui/icons-material/InsertDriveFile";
 import {
@@ -64,6 +66,12 @@ const ProfitAndLoss = ({
   const [events, setEvents] = useState(true);
   const [anchorEl, setAnchorEl] = useState(null);
   const systemTimeZone = Intl.DateTimeFormat().resolvedOptions().timeZone;
+
+  // Add theme and media query hooks for responsive design
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
+  const isTablet = useMediaQuery(theme.breakpoints.between('sm', 'md'));
+  const isSmallScreen = useMediaQuery(theme.breakpoints.down('md'));
 
   dayjs.extend(utc);
   let lastParamsRef = useRef("");
@@ -468,9 +476,10 @@ const ProfitAndLoss = ({
         <div
           style={{
             backgroundColor: "#fff",
-            padding: "10px",
-            width: "230px",
+            padding: isMobile ? "8px" : "10px",
+            width: isMobile ? "180px" : "230px",
             border: "1px solid #ccc",
+            fontSize: isMobile ? "12px" : "14px",
           }}
         >
           <p className="label" style={{ margin: "0 0 8px 0" }}>
@@ -632,8 +641,8 @@ const ProfitAndLoss = ({
     return label === "Gross Revenue" ||
       label === "Expenses" ||
       label === "Net Profit"
-      ? "16px"
-      : "14px";
+      ? isMobile ? "14px" : "16px"
+      : isMobile ? "12px" : "14px";
   };
 
   const getFontColor = (label) => {
@@ -652,15 +661,15 @@ const ProfitAndLoss = ({
   const hasOtherMetrics = graph?.some((g) => g.metric !== "units");
 
   return (
-    <div
-      style={{
-        padding: "20px",
+    <Box
+      sx={{
+        padding: { xs: "10px", sm: "15px", md: "20px" },
         fontFamily:
           "'Nunito Sans', -apple-system, 'Segoe UI', 'Roboto', 'Helvetica Neue', 'Arial', sans-serif",
         border: "1px solid #ddd",
         borderRadius: "8px",
         backgroundColor: "#fff",
-        margin: "15px 0px 15px 0px",
+        margin: { xs: "10px 0", sm: "15px 0" },
       }}
     >
       {loadingBody ? (
@@ -669,7 +678,7 @@ const ProfitAndLoss = ({
             display: "flex",
             justifyContent: "center",
             alignItems: "center",
-            minHeight: 400,
+            minHeight: { xs: 300, sm: 400 },
             width: "100%",
           }}
         >
@@ -678,28 +687,33 @@ const ProfitAndLoss = ({
       ) : (
         <Box>
           <Box
-            display="flex"
-            justifyContent="space-between"
-            alignItems="flex-start"
-            marginBottom={2}
+            sx={{
+              display: "flex",
+              flexDirection: { xs: "column", sm: "row" },
+              justifyContent: "space-between",
+              alignItems: { xs: "flex-start", sm: "flex-start" },
+              marginBottom: 2,
+              gap: { xs: 2, sm: 0 },
+            }}
           >
-            <Box sx={{ marginTop: "-30px" }}>
-              <h3
-                style={{
-                  fontSize: "1.5em",
+            <Box sx={{ marginTop: { xs: "0", sm: "-30px" } }}>
+              <Typography
+                variant="h5"
+                sx={{
+                  fontSize: { xs: "1.2em", sm: "1.5em" },
                   fontWeight: "bold",
                   marginBottom: "15px",
                   color: "#19232E",
                 }}
               >
                 P&L
-              </h3>
+              </Typography>
 
               <Typography
                 sx={{
                   marginBottom: "15px",
                   color: "#485E75",
-                  fontSize: "14px",
+                  fontSize: { xs: "12px", sm: "14px" },
                   mb: 0.5,
                 }}
               >
@@ -708,15 +722,22 @@ const ProfitAndLoss = ({
                   : formattedDateRange}
               </Typography>
             </Box>
-            <Box display="flex" alignItems="center" gap={2}>
+            <Box 
+              sx={{
+                display: "flex",
+                alignItems: "center",
+                gap: { xs: 1, sm: 2 },
+                flexWrap: "wrap",
+              }}
+            >
               {events && (
                 <Button
                   variant="outlined"
                   size="small"
                   sx={{
-                    fontSize: "14px",
+                    fontSize: { xs: "12px", sm: "14px" },
                     textTransform: "none",
-                    padding: "4px 12px",
+                    padding: { xs: "3px 8px", sm: "4px 12px" },
                     color: "black",
                     borderColor: "black",
                   }}
@@ -725,17 +746,19 @@ const ProfitAndLoss = ({
                   + Add Note
                 </Button>
               )}
-              <Typography
-                variant="body2"
-                sx={{ fontSize: "14px", lineHeight: 1 }}
-              >
-                Events
-              </Typography>
-              <Switch
-                checked={events}
-                onChange={() => setEvents(!events)}
-                size="small"
-              />
+              <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+                <Typography
+                  variant="body2"
+                  sx={{ fontSize: { xs: "12px", sm: "14px" }, lineHeight: 1 }}
+                >
+                  Events
+                </Typography>
+                <Switch
+                  checked={events}
+                  onChange={() => setEvents(!events)}
+                  size="small"
+                />
+              </Box>
               <Box>
                 <IconButton
                   aria-label="download"
@@ -764,7 +787,7 @@ const ProfitAndLoss = ({
                       sx={{
                         color: "#485E75",
                         fontFamily: "'Nunito Sans', sans-serif",
-                        fontSize: 14,
+                        fontSize: { xs: 12, sm: 14 },
                       }}
                       onClick={() => handleDownloadOptionClick("PNG")}
                     >
@@ -783,7 +806,7 @@ const ProfitAndLoss = ({
                       sx={{
                         color: "#485E75",
                         fontFamily: "'Nunito Sans', sans-serif",
-                        fontSize: 14,
+                        fontSize: { xs: 12, sm: 14 },
                       }}
                       onClick={() => handleDownloadOptionClick("JPEG")}
                     >
@@ -802,7 +825,7 @@ const ProfitAndLoss = ({
                       sx={{
                         color: "#485E75",
                         fontFamily: "'Nunito Sans', sans-serif",
-                        fontSize: 14,
+                        fontSize: { xs: 12, sm: 14 },
                       }}
                       onClick={() => handleDownloadOptionClick("PDF")}
                     >
@@ -827,7 +850,7 @@ const ProfitAndLoss = ({
                       sx={{
                         color: "#485E75",
                         fontFamily: "'Nunito Sans', sans-serif",
-                        fontSize: 14,
+                        fontSize: { xs: 12, sm: 14 },
                       }}
                     >
                       <ListItemIcon>
@@ -849,7 +872,7 @@ const ProfitAndLoss = ({
                       sx={{
                         color: "#485E75",
                         fontFamily: "'Nunito Sans', sans-serif",
-                        fontSize: 14,
+                        fontSize: { xs: 12, sm: 14 },
                       }}
                     >
                       <ListItemIcon>
@@ -882,25 +905,28 @@ const ProfitAndLoss = ({
           </Box>
           <NoteModel open={openNote} onClose={() => setOpenNote(false)} />
 
-          <div
-            style={{
+          <Box
+            sx={{
               display: "flex",
-              flexDirection: "row",
+              flexDirection: { xs: "column", sm: "row" },
               alignItems: "flex-start",
+              gap: { xs: 2, sm: 0 },
             }}
           >
-            <div
-              style={{
-                width: "35%",
-                paddingRight: "20px",
-                maxHeight: 400,
+            <Box
+              sx={{
+                width: { xs: "100%", sm: "35%" },
+                paddingRight: { xs: 0, sm: "20px" },
+                maxHeight: { xs: 300, sm: 400 },
                 overflowX: "hidden",
-                borderRight: "1px solid lightgray",
+                borderRight: { xs: "none", sm: "1px solid lightgray" },
+                borderBottom: { xs: "1px solid lightgray", sm: "none" },
+                paddingBottom: { xs: 2, sm: 0 },
+                marginBottom: { xs: 2, sm: 0 },
                 overflowY: "auto",
-                paddingRight: "0.5em" /* Use em for better responsiveness */,
-                scrollbarWidth: "thin" /* For Firefox */,
+                scrollbarWidth: "thin",
                 "&::-webkit-scrollbar": {
-                  width: "1px" /* Reduce the overall width */,
+                  width: "4px",
                 },
                 "&::-webkit-scrollbar-thumb": {
                   backgroundColor: "rgb(212, 219, 225)",
@@ -913,51 +939,59 @@ const ProfitAndLoss = ({
                     backgroundColor: "rgb(161, 180, 201)",
                   },
                 },
-                "&::-webkit-scrollbar-thumb:hover": {
-                  backgroundColor: "#555",
-                },
                 "&::-webkit-scrollbar-track": {
                   backgroundColor: "#f1f1f1",
                   borderRadius: "8px",
                 },
               }}
             >
-              <div>
+              <Box>
                 {summaryData.map((item, idx) => (
-                  <div key={idx} style={{ marginBottom: "12px" }}>
-                    <div
-                      style={{
+                  <Box key={idx} sx={{ marginBottom: "12px" }}>
+                    <Box
+                      sx={{
                         display: "flex",
                         justifyContent: "space-between",
                         alignItems: "center",
                       }}
                     >
-                      <div style={{ display: "flex", alignItems: "center" }}>
+                      <Box sx={{ display: "flex", alignItems: "center" }}>
                         <span
                           style={{
-                            width: "10px",
-                            height: "10px",
+                            width: isMobile ? "8px" : "10px",
+                            height: isMobile ? "8px" : "10px",
                             borderRadius: "50%",
                             backgroundColor: getCircleColor(item.label),
                             display: "inline-block",
                             marginRight: "8px",
                           }}
                         />
-                        <span style={{ color: getFontColor(item.label) }}>
+                        <span 
+                          style={{ 
+                            color: getFontColor(item.label),
+                            fontSize: getFontSize(item.label),
+                          }}
+                        >
                           {item.label}
                         </span>
-                      </div>
-                      <span style={{ fontWeight: "bold", color: "#19232E" }}>
+                      </Box>
+                      <span 
+                        style={{ 
+                          fontWeight: "bold", 
+                          color: "#19232E",
+                          fontSize: isMobile ? "12px" : "14px",
+                        }}
+                      >
                         {item.value}
                       </span>
-                    </div>
+                    </Box>
                     {expanded === idx && item.delta !== undefined && (
-                      <div
-                        style={{
+                      <Box
+                        sx={{
                           marginLeft: "18px",
                           marginTop: "8px",
                           color: "#637381",
-                          fontSize: "0.9em",
+                          fontSize: isMobile ? "0.8em" : "0.9em",
                         }}
                       >
                         <span>Change: </span>
@@ -968,15 +1002,18 @@ const ProfitAndLoss = ({
                             ? `-${Math.abs(item.delta).toFixed(2)}`
                             : `+${Math.abs(item.delta).toFixed(2)}`}
                         </span>
-                      </div>
+                      </Box>
                     )}
-                  </div>
+                  </Box>
                 ))}
-              </div>
-            </div>
+              </Box>
+            </Box>
 
-            <div
-              style={{ width: "65%", height: "450px" }}
+            <Box
+              sx={{
+                width: { xs: "100%", sm: "65%" },
+                height: { xs: "300px", sm: "450px" },
+              }}
               ref={chartContainerRef}
             >
               <ResponsiveContainer width="100%" height="100%">
@@ -984,8 +1021,8 @@ const ProfitAndLoss = ({
                   data={processedChartData}
                   margin={{
                     top: 10,
-                    right: hasUnits ? 50 : 30,
-                    left: 0,
+                    right: isMobile ? 10 : hasUnits ? 50 : 30,
+                    left: isMobile ? -10 : 0,
                     bottom: 30,
                   }}
                 >
@@ -997,11 +1034,14 @@ const ProfitAndLoss = ({
                   />
                   <XAxis
                     dataKey="date"
-                    padding={{ left: 20, right: 20 }}
+                    padding={{ left: isMobile ? 10 : 20, right: isMobile ? 10 : 20 }}
                     tickFormatter={xAxisTickFormatter}
                     axisLine={true}
                     tickLine={false}
                     ticks={calculateTicks()}
+                    tick={{ fontSize: isMobile ? 10 : 12 }}
+                    angle={isMobile ? -45 : 0}
+                    textAnchor={isMobile ? "end" : "middle"}
                   />
                   {hasOtherMetrics && (
                     <YAxis
@@ -1009,6 +1049,7 @@ const ProfitAndLoss = ({
                       axisLine={false}
                       tickLine={false}
                       yAxisId="left"
+                      tick={{ fontSize: isMobile ? 10 : 12 }}
                     />
                   )}
                   {hasUnits && (
@@ -1018,6 +1059,7 @@ const ProfitAndLoss = ({
                       tickLine={false}
                       orientation="right"
                       yAxisId="right"
+                      tick={{ fontSize: isMobile ? 10 : 12 }}
                     />
                   )}
                   <Tooltip content={<CustomTooltip />} />
@@ -1027,22 +1069,21 @@ const ProfitAndLoss = ({
                       dataKey="grossRevenue"
                       stroke="#6F42C1"
                       name="Gross Revenue"
-                      strokeWidth={2}
+                      strokeWidth={isMobile ? 1.5 : 2}
                       dot={false}
-                      activeDot={{ r: 5 }}
+                      activeDot={{ r: isMobile ? 3 : 5 }}
                       yAxisId="left"
                     />
                   )}
-                  {/* {graph?.find(g => g.metric === 'estimatedPayout') && <Line type="monotone" dataKey="estimatedPayout" stroke="#0DCAF0" name="Estimated Payout" dot={false} activeDot={{ r: 5 }} yAxisId="left" />} */}
                   {graph?.find((g) => g.metric === "expenses") && (
                     <Line
                       type="monotone"
                       dataKey="expenses"
                       stroke="#DC3545"
                       name="Expenses"
-                      strokeWidth={2}
+                      strokeWidth={isMobile ? 1.5 : 2}
                       dot={false}
-                      activeDot={{ r: 5 }}
+                      activeDot={{ r: isMobile ? 3 : 5 }}
                       yAxisId="left"
                     />
                   )}
@@ -1052,9 +1093,9 @@ const ProfitAndLoss = ({
                       dataKey="netProfit"
                       stroke="#198754"
                       name="Net Profit"
-                      strokeWidth={2}
+                      strokeWidth={isMobile ? 1.5 : 2}
                       dot={false}
-                      activeDot={{ r: 5 }}
+                      activeDot={{ r: isMobile ? 3 : 5 }}
                       yAxisId="left"
                     />
                   )}
@@ -1064,20 +1105,19 @@ const ProfitAndLoss = ({
                       dataKey="units"
                       stroke="#b8b8ff"
                       name="Orders"
-                      strokeWidth={2}
+                      strokeWidth={isMobile ? 1.5 : 2}
                       dot={false}
-                      activeDot={{ r: 5 }}
+                      activeDot={{ r: isMobile ? 3 : 5 }}
                       yAxisId="right"
                     />
                   )}
-                  {/* {graph?.find(g => g.metric === 'ppcSales') && <Line type="monotone" dataKey="ppcSales" stroke="#49beaa" name="PPC Sales" dot={false} activeDot={{ r: 5 }} yAxisId="left" />} */}
                 </LineChart>
               </ResponsiveContainer>
-            </div>
-          </div>
+            </Box>
+          </Box>
         </Box>
       )}
-    </div>
+    </Box>
   );
 };
 

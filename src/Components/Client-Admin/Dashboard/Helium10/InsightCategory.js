@@ -7,6 +7,8 @@ import {
   Button,
   CircularProgress,
   Alert,
+  useTheme,
+  useMediaQuery,
 } from "@mui/material";
 import CloseIcon from "@mui/icons-material/Close";
 import NorthEastIcon from "@mui/icons-material/NorthEast";
@@ -23,6 +25,7 @@ import {
   KeyboardArrowUp,
   MoreVert,
 } from "@mui/icons-material";
+
 const ShowIcon = (props) => (
   <SvgIcon {...props} viewBox="0 0 512 512" sx={{ fontSize: 16 }}>
     <path
@@ -76,6 +79,12 @@ const InsightsSection = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState(null);
   const [notifications, setNotifications] = useState([]);
+
+  // Add theme and media query hooks
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
+  const isTablet = useMediaQuery(theme.breakpoints.between('sm', 'md'));
+  const isSmallScreen = useMediaQuery(theme.breakpoints.down('md'));
 
   useEffect(() => {
     const fetchInsightsData = async () => {
@@ -216,11 +225,18 @@ const InsightsSection = () => {
   );
 
   return (
-    <Box p={1} pr={3} border="1px solid #E5E7EB" borderRadius={2}>
+    <Box 
+      sx={{
+        p: { xs: 1, sm: 1 },
+        pr: { xs: 1, sm: 2, md: 3 },
+        border: "1px solid #E5E7EB",
+        borderRadius: 2,
+      }}
+    >
       <Typography
-        fontWeight={700}
-        fontSize={20}
         sx={{
+          fontWeight: 700,
+          fontSize: { xs: 18, sm: 20 },
           fontFamily:
             "'Nunito Sans', -apple-system, 'Segoe UI', 'Roboto', 'Helvetica Neue', 'Arial', sans-serif",
         }}
@@ -228,19 +244,31 @@ const InsightsSection = () => {
         Insights
       </Typography>
 
-      <Box p={1} pr={2} display="inherit" gap={20} sx={{ overflowY: "auto" }}>
+      <Box 
+        sx={{
+          p: 1,
+          pr: { xs: 1, sm: 2 },
+          display: "inherit",
+          gap: { xs: 2, sm: 10, md: 20 },
+          overflowY: "auto",
+          flexDirection: { xs: "column", md: "row" },
+        }}
+      >
         <Box
-          display="flex"
-          flexDirection="row"
-          sx={{ paddingTop: "10px" }}
-          gap={3.5}
-          minWidth={300}
-          mr={2}
+          sx={{
+            display: "flex",
+            flexDirection: { xs: "column", sm: "row" },
+            paddingTop: "10px",
+            gap: { xs: 2, sm: 3.5 },
+            minWidth: { xs: "100%", sm: 300 },
+            mr: { xs: 0, sm: 2 },
+          }}
         >
           <Box
             display="block"
             alignItems="center"
             justifyContent="space-between"
+            sx={{ width: { xs: "100%", sm: "auto" } }}
           >
             <Box
               display="flex"
@@ -256,10 +284,10 @@ const InsightsSection = () => {
                 >
                   <KeyboardArrowUp sx={{ color: "#485E75" }} />
                   <Typography
-                    fontWeight={600}
-                    fontSize={14}
-                    ml={0.5}
                     sx={{
+                      fontWeight: 600,
+                      fontSize: { xs: 12, sm: 14 },
+                      ml: 0.5,
                       color: "#485E75",
                       fontFamily:
                         "'Nunito Sans', -apple-system, 'Segoe UI', 'Roboto', 'Helvetica Neue', 'Arial', sans-serif",
@@ -290,9 +318,9 @@ const InsightsSection = () => {
                     <LeftArrowIcon />
                   </IconButton>
                   <Typography
-                    fontWeight={500}
-                    fontSize={16}
                     sx={{
+                      fontWeight: 500,
+                      fontSize: { xs: 14, sm: 16 },
                       color: "#485E75",
                       fontFamily:
                         "'Nunito Sans', -apple-system, 'Segoe UI', 'Roboto', 'Helvetica Neue', 'Arial', sans-serif",
@@ -309,26 +337,35 @@ const InsightsSection = () => {
                   </IconButton>
                 </Box>
 
-                <Box display="flex" gap={2} alignItems="center">
+                <Box 
+                  sx={{
+                    display: "flex",
+                    gap: { xs: 1, sm: 2 },
+                    alignItems: "center",
+                    flexDirection: { xs: "column", sm: "row" },
+                  }}
+                >
                   <Box
-                    height={120}
-                    width={120}
-                    display="flex"
-                    justifyContent="center"
-                    alignItems="center"
+                    sx={{
+                      height: { xs: 100, sm: 120 },
+                      width: { xs: 100, sm: 120 },
+                      display: "flex",
+                      justifyContent: "center",
+                      alignItems: "center",
+                    }}
                   >
                     {isLoading ? (
                       <DottedCircleLoading />
                     ) : error ? (
                       <Alert severity="error">{error}</Alert>
                     ) : currentChartData.length > 0 ? (
-                      <PieChart width={100} height={120}>
+                      <PieChart width={isMobile ? 80 : 100} height={isMobile ? 100 : 120}>
                         <Pie
                           data={currentChartData}
                           cx="50%"
                           cy="50%"
-                          innerRadius={35}
-                          outerRadius={45}
+                          innerRadius={isMobile ? 28 : 35}
+                          outerRadius={isMobile ? 38 : 45}
                           paddingAngle={1}
                           dataKey="value"
                         >
@@ -339,7 +376,12 @@ const InsightsSection = () => {
                         <Tooltip />
                       </PieChart>
                     ) : (
-                      <Typography color="textSecondary" fontSize={12}>
+                      <Typography 
+                        sx={{
+                          color: "textSecondary",
+                          fontSize: { xs: 10, sm: 12 },
+                        }}
+                      >
                         No data available.
                       </Typography>
                     )}
@@ -355,9 +397,11 @@ const InsightsSection = () => {
                       <></>
                     ) : currentChartData.length > 0 ? (
                       <Box
-                        display="grid"
-                        gridTemplateColumns="repeat(2, 1fr)"
-                        gap="10% 2%"
+                        sx={{
+                          display: "grid",
+                          gridTemplateColumns: { xs: "repeat(1, 1fr)", sm: "repeat(2, 1fr)" },
+                          gap: { xs: "5%", sm: "10% 2%" },
+                        }}
                       >
                         {currentChartData.map((item, index) => (
                           <Box
@@ -367,10 +411,10 @@ const InsightsSection = () => {
                             gap={0.4}
                           >
                             <Typography
-                              fontWeight={600}
-                              fontSize={14}
-                              color="#1A2027"
                               sx={{
+                                fontWeight: 600,
+                                fontSize: { xs: 12, sm: 14 },
+                                color: "#1A2027",
                                 fontFamily:
                                   "'Nunito Sans', -apple-system, 'Segoe UI', 'Roboto', 'Helvetica Neue', 'Arial', sans-serif",
                               }}
@@ -378,7 +422,7 @@ const InsightsSection = () => {
                               {item.value}
                               <span
                                 style={{
-                                  fontSize: "16px",
+                                  fontSize: isMobile ? "14px" : "16px",
                                   color: "#485E75",
                                   fontFamily:
                                     "'Nunito Sans', -apple-system, 'Segoe UI', 'Roboto', 'Helvetica Neue', 'Arial', sans-serif",
@@ -396,8 +440,8 @@ const InsightsSection = () => {
                                   gap={0.2}
                                 >
                                   <Typography
-                                    fontSize={12}
-                                    style={{
+                                    sx={{
+                                      fontSize: { xs: 10, sm: 12 },
                                       color: item.textColor,
                                       fontFamily:
                                         "'Nunito Sans', -apple-system, 'Segoe UI', 'Roboto', 'Helvetica Neue', 'Arial', sans-serif",
@@ -406,7 +450,7 @@ const InsightsSection = () => {
                                     {item.name}
                                   </Typography>
                                   <NorthEastIcon
-                                    sx={{ fontSize: 12, color: "#718096" }}
+                                    sx={{ fontSize: { xs: 10, sm: 12 }, color: "#718096" }}
                                   />
                                 </Box>
                               }
@@ -415,10 +459,10 @@ const InsightsSection = () => {
                                 backgroundColor: `${item.color}30`,
                                 color: `${item.color}`,
                                 fontWeight: 500,
-                                fontSize: 11,
+                                fontSize: { xs: 9, sm: 11 },
                                 borderRadius: "25px",
-                                px: 0.8,
-                                py: 0.2,
+                                px: { xs: 0.6, sm: 0.8 },
+                                py: { xs: 0.1, sm: 0.2 },
                               }}
                             />
                           </Box>
@@ -427,7 +471,12 @@ const InsightsSection = () => {
                     ) : (
                       allCategories[categoryIndex] ===
                         "Insights By Category" && (
-                        <Typography color="textSecondary" fontSize={12}>
+                        <Typography 
+                          sx={{
+                            color: "textSecondary",
+                            fontSize: { xs: 10, sm: 12 },
+                          }}
+                        >
                           No category insights available.
                         </Typography>
                       )
@@ -438,25 +487,31 @@ const InsightsSection = () => {
             )}
           </Box>
 
-          <Box flex={1} display="flex" gap="1%">
+          <Box 
+            sx={{
+              flex: 1,
+              display: "flex",
+              gap: "1%",
+              width: { xs: "100%", sm: "auto" },
+            }}
+          >
             {sortedNotificationDates.map((date) => (
-              <Box key={date} mb={2}>
+              <Box key={date} mb={2} sx={{ width: "100%" }}>
                 <Typography
-                  color="textSecondary"
-                  fontSize={14}
-                  mb={1}
                   sx={{
+                    color: "#485E75",
+                    fontSize: { xs: 12, sm: 14 },
+                    mb: 1,
                     fontFamily:
                       "'Nunito Sans', -apple-system, 'Segoe UI', 'Roboto', 'Helvetica Neue', 'Arial', sans-serif",
-                    color: "#485E75",
                   }}
                 >
                   {'September 1,2025'}
                 </Typography>
                 <Box
-                  display="flex"
-                  gap={2}
                   sx={{
+                    display: "flex",
+                    gap: { xs: 1, sm: 2 },
                     overflowX: "auto",
                     overflowY: "hidden",
                     maxWidth: "100%",
@@ -469,7 +524,7 @@ const InsightsSection = () => {
                       borderRadius: 4,
                     },
                     "&::-webkit-scrollbar-track": {
-                      backgroundColor: "#d3d3d3", // light grey color
+                      backgroundColor: "#d3d3d3",
                       borderRadius: 4,
                     },
                   }}
@@ -477,14 +532,16 @@ const InsightsSection = () => {
                   {groupedNotifications[date].map((note) => (
                     <Box
                       key={note.id}
-                      minWidth={300}
-                      p={1.5}
-                      borderRadius={2}
-                      bgcolor="#F0F9FF"
-                      display="flex"
-                      flexDirection="column"
-                      justifyContent="space-between"
-                      position="relative"
+                      sx={{
+                        minWidth: { xs: 250, sm: 300 },
+                        p: { xs: 1, sm: 1.5 },
+                        borderRadius: 2,
+                        bgcolor: "#F0F9FF",
+                        display: "flex",
+                        flexDirection: "column",
+                        justifyContent: "space-between",
+                        position: "relative",
+                      }}
                     >
                       <Box>
                         {/* Title and Close Icon Row */}
@@ -494,8 +551,8 @@ const InsightsSection = () => {
                           alignItems="flex-start"
                         >
                           <Typography
-                            fontSize={14}
                             sx={{
+                              fontSize: { xs: 12, sm: 14 },
                               color: "#485E75",
                               fontFamily:
                                 "'Nunito Sans', -apple-system, 'Segoe UI', 'Roboto', 'Helvetica Neue', 'Arial', sans-serif",
@@ -515,21 +572,37 @@ const InsightsSection = () => {
                             {note.desc}
                           </Typography>
 
-                          <IconButton size="small" sx={{ p: 0.5 }}>
-                            <CloseIcon fontSize="small" />
+                          <IconButton 
+                            size="small" 
+                            sx={{ 
+                              p: { xs: 0.3, sm: 0.5 } 
+                            }}
+                          >
+                            <CloseIcon 
+                              sx={{
+                                fontSize: { xs: "16px", sm: "small" }
+                              }}
+                            />
                           </IconButton>
                         </Box>
                       </Box>
 
                       {/* Tag and Button */}
-                      <Box display="flex" alignItems="center" gap={0.8} mt={1}>
+                      <Box 
+                        display="flex" 
+                        alignItems="center" 
+                        gap={0.8} 
+                        mt={1}
+                      >
                         <Chip
                           label={
                             <Box display="flex" alignItems="center" gap={0.3}>
-                              <NotificationsIcon sx={{ fontSize: 12 }} />
+                              <NotificationsIcon 
+                                sx={{ fontSize: { xs: 10, sm: 12 } }} 
+                              />
                               <Typography
-                                fontSize={12}
-                                style={{
+                                sx={{
+                                  fontSize: { xs: 10, sm: 12 },
                                   color: note.textColor,
                                   fontFamily:
                                     "'Nunito Sans', -apple-system, 'Segoe UI', 'Roboto', 'Helvetica Neue', 'Arial', sans-serif",
@@ -537,7 +610,9 @@ const InsightsSection = () => {
                               >
                                 {note.tag}
                               </Typography>
-                              <NorthEastIcon sx={{ fontSize: 12 }} />
+                              <NorthEastIcon 
+                                sx={{ fontSize: { xs: 10, sm: 12 } }} 
+                              />
                             </Box>
                           }
                           size="small"
@@ -545,21 +620,25 @@ const InsightsSection = () => {
                             backgroundColor: `${note.color}33`,
                             color: note.color,
                             fontWeight: 600,
-                            fontSize: 10,
+                            fontSize: { xs: 8, sm: 10 },
                             borderRadius: "4px",
-                            px: 0.8,
-                            py: 0.2,
+                            px: { xs: 0.6, sm: 0.8 },
+                            py: { xs: 0.1, sm: 0.2 },
                           }}
                         />
                         {/* <Button
-      variant="contained"
-      size="small"
-      sx={{   fontFamily:
-        "'Nunito Sans', -apple-system, 'Segoe UI', 'Roboto', 'Helvetica Neue', 'Arial', sans-serif",
- borderRadius: '4px', textTransform: 'none', fontSize: 14, padding: '4px 8px' }}
-    >
-      Open
-    </Button> */}
+                          variant="contained"
+                          size="small"
+                          sx={{   
+                            fontFamily: "'Nunito Sans', -apple-system, 'Segoe UI', 'Roboto', 'Helvetica Neue', 'Arial', sans-serif",
+                            borderRadius: '4px', 
+                            textTransform: 'none', 
+                            fontSize: { xs: 12, sm: 14 }, 
+                            padding: { xs: '2px 6px', sm: '4px 8px' }
+                          }}
+                        >
+                          Open
+                        </Button> */}
                       </Box>
                     </Box>
                   ))}

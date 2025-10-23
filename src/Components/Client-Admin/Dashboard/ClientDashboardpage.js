@@ -1311,72 +1311,73 @@ function ClientDashboardpage() {
                 }}
               >
                 <Tabs
-                  value={tab}
-                  onChange={(e, newValue) => setTab(newValue)}
-                  variant="fullWidth"
-                  sx={{
-                    minHeight: 0,
-                    width: "100%",
-                    "& .MuiTabs-indicator": { display: "none" },
-                  }}
-                >
-                  {[
-                    {
-                      label: "Revenue",
-                      icon: <BarChartOutlined fontSize="small" />,
-                    },
-                    {
-                      label: "Top Products",
-                      icon: <EmojiEventsOutlined fontSize="small" />,
-                    },
-                    {
-                      label: "Total Sales",
-                      icon: <AttachMoneyOutlined fontSize="small" />,
-                    },
-                    {
-                      label: "Latest Orders",
-                      icon: <ShoppingCartOutlined fontSize="small" />,
-                    },
-                  ].map((item, index) => (
-                    <Tab
-                      key={item.label}
-                      icon={item.icon}
-                      iconPosition="start"
-                      label={
-                        <Typography
-                          fontSize="14px"
-                          sx={{
-                            fontFamily:
-                              "'Nunito Sans', -apple-system, 'Segoe UI', 'Roboto', 'Helvetica Neue', 'Arial', sans-serif",
-                          }}
-                          fontWeight={tab === index ? 600 : "normal"}
-                        >
-                          {item.label}
-                        </Typography>
-                      }
-                      sx={{
-                        textTransform: "none",
-                        minHeight: 26,
-                        px: 1.2,
-                        mx: 0.4,
-                        fontSize: "14px",
-                        borderRadius: "16px",
-                        color: "#2b2f3c",
-                        backgroundColor: tab === index ? "#fff" : "transparent",
-                        "&.Mui-selected": {
-                          color: "#000",
-                        },
-                        "&:hover": {
-                          backgroundColor:
-                            tab === index ? "#fff" : "rgb(166, 183, 201)",
-                        },
-                        "&:active": {
-                          backgroundColor: "rgb(103, 132, 162)",
-                        },
-                      }}
-                    />
-                  ))}
-                </Tabs>
+                value={tab}
+                onChange={(e, newValue) => setTab(newValue)}
+                variant="fullWidth"
+                sx={{
+                  minHeight: 0,
+                  width: "100%",
+                  "& .MuiTabs-indicator": { display: "none" },
+                }}
+              >
+                {[
+                  {
+                    label: "Revenue",
+                    icon: <BarChartOutlined sx={{ fontSize: { xs: 16, sm: 20 } }} />,
+                  },
+                  {
+                    label: "Top Products",
+                    icon: <EmojiEventsOutlined sx={{ fontSize: { xs: 16, sm: 20 } }} />,
+                  },
+                  {
+                    label: "Total Sales",
+                    icon: <AttachMoneyOutlined sx={{ fontSize: { xs: 16, sm: 20 } }} />,
+                  },
+                  {
+                    label: "Latest Orders",
+                    icon: <ShoppingCartOutlined sx={{ fontSize: { xs: 16, sm: 20 } }} />,
+                  },
+                ].map((item, index) => (
+                  <Tab
+                    key={item.label}
+                    icon={item.icon}
+                    iconPosition="start"
+                    label={
+                      <Typography
+                        sx={{
+                          fontSize: { xs: "11px", sm: "12px", md: "14px" },
+                          fontFamily:
+                            "'Nunito Sans', -apple-system, 'Segoe UI', 'Roboto', 'Helvetica Neue', 'Arial', sans-serif",
+                          fontWeight: tab === index ? 600 : "normal",
+                          display: { xs: "none", sm: "block" },
+                        }}
+                      >
+                        {item.label}
+                      </Typography>
+                    }
+                    sx={{
+                      textTransform: "none",
+                      minHeight: { xs: 24, sm: 26 },
+                      minWidth: { xs: "auto", sm: "unset" },
+                      px: { xs: 0.5, sm: 0.8, md: 1.2 },
+                      mx: { xs: 0.2, sm: 0.3, md: 0.4 },
+                      fontSize: { xs: "11px", sm: "12px", md: "14px" },
+                      borderRadius: { xs: "12px", sm: "14px", md: "16px" },
+                      color: "#2b2f3c",
+                      backgroundColor: tab === index ? "#fff" : "transparent",
+                      "&.Mui-selected": { color: "#000" },
+                      "&:hover": {
+                        backgroundColor: tab === index ? "#fff" : "rgb(166, 183, 201)",
+                      },
+                      "&:active": { backgroundColor: "rgb(103, 132, 162)" },
+                      "& .MuiTab-iconWrapper": {
+                        marginRight: { xs: 0, sm: "6px" },
+                        marginBottom: { xs: 0, sm: "0 !important" },
+                      },
+                    }}
+                  />
+                ))}
+              </Tabs>
               </Box>
               <Box>
                 {tab === 0 && (

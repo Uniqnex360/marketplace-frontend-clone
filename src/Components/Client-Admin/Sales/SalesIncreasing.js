@@ -17,7 +17,9 @@ import {
   MenuItem,
   ListItemIcon,
   ListItemText,
-  Paper
+  Paper,
+  useTheme,
+  useMediaQuery
 } from '@mui/material';
 import {
   MoreVert,
@@ -47,6 +49,12 @@ const SalesIncreasing = ({
   const [anchorEl, setAnchorEl] = useState(null);
   const open = Boolean(anchorEl);
   const lastParamsRef = useRef("");
+
+  // Add theme and media query hooks
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
+  const isTablet = useMediaQuery(theme.breakpoints.between('sm', 'md'));
+  const isSmallScreen = useMediaQuery(theme.breakpoints.down('md'));
 
   // Get dates for display
   const today = new Date();
@@ -209,12 +217,22 @@ const SalesIncreasing = ({
 
   return (
     <Box sx={{ borderRadius: 3, border: '1px solid #E0E0E0' }}>
-      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', p: '10px', mb: 2 }}>
+      <Box 
+        sx={{ 
+          display: 'flex', 
+          flexDirection: { xs: 'column', sm: 'row' },
+          justifyContent: 'space-between', 
+          alignItems: { xs: 'flex-start', sm: 'center' }, 
+          p: { xs: '8px', sm: '10px' }, 
+          mb: { xs: 1, sm: 2 },
+          gap: { xs: 1, sm: 0 }
+        }}
+      >
         <Box>
           <Typography
             variant="h6"
             sx={{
-              fontSize: '20px',
+              fontSize: { xs: '16px', sm: '18px', md: '20px' },
               fontWeight: 700,
               color: '#1E293B',
               fontFamily: "'Nunito Sans', -apple-system, 'Segoe UI', 'Roboto', 'Helvetica Neue', 'Arial', sans-serif",
@@ -226,7 +244,7 @@ const SalesIncreasing = ({
           <Typography
             variant="body2"
             sx={{
-              fontSize: '14px',
+              fontSize: { xs: '12px', sm: '14px' },
               color: '#485E75',
               fontFamily: "'Nunito Sans', -apple-system, 'Segoe UI', 'Roboto', 'Helvetica Neue', 'Arial', sans-serif",
             }}
@@ -234,7 +252,7 @@ const SalesIncreasing = ({
             {`${dayBeforeYesterday} - ${yesterday}`}
           </Typography>
         </Box>
-        <Box>
+        <Box sx={{ alignSelf: { xs: 'flex-end', sm: 'center' } }}>
           <IconButton
             aria-label="more"
             id="long-button"
@@ -256,7 +274,7 @@ const SalesIncreasing = ({
             onClose={handleClose}
             PaperProps={{
               style: {
-                width: 200,
+                width: isMobile ? 180 : 200,
                 borderRadius: 10,
                 boxShadow: '0 4px 20px rgba(0,0,0,0.1)',
               },
@@ -270,7 +288,7 @@ const SalesIncreasing = ({
               sx={{
                 color: '#485E75',
                 fontFamily: "'Nunito Sans', sans-serif",
-                fontSize: 14,
+                fontSize: { xs: 12, sm: 14 },
               }}
             >
               <ListItemIcon sx={{ color: '#485E75', minWidth: 36 }}>
@@ -291,7 +309,7 @@ const SalesIncreasing = ({
               sx={{
                 color: '#485E75',
                 fontFamily: "'Nunito Sans', sans-serif",
-                fontSize: 14,
+                fontSize: { xs: 12, sm: 14 },
               }}
             >
               <ListItemIcon sx={{ color: '#485E75', minWidth: 36 }}>
@@ -309,7 +327,7 @@ const SalesIncreasing = ({
               sx={{
                 color: '#485E75',
                 fontFamily: "'Nunito Sans', sans-serif",
-                fontSize: 14,
+                fontSize: { xs: 12, sm: 14 },
               }}
             >
               <ListItemIcon sx={{ color: '#485E75', minWidth: 36 }}>
@@ -325,39 +343,47 @@ const SalesIncreasing = ({
           </Menu>
         </Box>
       </Box>
-      <TableContainer>
+      <TableContainer sx={{ maxWidth: '100%', overflowX: 'auto' }}>
         <Table>
           <TableHead sx={{ backgroundColor: '#F9FAFB' }}>
             <TableRow>
               <TableCell sx={{
-                fontSize: '12px',
+                fontSize: { xs: '10px', sm: '12px' },
                 color: '#485E75',
                 fontFamily: "'Nunito Sans', -apple-system, 'Segoe UI', 'Roboto', 'Helvetica Neue', 'Arial', sans-serif",
-                fontWeight: 600
+                fontWeight: 600,
+                minWidth: { xs: '200px', sm: '300px' },
+                padding: { xs: '8px', sm: '16px' }
               }}>
                 Product
               </TableCell>
               <TableCell sx={{
-                fontSize: '12px',
+                fontSize: { xs: '10px', sm: '12px' },
                 color: '#485E75',
                 fontFamily: "'Nunito Sans', -apple-system, 'Segoe UI', 'Roboto', 'Helvetica Neue', 'Arial', sans-serif",
-                fontWeight: 600
+                fontWeight: 600,
+                minWidth: { xs: '80px', sm: 'auto' },
+                padding: { xs: '8px', sm: '16px' }
               }}>
                 Gross Revenue
               </TableCell>
               <TableCell sx={{
-                fontSize: '12px',
+                fontSize: { xs: '10px', sm: '12px' },
                 color: '#485E75',
                 fontFamily: "'Nunito Sans', -apple-system, 'Segoe UI', 'Roboto', 'Helvetica Neue', 'Arial', sans-serif",
-                fontWeight: 600
+                fontWeight: 600,
+                minWidth: { xs: '80px', sm: 'auto' },
+                padding: { xs: '8px', sm: '16px' }
               }}>
                 Net Profit
               </TableCell>
               <TableCell sx={{
-                fontSize: '12px',
+                fontSize: { xs: '10px', sm: '12px' },
                 color: '#485E75',
                 fontFamily: "'Nunito Sans', -apple-system, 'Segoe UI', 'Roboto', 'Helvetica Neue', 'Arial', sans-serif",
-                fontWeight: 600
+                fontWeight: 600,
+                minWidth: { xs: '80px', sm: 'auto' },
+                padding: { xs: '8px', sm: '16px' }
               }}>
                 Units Sold
               </TableCell>
@@ -367,41 +393,71 @@ const SalesIncreasing = ({
             {products.length > 0 ? (
               products.map((item, index) => (
                 <TableRow key={index} sx={{ '&:last-child td, &:last-child th': { border: 0 } }}>
-                  <TableCell>
-                    <Box display="flex" alignItems="center" sx={{ width: '600px' }} gap={2}>
-                      <Avatar src={item.images || ''} variant="square" sx={{ width: 40, height: 40 }} />
-                      <Box>
+                  <TableCell sx={{ padding: { xs: '8px', sm: '16px' } }}>
+                    <Box 
+                      display="flex" 
+                      alignItems="center" 
+                      sx={{ 
+                        width: { xs: '200px', sm: '400px', md: '600px' },
+                        flexDirection: { xs: 'column', sm: 'row' },
+                        alignItems: { xs: 'flex-start', sm: 'center' }
+                      }} 
+                      gap={{ xs: 1, sm: 2 }}
+                    >
+                      <Avatar 
+                        src={item.images || ''} 
+                        variant="square" 
+                        sx={{ 
+                          width: { xs: 30, sm: 40 }, 
+                          height: { xs: 30, sm: 40 } 
+                        }} 
+                      />
+                      <Box sx={{ width: '100%' }}>
                         <a
                           href={`/Home/sales-detail/${item.id}`}
                           target="_blank"
                           rel="noopener noreferrer"
-                          style={{ textDecoration: "none", width: '40px', height: '40px' }}
+                          style={{ textDecoration: "none" }}
                         >
                           <CustomizeTooltip title={item.product_name}>
                             <Typography
                               sx={{
-                                fontSize: '14px',
+                                fontSize: { xs: '12px', sm: '14px' },
                                 color: "#0A6FE8",
                                 fontWeight: 500,
-                                fontFamily: "'Nunito Sans', -apple-system, 'Segoe UI', 'Roboto', 'Helvetica Neue', 'Arial', sans-serif"
+                                fontFamily: "'Nunito Sans', -apple-system, 'Segoe UI', 'Roboto', 'Helvetica Neue', 'Arial', sans-serif",
+                                overflow: 'hidden',
+                                textOverflow: 'ellipsis',
+                                whiteSpace: isMobile ? 'normal' : 'nowrap',
+                                display: '-webkit-box',
+                                WebkitLineClamp: isMobile ? 2 : 1,
+                                WebkitBoxOrient: 'vertical',
                               }}
                             >
                               {item.product_name}
                             </Typography>
                           </CustomizeTooltip>
                         </a>
-                        <Box sx={{ display: 'flex', alignItems: 'center', mt: 0.5 }}>
+                        <Box 
+                          sx={{ 
+                            display: 'flex', 
+                            alignItems: 'center', 
+                            mt: 0.5,
+                            flexWrap: 'wrap',
+                            gap: { xs: 0.5, sm: 0 }
+                          }}
+                        >
                           <img
                             src="https://re-cdn.helium10.com/container/static/Flag-united-states-ksqXwksC.svg"
                             alt="Country Flag"
-                            width={27}
-                            height={16}
+                            width={isMobile ? 20 : 27}
+                            height={isMobile ? 12 : 16}
                             style={{ marginRight: 6 }}
                           />
                           <Typography
                             sx={{
                               pr: '7px',
-                              fontSize: '14px',
+                              fontSize: { xs: '11px', sm: '14px' },
                               color: '#121212',
                               fontFamily: "'Nunito Sans', -apple-system, 'Segoe UI', 'Roboto', 'Helvetica Neue', 'Arial', sans-serif'",
                               position: 'relative',
@@ -412,19 +468,23 @@ const SalesIncreasing = ({
                                 left: 0,
                                 top: 0,
                                 color: '#485E75',
-                                fontSize: '14px',
+                                fontSize: { xs: '11px', sm: '14px' },
                                 lineHeight: '1.5',
                               },
                             }}
                           >
                             {`• ${item.fulfillmentChannel}`}
                           </Typography>
-                          <Typography variant="caption" color="textSecondary" sx={{
-                            mr: 1,
-                            fontSize: '14px',
-                            color: '#485E75',
-                            fontFamily: "'Nunito Sans', -apple-system, 'Segoe UI', 'Roboto', 'Helvetica Neue', 'Arial', sans-serif'",
-                          }}>
+                          <Typography 
+                            variant="caption" 
+                            color="textSecondary" 
+                            sx={{
+                              mr: 1,
+                              fontSize: { xs: '11px', sm: '14px' },
+                              color: '#485E75',
+                              fontFamily: "'Nunito Sans', -apple-system, 'Segoe UI', 'Roboto', 'Helvetica Neue', 'Arial', sans-serif'",
+                            }}
+                          >
                             {item?.asin}
                           </Typography>
                           <Tooltip
@@ -432,13 +492,20 @@ const SalesIncreasing = ({
                             onOpen={() => handleTooltipOpen(item.asin)}
                             arrow
                           >
-                            <IconButton onClick={() => handleCopy(item.asin)} size="small" sx={{ mr: 0.5 }}>
-                              <ContentCopyIcon sx={{ fontSize: '14px', color: '#757575' }} />
+                            <IconButton 
+                              onClick={() => handleCopy(item.asin)} 
+                              size="small" 
+                              sx={{ 
+                                mr: 0.5,
+                                padding: { xs: '2px', sm: '4px' }
+                              }}
+                            >
+                              <ContentCopyIcon sx={{ fontSize: { xs: '12px', sm: '14px' }, color: '#757575' }} />
                             </IconButton>
                           </Tooltip>
                           <Typography
                             sx={{
-                              fontSize: '14px',
+                              fontSize: { xs: '11px', sm: '14px' },
                               color: '#485E75',
                               fontFamily: "'Nunito Sans', -apple-system, 'Segoe UI', 'Roboto', 'Helvetica Neue', 'Arial', sans-serif'",
                               position: 'relative',
@@ -449,7 +516,7 @@ const SalesIncreasing = ({
                                 left: 0,
                                 top: 0,
                                 color: '#485E75',
-                                fontSize: '14px',
+                                fontSize: { xs: '11px', sm: '14px' },
                                 lineHeight: '1.5',
                               },
                             }}
@@ -461,36 +528,46 @@ const SalesIncreasing = ({
                     </Box>
                   </TableCell>
                   <TableCell sx={{
-                    fontSize: '14px',
+                    fontSize: { xs: '12px', sm: '14px' },
                     fontFamily: "'Nunito Sans', -apple-system, 'Segoe UI', 'Roboto', 'Helvetica Neue', 'Arial', sans-serif",
-                    color: '#485E75'
+                    color: '#485E75',
+                    padding: { xs: '8px', sm: '16px' }
                   }}>
                     {formatCurrency(item.grossRevenue)}
                   </TableCell>
                   <TableCell sx={{
-                    fontSize: '14px',
+                    fontSize: { xs: '12px', sm: '14px' },
                     fontFamily: "'Nunito Sans', -apple-system, 'Segoe UI', 'Roboto', 'Helvetica Neue', 'Arial', sans-serif",
-                    color: '#485E75'
+                    color: '#485E75',
+                    padding: { xs: '8px', sm: '16px' }
                   }}>
                      {formatCurrency(item.netProfit)}
                   </TableCell>
-                  <TableCell>
+                  <TableCell sx={{ padding: { xs: '8px', sm: '16px' } }}>
                     <Box display="flex" alignItems="center" gap={1}>
                       <Typography sx={{
-                        fontSize: '14px',
+                        fontSize: { xs: '12px', sm: '14px' },
                         fontFamily: "'Nunito Sans', -apple-system, 'Segoe UI', 'Roboto', 'Helvetica Neue', 'Arial', sans-serif",
                         color: '#485E75'
                       }}>
                         {item.unitsSold?.toLocaleString("en-US")}
                       </Typography>
-                      <ArrowUpwardIcon sx={{ color: 'rgb(51, 204, 153)', fontSize: 14 }} />
+                      <ArrowUpwardIcon sx={{ color: 'rgb(51, 204, 153)', fontSize: { xs: 12, sm: 14 } }} />
                     </Box>
                   </TableCell>
                 </TableRow>
               ))
             ) : (
               <TableRow>
-                <TableCell colSpan={4} align="center" sx={{ fontSize: '14px', color: '#485E75' }}>
+                <TableCell 
+                  colSpan={4} 
+                  align="center" 
+                  sx={{ 
+                    fontSize: { xs: '12px', sm: '14px' }, 
+                    color: '#485E75',
+                    padding: { xs: '8px', sm: '16px' }
+                  }}
+                >
                   No data available
                 </TableCell>
               </TableRow>

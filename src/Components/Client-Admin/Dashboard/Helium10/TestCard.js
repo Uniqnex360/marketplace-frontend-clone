@@ -9,6 +9,7 @@ import {
   useTheme,
   Dialog,
   DialogContent,
+  useMediaQuery,
 } from "@mui/material";
 import "./Helium.css";
 import SettingsIcon from "@mui/icons-material/Settings";
@@ -47,6 +48,9 @@ const MetricItem = ({
   percentSymbol,
   loading = false,
 }) => {
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
+
   const absValue = Math.abs(value ?? 0);
   const absChange = Math.abs(change ?? 0);
 
@@ -88,14 +92,19 @@ const MetricItem = ({
     <Card
       sx={{
         borderRadius: 2,
-        minWidth: 200,
-        height: 60,
+        minWidth: { xs: 150, sm: 180, md: 200 },
+        height: { xs: 55, sm: 60 },
         opacity: loading ? 0.6 : 1,
       }}
     >
-      <CardContent sx={{ py: 0.5 }}>
+      <CardContent sx={{ py: { xs: 0.3, sm: 0.5 }, px: { xs: 1, sm: 2 } }}>
         <Box display="flex" justifyContent="space-between" alignItems="center">
-          <Typography fontSize={14} color="text.secondary">
+          <Typography 
+            sx={{ 
+              fontSize: { xs: 12, sm: 14 }, 
+              color: "text.secondary" 
+            }}
+          >
             {title}
           </Typography>
         </Box>
@@ -105,12 +114,12 @@ const MetricItem = ({
           justifyContent="flex-start"
           alignItems="center"
           mt={0.5}
-          sx={{ paddingRight: "4px", gap: 1 }}
+          sx={{ paddingRight: "4px", gap: { xs: 0.5, sm: 1 } }}
         >
           <Tooltip title={tooltip || ""}>
             <Typography
               variant="subtitle2"
-              sx={{ fontSize: "20px" }}
+              sx={{ fontSize: { xs: "16px", sm: "18px", md: "20px" } }}
               fontWeight="bold"
             >
               {loading ? "..." : displayValue}
@@ -119,18 +128,20 @@ const MetricItem = ({
 
           {change !== undefined && (
             <Typography
-              fontSize={11}
-              color={isNegative ? "error.main" : "success.main"}
-              display="flex"
-              alignItems="center"
-              gap={0.5}
+              sx={{ 
+                fontSize: { xs: 10, sm: 11 },
+                color: isNegative ? "error.main" : "success.main",
+                display: "flex",
+                alignItems: "center",
+                gap: 0.5,
+              }}
             >
               {loading ? "..." : displayChange}
               {!loading &&
                 (isNegative ? (
-                  <ArrowDownward fontSize="inherit" />
+                  <ArrowDownward sx={{ fontSize: "inherit" }} />
                 ) : (
-                  <ArrowUpward fontSize="inherit" />
+                  <ArrowUpward sx={{ fontSize: "inherit" }} />
                 ))}
             </Typography>
           )}
@@ -152,6 +163,10 @@ const TestCard = ({
   fulfillment_channel,
 }) => {
   const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
+  const isTablet = useMediaQuery(theme.breakpoints.between('sm', 'md'));
+  const isSmallScreen = useMediaQuery(theme.breakpoints.down('md'));
+
   const API_TODAY = dayjs("02/09/2025", "DD/MM/YYYY").tz(TIMEZONE);
 
   // Combined state for dates and preset
@@ -316,7 +331,7 @@ const TestCard = ({
     switch (widgetData) {
       case "Today":
       case "Yesterday":
-        return selectedDate.format("ddd, MMM DD");
+        return selectedDate.format(isMobile ? "MMM DD" : "ddd, MMM DD");
       default:
         if (
           displayDate &&
@@ -327,7 +342,7 @@ const TestCard = ({
             "MMM DD"
           )}`;
         }
-        return selectedDate.format("ddd, MMM DD");
+        return selectedDate.format(isMobile ? "MMM DD" : "ddd, MMM DD");
     }
   };
 
@@ -350,7 +365,7 @@ const TestCard = ({
             color: "#0A6FE8",
             fontWeight: "bold",
             fontFamily: "'Nunito Sans', sans-serif",
-            fontSize: 14,
+            fontSize: isMobile ? 12 : 14,
             cursor: "pointer",
             textDecoration: "none",
           }}
@@ -643,9 +658,10 @@ const TestCard = ({
 
   const getGraphPoints = (metric = "gross_revenue_without_tax") => {
     const maxValue = Math.max(...dataState.bindGraph.map((d) => d[metric]), 1);
+    const width = isMobile ? 200 : 280;
     return dataState.bindGraph
       .map((item, index) => {
-        const x = (index / (dataState.bindGraph.length - 1)) * 280 + 10;
+        const x = (index / (dataState.bindGraph.length - 1)) * width + 10;
         const y = 50 - (item[metric] / maxValue) * 30;
         return `${x},${y}`;
       })
@@ -654,22 +670,23 @@ const TestCard = ({
 
   const getCirclePoints = (metric = "gross_revenue_without_tax") => {
     const maxValue = Math.max(...dataState.bindGraph.map((d) => d[metric]), 1);
+    const width = isMobile ? 200 : 280;
     return dataState.bindGraph.map((item, index) => ({
       ...item,
-      cx: (index / (dataState.bindGraph.length - 1)) * 280 + 10,
+      cx: (index / (dataState.bindGraph.length - 1)) * width + 10,
       cy: 50 - (item[metric] / maxValue) * 30,
       value: item[metric],
     }));
   };
 
   const metricBlockStyle = {
-    flex: "0 0 180px",
+    flex: { xs: "0 0 150px", sm: "0 0 180px" },
     display: "flex",
     alignItems: "center",
     justifyContent: "center",
     borderBottom: "1px solid #e0e0e0",
-    py: 1,
-    px: 2,
+    py: { xs: 0.5, sm: 1 },
+    px: { xs: 1, sm: 2 },
   };
 
   return (
@@ -678,7 +695,7 @@ const TestCard = ({
         border: "1px solid #e0e0e0",
         borderRadius: 2,
         backgroundColor: "#fff",
-        width: "99%",
+        width: { xs: "100%", sm: "99%" },
         boxShadow: "0 2px 8px rgba(0, 0, 0, 0.05)",
         py: 0.5,
       }}
@@ -698,9 +715,9 @@ const TestCard = ({
         <>
         <Box
           sx={{
-            px: 2,
-            py: 1.5,
-            borderBottom: "1px solid #e0e0e0", // Separator line
+            px: { xs: 1, sm: 2 },
+            py: { xs: 1, sm: 1.5 },
+            borderBottom: "1px solid #e0e0e0",
             textAlign: "left",
           }}
         >
@@ -710,10 +727,10 @@ const TestCard = ({
             color="#020202ff"
             sx={{
               fontFamily: "'Nunito Sans', sans-serif",
-              fontSize: 18,
+              fontSize: { xs: 16, sm: 18 },
             }}
           >
-            Summary  {/* Main header text - Change to "Key Metrics Summary" or whatever fits */}
+            Summary
           </Typography>
         </Box>
         <Box
@@ -722,15 +739,16 @@ const TestCard = ({
             flexWrap: "wrap",
             justifyContent: "flex-start",
             width: "100%",
-            px: 2,
+            px: { xs: 1, sm: 2 },
           }}
         >
           {/* Date Picker */}
           <Box
             sx={{
               ...metricBlockStyle,
-              borderRight: "1px solid #e0e0e0",
+              borderRight: { xs: "none", sm: "1px solid #e0e0e0" },
               borderLeft: "none",
+              width: { xs: "100%", sm: "auto" },
             }}
           >
             <Box display="flex" alignItems="center" gap={1}>
@@ -738,8 +756,9 @@ const TestCard = ({
                 size="small"
                 onClick={handlePrevious}
                 disabled={dataLoading}
+                sx={{ padding: { xs: '4px', sm: '8px' } }}
               >
-                <ChevronLeft fontSize="small" />
+                <ChevronLeft sx={{ fontSize: { xs: 18, sm: 24 } }} />
               </IconButton>
 
               <Tooltip
@@ -753,7 +772,7 @@ const TestCard = ({
                     sx={{
                       color: "#485E75",
                       fontFamily: "'Nunito Sans', sans-serif",
-                      fontSize: 14,
+                      fontSize: { xs: 12, sm: 14 },
                       opacity: dataLoading ? 0.7 : 1,
                     }}
                   >
@@ -776,6 +795,7 @@ const TestCard = ({
                         justifyContent: "center",
                         textAlign: "center",
                         width: "100%",
+                        fontSize: { xs: 11, sm: 14 },
                       }}
                     >
                       {getSubtitleText(
@@ -795,8 +815,9 @@ const TestCard = ({
                   size="small"
                   onClick={handleNext}
                   disabled={dataLoading}
+                  sx={{ padding: { xs: '4px', sm: '8px' } }}
                 >
-                  <ChevronRight fontSize="small" />
+                  <ChevronRight sx={{ fontSize: { xs: 18, sm: 24 } }} />
                 </IconButton>
               )}
             </Box>
@@ -857,7 +878,7 @@ const TestCard = ({
           {/* Chart */}
           {(visibleMetrics.includes("gross_revenue_without_tax") ||
             visibleMetrics.includes("gross_revenue_with_tax")) && (
-            <Box sx={{ borderRight: "1px solid #e0e0e0" }}>
+            <Box sx={{ borderRight: { xs: "none", sm: "1px solid #e0e0e0" } }}>
               <Box
                 ref={graphContainerRef}
                 sx={{
@@ -886,12 +907,12 @@ const TestCard = ({
                 <Box
                   sx={{
                     width: "100%",
-                    height: 80,
+                    height: { xs: 70, sm: 80 },
                     position: "relative",
                     overflow: "visible",
                   }}
                 >
-                  <svg ref={svgRef} width="100%" height="60">
+                  <svg ref={svgRef} width="100%" height={isMobile ? 50 : 60}>
                     {[20, 30, 40].map((y, idx) => (
                       <line
                         key={idx}
@@ -905,9 +926,9 @@ const TestCard = ({
                     ))}
                     <line
                       x1="0"
-                      y1="48"
+                      y1={isMobile ? 46 : 48}
                       x2="100%"
-                      y2="48"
+                      y2={isMobile ? 46 : 48}
                       stroke="#000"
                       strokeWidth="1"
                     />
@@ -919,15 +940,15 @@ const TestCard = ({
                           style={{
                             fill: "none",
                             stroke: theme.palette.primary.main,
-                            strokeWidth: 2,
+                            strokeWidth: isMobile ? 1.5 : 2,
                           }}
                         />
                         <polyline
                           points={getGraphPoints("gross_revenue_with_tax")}
                           style={{
                             fill: "none",
-                            stroke: "#FF9800", // Use a different color
-                            strokeWidth: 2,
+                            stroke: "#FF9800",
+                            strokeWidth: isMobile ? 1.5 : 2,
                           }}
                         />
 
@@ -937,7 +958,7 @@ const TestCard = ({
                               key={`no-tax-${index}`}
                               cx={point.cx}
                               cy={point.cy}
-                              r="8"
+                              r={isMobile ? 6 : 8}
                               fill="transparent"
                               stroke="transparent"
                               style={{
@@ -961,7 +982,7 @@ const TestCard = ({
                               key={`with-tax-${index}`}
                               cx={point.cx}
                               cy={point.cy}
-                              r="8"
+                              r={isMobile ? 6 : 8}
                               fill="transparent"
                               stroke="transparent"
                               style={{
@@ -985,7 +1006,7 @@ const TestCard = ({
                             <circle
                               cx={tooltipData.cx}
                               cy={tooltipData.cy}
-                              r="6"
+                              r={isMobile ? 4 : 6}
                               fill="white"
                               stroke={theme.palette.primary.main}
                               strokeWidth="2"
@@ -994,7 +1015,7 @@ const TestCard = ({
                             <circle
                               cx={tooltipData.cx}
                               cy={tooltipData.cy}
-                              r="3"
+                              r={isMobile ? 2 : 3}
                               fill={theme.palette.primary.main}
                               style={{ pointerEvents: "none" }}
                             />
@@ -1009,12 +1030,12 @@ const TestCard = ({
                     <Box
                       sx={{
                         position: "absolute",
-                        top: 52,
+                        top: isMobile ? 42 : 52,
                         left: 0,
                         right: 0,
                         display: "flex",
                         justifyContent: "space-between",
-                        fontSize: 11,
+                        fontSize: { xs: 9, sm: 11 },
                         color: "#555",
                         px: 1,
                         marginTop: "3px",
@@ -1037,7 +1058,7 @@ const TestCard = ({
                         top: "50%",
                         left: "50%",
                         transform: "translate(-50%, -50%)",
-                        fontSize: 12,
+                        fontSize: { xs: 10, sm: 12 },
                         color: "#666",
                       }}
                     >
@@ -1057,24 +1078,32 @@ const TestCard = ({
                           window.innerWidth - 160,
                           svgOffset.left + tooltipData.cx - 80
                         )
-                      ), // Prevent tooltip from going off-screen
+                      ),
                       top: Math.max(10, svgOffset.top + tooltipData.cy - 70),
                       backgroundColor: "white",
                       border: "1px solid #d0d7de",
                       borderRadius: 2,
-                      padding: "8px 12px",
-                      fontSize: 12,
-                      pointerEvents: "none", // This is crucial - prevents tooltip from interfering with mouse events
+                      padding: { xs: "6px 10px", sm: "8px 12px" },
+                      fontSize: { xs: 11, sm: 12 },
+                      pointerEvents: "none",
                       zIndex: 1000,
                       boxShadow: "0 8px 24px rgba(0,0,0,0.15)",
                       whiteSpace: "nowrap",
                       maxWidth: 200,
                     }}
                   >
-                    <Typography fontWeight="bold" fontSize={14} color="#485E75">
+                    <Typography 
+                      fontWeight="bold" 
+                      sx={{ fontSize: { xs: 12, sm: 14 } }} 
+                      color="#485E75"
+                    >
                       {dayjs(tooltipData.fullDate).format("MMM DD, YYYY")}
                     </Typography>
-                    <Typography fontSize={14} color="#FF9800" fontWeight="bold">
+                    <Typography 
+                      sx={{ fontSize: { xs: 12, sm: 14 } }} 
+                      color="#FF9800" 
+                      fontWeight="bold"
+                    >
                       Gross Revenue:{" "}
                       {formatCurrency(tooltipData.gross_revenue_with_tax)}
                     </Typography>
@@ -1129,19 +1158,25 @@ const TestCard = ({
               alignItems: "center",
               gap: 1,
               cursor: "pointer",
-              p: 1,
-              height: "65px",
-              fontSize: 14,
+              p: { xs: 0.5, sm: 1 },
+              height: { xs: "55px", sm: "65px" },
+              fontSize: { xs: 12, sm: 14 },
               fontWeight: 600,
               color: "#485E75",
             }}
           >
-            <SettingsIcon sx={{ fontSize: 18 }} />
-            Choose Metrics
+            <SettingsIcon sx={{ fontSize: { xs: 16, sm: 18 } }} />
+            <Box sx={{ display: { xs: "none", sm: "block" } }}>Choose Metrics</Box>
           </Box>
 
           {/* Settings Dialog */}
-          <Dialog open={open} onClose={handleClose} maxWidth="sm" fullWidth>
+          <Dialog 
+            open={open} 
+            onClose={handleClose} 
+            maxWidth="sm" 
+            fullWidth
+            fullScreen={isMobile}
+          >
             <DialogContent dividers>
               <ChooseMetrics
                 selectedDate={currentDates.selectedDate}
