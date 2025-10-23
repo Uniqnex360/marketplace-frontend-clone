@@ -772,14 +772,14 @@ function ClientDashboardpage() {
     >
       <Box
         sx={{
-          fontSize: "32px",
+          fontSize: "24px",
           fontFamily:
             "'Nunito Sans', -apple-system, 'Segoe UI', 'Roboto', 'Helvetica Neue', 'Arial', sans-serif",
           fontWeight: 500,
           flexShrink: 0,
         }}
       >
-        Welcome
+        Welcome {JSON.parse(localStorage.getItem("user"))?.name||"User"}
       </Box>
 
       {/* Filters in one line */}
@@ -1072,7 +1072,7 @@ function ClientDashboardpage() {
 
         {/* Preset Dropdown */}
         <Box sx={{ width: "130px" }}>
-          <FormControl size="small" sx={{ width: "100%" }}>
+          <FormControl size="small" sx={{ width: "110%" }}>
             <InputLabel>Preset</InputLabel>
             <Select
               value={selectedPreset}
@@ -1092,7 +1092,7 @@ function ClientDashboardpage() {
         </Box>
 
         {/* Start Date Picker */}
-        <Box sx={{ width: "130px" }}>
+        <Box sx={{ width: "130px",ml:1}}>
           <LocalizationProvider dateAdapter={AdapterDayjs}>
             <DatePicker
               label="Start Date"
@@ -1194,6 +1194,7 @@ function ClientDashboardpage() {
     <Box
       sx={{
         display: "flex",
+        width:'88%',
         flexWrap: "wrap",
         alignItems: "center",
         gap: 1,
@@ -1202,7 +1203,7 @@ function ClientDashboardpage() {
         borderRadius: "8px",
         backgroundColor: "#f9f9f9",
         mx: 2,
-        mt: 1,
+        mt: 2,
       }}
     >
       <Typography variant="body2" sx={{ fontWeight: "bold", mr: 1 }}>
