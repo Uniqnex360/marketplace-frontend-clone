@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef, useCallback } from "react";
+import React, { useState, useEffect, useRef, useCallback, useMemo, startTransition } from "react";
 import {
   Box,
   Grid,
@@ -55,6 +55,7 @@ import { fetchMarketplaceList } from "../../../utils/marketplace";
 import { useMarketplace } from "../../../utils/MarketplaceProvider";
 import ProductPerformanceContainer from "../../../utils/SalesTrends";
 import { useEnhancedCategories } from "../../../utils/UseEnhancedCategories";
+
 function ClientDashboardpage() {
   const [selectedCategory, setSelectedCategory] = useState({
     id: "all",
@@ -145,10 +146,62 @@ function ClientDashboardpage() {
     }
     return preset;
   };
+
+  const datePickerSx = useMemo(() => ({
+    width: "100%",
+    "& .MuiInputBase-root": {
+      height: 40,
+    },
+    "& .MuiInputLabel-root": { 
+      fontSize: "0.875rem" 
+    },
+  }), []);
+
   const setSelectedBrandImmediate=(brands)=>{
     setSelectedBrand(brands)
     setSelectedBrandFilter(brands.map(b=>b.id))
   }
+
+  // Optimized date change handlers with useCallback
+  const handleStartDateChangeOptimized = useCallback((newValue) => {
+    setStartDate(newValue);
+    if (endDate && newValue && newValue.isAfter(endDate)) {
+      setEndDate(null);
+    }
+  }, [endDate]);
+
+  const handleEndDateChangeOptimized = useCallback((newValue) => {
+    setEndDate(newValue);
+  }, []);
+
+  // Optimized date effect with startTransition
+  useEffect(() => {
+    if (!startDate || !endDate) return;
+    
+    const timer = setTimeout(() => {
+      startTransition(() => {
+        const formattedStart = startDate.format('YYYY-MM-DD');
+        const formattedEnd = endDate.format('YYYY-MM-DD');
+        
+        setAppliedStartDate(formattedStart);
+        setAppliedEndDate(formattedEnd);
+        setAppliedStartDateHelium(startDate);
+        setAppliedEndDateHelium(endDate);
+        setAppliedPreset('');
+        
+        setActiveFilters(prev => {
+          const filtered = prev.filter(f => f.type !== 'date' && f.type !== 'preset');
+          const dateLabel = `${startDate.format("MMM D, YYYY")} - ${endDate.format("MMM D, YYYY")}`;
+          return [...filtered, { type: 'date', value: 'customDate', label: dateLabel }];
+        });
+        
+        setIsFiltering(true);
+      });
+    }, 500);
+
+    return () => clearTimeout(timer);
+  }, [startDate, endDate]);
+
   const continents = ["US", "UK"];
   const [value, setValue] = useState([dayjs().subtract(6, "day"), dayjs()]);
   const [selectedPreset, setSelectedPreset] = useState("Today");
@@ -246,13 +299,19 @@ function ClientDashboardpage() {
       setSelectedPreset("");
     }
   }, [startDate, endDate]);
-  useEffect(()=>{
-    setSelectedManufacturerFilter(selectedManufacturer)
-    setMergedProductsFilter(mergedProducts)
-    setSelectedBrandFilter(brand_id)
-    setIsFiltering(true)
 
-  },[selectedManufacturer,mergedProducts,brand_id])
+  // Debounced filter updates
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setSelectedManufacturerFilter(selectedManufacturer);
+      setMergedProductsFilter(mergedProducts);
+      setSelectedBrandFilter(brand_id);
+      setIsFiltering(true);
+    }, 300);
+    
+    return () => clearTimeout(timer);
+  }, [selectedManufacturer, mergedProducts, brand_id]);
+
   useEffect(() => {
     if (befePreset || selectedPreset) {
       setStartDate(null);
@@ -415,16 +474,7 @@ function ClientDashboardpage() {
       setIsLoading(false);
     }
   };
-  useEffect(() => {
-    updateActiveFilters("date", "customDate", "", false);
-    if (startDate && endDate) {
-      const startLabel = dayjs(startDate).format("MMM D,YYYY");
-      const endLabel = dayjs(endDate).format("MMM D, YYYY");
-      const dateLabel = `${startLabel} - ${endLabel}`;
-      updateActiveFilters("date", "customDate", dateLabel, true);
-      updateActiveFilters("preset", selectedPreset, selectedPreset, false);
-    }
-  }, [startDate, endDate]);
+
   const fetchSkuList = async (searchText = "") => {
     setIsLoading(true);
     try {
@@ -505,7 +555,7 @@ function ClientDashboardpage() {
     }
     setSelectedCategory(category);
     setFilterFinal(category); 
-     setIsFiltering(true); 
+    setIsFiltering(true); 
     if (category.id !== "all") {
       updateActiveFilters("channel", category.id, category.name, true);
     }
@@ -520,8 +570,8 @@ function ClientDashboardpage() {
     const { label, value } = fulfillment;
     setselectFulfillment(value);
     setSelectedCategory({ ...category, fulfillment: label });
-     setFilterFinal({ ...category, fulfillment: label }); // Add this line
-  setIsFiltering(true); // Add this li
+    setFilterFinal({ ...category, fulfillment: label });
+    setIsFiltering(true);
     handleMenuClose();
   };
   const toggleSelection = (option) => {
@@ -626,76 +676,7 @@ function ClientDashboardpage() {
   const handleEndDateChange = (newValue) => {
     setEndDate(newValue);
   };
-  // const handleApplyFilter = () => {
-  //   setBefePreset(selectedPreset);
-  //   setAppliedStartDateHelium(startDateHelium);
-  //   setAppliedEndDateHelium(endDateHelium);
-  //   setAppliedPreset(selectedPreset);
-  //   console.log("index", befePreset);
-  //   if (selectedCountry) {
-  //     updateActiveFilters("country", selectedCountry, selectedCountry, true);
-  //   }
-  //   if (selectedCategory) {
-  //     setSelectedManufacturerFilter(selectedManufacturer);
-  //     setMergedProductsFilter(mergedProducts);
-  //     setSelectedBrandFilter(brand_id);
-  //     if (!startDate || !endDate) {
-  //       setFilter(selectedCategory);
-  //       setFilterFinal(selectedCategory);
-  //       setIsFiltering(true);
-  //       toast.success("Filter applied successfully!", {
-  //         position: "top-right",
-  //         autoClose: 3000,
-  //         hideProgressBar: false,
-  //         closeOnClick: true,
-  //         pauseOnHover: true,
-  //         draggable: true,
-  //         progress: undefined,
-  //         theme: "colored",
-  //       });
-  //       return;
-  //     }
-  //   }
-  //   if (startDate && endDate) {
-  //     console.log("Raw:", startDate, endDate);
-  //     const start = new Date(startDate);
-  //     const end = new Date(endDate);
-  //     const formattedStartDate = start.toLocaleDateString("en-CA");
-  //     const formattedEndDate = end.toLocaleDateString("en-CA");
-  //     console.log("Formatted:", formattedStartDate, formattedEndDate);
-  //     setAppliedStartDate(formattedStartDate);
-  //     setAppliedEndDate(formattedEndDate);
-  //     setAppliedPreset("");
-  //     console.log("Applied end date:", formattedEndDate);
-  //     setFilter(selectedCategory);
-  //     setFilterFinal(selectedCategory);
-  //     setIsFiltering(true);
-  //     toast.success(
-  //       "Filter applied successfully with selected category and dates!",
-  //       {
-  //         position: "top-right",
-  //         autoClose: 3000,
-  //         hideProgressBar: false,
-  //         closeOnClick: true,
-  //         pauseOnHover: true,
-  //         draggable: true,
-  //         progress: undefined,
-  //         theme: "colored",
-  //       }
-  //     );
-  //   } else if (startDate && !endDate) {
-  //     toast.error("Please select both start and end dates.", {
-  //       position: "top-right",
-  //       autoClose: 3000,
-  //       hideProgressBar: false,
-  //       closeOnClick: true,
-  //       pauseOnHover: true,
-  //       draggable: true,
-  //       progress: undefined,
-  //       theme: "colored",
-  //     });
-  //   }
-  // };
+  
   const handleClearFilter = () => {
     setSelectedCategory({ id: "all", name: "All Channels" });
     setFilterFinal({ id: "all", name: "All Channels" });
@@ -781,19 +762,6 @@ function ClientDashboardpage() {
         gap: 2,
       }}
     >
-      {/* <Box
-        sx={{
-          fontSize: "20px",
-          fontFamily:
-            "'Nunito Sans', -apple-system, 'Segoe UI', 'Roboto', 'Helvetica Neue', 'Arial', sans-serif",
-          fontWeight: 500,
-          flexShrink: 0,
-        }}
-      >
-        Welcome User
-      </Box> */}
-
-      {/* Filters in one line */}
       <Box
         sx={{
           display: "flex",
@@ -834,7 +802,6 @@ function ClientDashboardpage() {
                   </FormControl>
                 </LocalizationProvider>
               </Box>
-        {/* Brand Selector */}
        <Box sx={{ width: "190px" }}>
           <BrandSelector
             selectedBrand={selectedBrand}
@@ -944,7 +911,6 @@ function ClientDashboardpage() {
           />
         </Box>
 
-        {/* All Channels Dropdown */}
          <Box>
                     <Button
                       variant="outlined"
@@ -1068,7 +1034,6 @@ function ClientDashboardpage() {
                     )}
                   </Menu>
 
-        {/* ASIN Selector */}
         <Box sx={{ width: "150px" }}>
           <Autocomplete
             multiple
@@ -1148,7 +1113,6 @@ function ClientDashboardpage() {
           />
         </Box>
 
-        {/* Preset Dropdown */}
         <Box sx={{ width: "130px" }}>
           <FormControl size="small" sx={{ width: "110%" }}>
             <InputLabel>Preset</InputLabel>
@@ -1171,38 +1135,21 @@ function ClientDashboardpage() {
           </FormControl>
         </Box>
 
-        <Box sx={{ width: "130px",ml:1}}>
+        <Box sx={{ width: "130px", ml: 1 }}>
           <LocalizationProvider dateAdapter={AdapterDayjs}>
             <DatePicker
               label="Start Date"
               value={startDate}
-              onChange={(newValue)=>{
-                setStartDate(newValue)
-                if(newValue && endDate)
-                {
-                  setAppliedStartDate(newValue.toLocaleDateString("en-CA"));
-                  setAppliedEndDate(endDate.toLocaleDateString("en-CA"));
-                  setAppliedStartDateHelium(startDate)
-                  setAppliedEndDate(newValue)
-                   setIsFiltering(true);
+              onChange={handleStartDateChangeOptimized}
+              format="DD/MM/YYYY"
+              disableFuture
+              maxDate={endDate || dayjs()}
+              slotProps={{
+                textField: {
+                  size: "small",
+                  sx: datePickerSx
                 }
               }}
-              views={["year", "month", "day"]}
-              disableFuture
-              maxDate={endDate}
-              renderInput={(params) => (
-                <TextField
-                  {...params}
-                  size="small"
-                  sx={{
-                    width: "100%",
-                    "& .MuiInputBase-root": {
-                      height: 40,
-                    },
-                    "& .MuiInputLabel-root": { fontSize: "0.75rem" },
-                  }}
-                />
-              )}
             />
           </LocalizationProvider>
         </Box>
@@ -1212,61 +1159,22 @@ function ClientDashboardpage() {
             <DatePicker
               label="End Date"
               value={endDate}
-              onChange={(newValue)=>{
-                setEndDate(newValue)
-                if(startDate && newValue)
-                {
-                  setAppliedStartDate(startDate.toLocaleDateString('en-CA'))
-                  setAppliedEndDate(newValue.toLocaleDateString('en-CA'))
-                  setAppliedStartDateHelium(newValue)
-                  setAppliedEndDate(endDate)
-                  setAppliedPreset('')
-                  setIsFiltering(true)
+              onChange={handleEndDateChangeOptimized}
+              format="DD/MM/YYYY"
+              disableFuture
+              minDate={startDate}
+              disabled={!startDate}
+              slotProps={{
+                textField: {
+                  size: "small",
+                  sx: datePickerSx
                 }
               }}
-              views={["year", "month", "day"]}
-              minDate={startDate}
-              shouldDisableDate={(date) => date.isBefore(startDate, "day")}
-              renderInput={(params) => (
-                <TextField
-                  {...params}
-                  size="small"
-                  sx={{
-                    width: "100%",
-                    "& .MuiInputBase-root": {
-                      height: 40,
-                    },
-                    "& .MuiInputLabel-root": { fontSize: "0.75rem" },
-                  }}
-                />
-              )}
             />
           </LocalizationProvider>
         </Box>
 
-        {/* Action Buttons */}
         <Box sx={{ display: "flex", gap: 1, flexShrink: 0 }}>
-          {/* Apply Button */}
-          {/* <Tooltip title="Apply Filter" arrow>
-            <Button
-              onClick={handleApplyFilter}
-              variant="contained"
-              sx={{
-                backgroundColor: "#000080",
-                color: "white",
-                minWidth: "auto",
-                padding: "8px",
-                boxShadow: "none",
-                "&:hover": {
-                  backgroundColor: "darkblue",
-                },
-              }}
-            >
-              <FilterAltIcon sx={{ color: "white", fontSize: "20px" }} />
-            </Button>
-          </Tooltip> */}
-
-          {/* Reset Button */}
           <Tooltip title="Reset" arrow>
             <Button
               onClick={handleClearFilter}
@@ -1288,7 +1196,6 @@ function ClientDashboardpage() {
     </Grid>
   </Grid>
 
-  {/* Active Filters Chips */}
   {activeFilters.length > 0 && (
     <Box
       sx={{
@@ -1345,9 +1252,7 @@ function ClientDashboardpage() {
           }}
         >
         </Grid>
-        {/* Display Cards and Components */}
         <Grid item xs={12} sm={12} sx={{ marginTop: "0%" }}>
-          {/* <HeliumCard/> */}
           <TestCard
             country={selectedCountry}
             marketPlaceId={
@@ -1363,28 +1268,8 @@ function ClientDashboardpage() {
             DateStartDate={appliedStartDate}
             DateEndDate={appliedEndDate}
           />
-          {/* <CardCount marketPlaceId={ selectedCategory == 'all' ? selectedCategory : filterFinal} DateStartDate={appliedStartDate} DateEndDate={appliedEndDate} /> */}
         </Grid>
-        {/* <Grid item xs={12} sm={12} sx={{paddingLeft: '40px'}}
-        >
-            <CardComponent   widgetData={befePreset} marketPlaceId={selectedCategory == 'all' ? selectedCategory : filterFinal} DateStartDate={appliedStartDate} DateEndDate={appliedEndDate} brand_id={selectedBrandFilter} product_id={mergedProductsFilter} manufacturer_name={selectedManufacturerFilter} fulfillment_channel={selectedFulfillment}/>
-          </Grid> */}
         <Grid container spacing={2}>
-          {/* Left side - Insight */}
-          {/* <Grid item xs={12} md={3}>
-    <Box
-      sx={{
-        borderRight: '1px solid lightgray', 
-        height: '90%', 
-        padding: '16px', 
-      }}
-    >
-      <InsightCategory />
-    </Box>
-  </Grid> */}
-          
-          {/* Right side - Tabs + Content */}
-          {/* <Grid item xs={12} md={9}> */}
           <Grid
             item
             xs={12}
@@ -1496,21 +1381,6 @@ function ClientDashboardpage() {
                     DateEndDate={appliedEndDate}
                   />
                 )}
-                {/* {tab === 0 && (
-    (befePreset === 'Today' || befePreset === 'Yesterday') ? (
-          <RevenueTimeGraph
-          startDate={startDateHelium}
-          endDate={endDateHelium}
-          widgetData={befePreset}  marketPlaceId={selectedCategory == 'all' ? selectedCategory : filterFinal} brand_id={selectedBrandFilter}   product_id={mergedProductsFilter} manufacturer_name={selectedManufacturerFilter} fulfillment_channel={selectedFulfillment}
-      DateStartDate={appliedStartDate} DateEndDate={appliedEndDate}  />
-      ) : (
-          <RevenueWidget
-          startDate={startDateHelium}
-          endDate={endDateHelium}
-          widgetData={befePreset}  marketPlaceId={selectedCategory == 'all' ? selectedCategory : filterFinal} brand_id={selectedBrandFilter}   product_id={mergedProductsFilter} manufacturer_name={selectedManufacturerFilter} fulfillment_channel={selectedFulfillment}
-      DateStartDate={appliedStartDate} DateEndDate={appliedEndDate}  />
-        )
-  )} */}
                 {tab === 1 && (
                   <TopProducts
                     startDate={appliedStartDateHelium}
@@ -1649,9 +1519,6 @@ function ClientDashboardpage() {
               DateEndDate={appliedEndDate}
             />
           </Grid>
-          {/* <Grid item xs={12} sm={12} sx={{width:'99%'}}>
-            <TestProfitLoss  widgetData={befePreset} marketPlaceId={selectedCategory == 'all' ? selectedCategory : filterFinal}/>
-          </Grid> */}
           <Grid item xs={12} sm={12}>
             <MyProductList
               widgetData={appliedPreset}
@@ -1667,11 +1534,7 @@ function ClientDashboardpage() {
             />
           </Grid>
         </Grid>
-        {/* <Grid item xs={12} sm={12}>
-            <ProductTableDashboard marketPlaceId={selectedCategory == 'all' ? selectedCategory : filterFinal} DateStartDate={appliedStartDate} DateEndDate={appliedEndDate} />
-          </Grid>  */}
       </Grid>
-      {/* Move this outside the sticky header */}
     </Box>
   );
 }
