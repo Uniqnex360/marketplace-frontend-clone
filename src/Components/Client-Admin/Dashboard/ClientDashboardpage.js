@@ -21,10 +21,7 @@ import {
   Chip,
 } from "@mui/material";
 import axios from "axios";
-import ShoppingCartIcon from "@mui/icons-material/ShoppingCart";
-import AppsIcon from "@mui/icons-material/Apps";
 import ImageIcon from "@mui/icons-material/Image";
-import debounce from "lodash/debounce";
 import { toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import FilterAltIcon from "@mui/icons-material/FilterAlt";
@@ -507,6 +504,8 @@ function ClientDashboardpage() {
       );
     }
     setSelectedCategory(category);
+    setFilterFinal(category); 
+     setIsFiltering(true); 
     if (category.id !== "all") {
       updateActiveFilters("channel", category.id, category.name, true);
     }
@@ -521,6 +520,8 @@ function ClientDashboardpage() {
     const { label, value } = fulfillment;
     setselectFulfillment(value);
     setSelectedCategory({ ...category, fulfillment: label });
+     setFilterFinal({ ...category, fulfillment: label }); // Add this line
+  setIsFiltering(true); // Add this li
     handleMenuClose();
   };
   const toggleSelection = (option) => {
@@ -1170,7 +1171,6 @@ function ClientDashboardpage() {
           </FormControl>
         </Box>
 
-        {/* Start Date Picker */}
         <Box sx={{ width: "130px",ml:1}}>
           <LocalizationProvider dateAdapter={AdapterDayjs}>
             <DatePicker
@@ -1205,7 +1205,6 @@ function ClientDashboardpage() {
           </LocalizationProvider>
         </Box>
 
-        {/* End Date Picker */}
         <Box sx={{ width: "130px" }}>
           <LocalizationProvider dateAdapter={AdapterDayjs}>
             <DatePicker
@@ -1216,7 +1215,8 @@ function ClientDashboardpage() {
                 if(startDate && newValue)
                 {
                   setAppliedStartDate(startDate.toLocaleDateString('en-CA'))
-                  setAppliedEndDate(endDate.toLocaleDateString('en-US'))
+                  setAppliedEndDate(newValue.toLocaleDateString('en-CA'))
+                  setAppliedPreset('')
                   setIsFiltering(true)
                 }
               }}
