@@ -1182,6 +1182,8 @@ function ClientDashboardpage() {
                 {
                   setAppliedStartDate(newValue.toLocaleDateString("en-CA"));
                   setAppliedEndDate(endDate.toLocaleDateString("en-CA"));
+                  setAppliedStartDateHelium(startDate)
+                  setAppliedEndDate(newValue)
                    setIsFiltering(true);
                 }
               }}
@@ -1216,6 +1218,8 @@ function ClientDashboardpage() {
                 {
                   setAppliedStartDate(startDate.toLocaleDateString('en-CA'))
                   setAppliedEndDate(newValue.toLocaleDateString('en-CA'))
+                  setAppliedStartDateHelium(newValue)
+                  setAppliedEndDate(endDate)
                   setAppliedPreset('')
                   setIsFiltering(true)
                 }
