@@ -128,7 +128,7 @@ const CardComponent = ({
           brand_id: brand_id,
           product_id: product_id,
           manufacturer_name: manufacturer_name,
-          timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
+          timezone: "US/Pacific",
         }
       );
 

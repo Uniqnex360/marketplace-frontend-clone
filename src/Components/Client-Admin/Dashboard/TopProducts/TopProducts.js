@@ -208,6 +208,8 @@ export default function TopProductsChart({
   const [tooltipText, setTooltipText] = useState("Copy ASIN");
   const [copied, setCopied] = useState(false);
   const copyTimeoutRef = useRef(null);
+   const stableBrandId = JSON.stringify(brand_id);
+const stableManufacturer = JSON.stringify(manufacturer_name);
   const isTodayOrYesterday =
     widgetData === "Today" || widgetData === "Yesterday";
   const [hoveredProductId, setHoveredProductId] = useState(null);
@@ -429,12 +431,13 @@ export default function TopProductsChart({
     tab,
     widgetData,
     marketPlaceId,
-    brand_id,
-    manufacturer_name,
+    stableBrandId,
+    stableManufacturer,
     fulfillment_channel,
     DateStartDate,
     DateEndDate,
   ]);
+ 
   useEffect(() => {
     if (apiResponse?.data?.results?.items) {
       const items = apiResponse.data.results.items;
@@ -611,7 +614,6 @@ export default function TopProductsChart({
             }}
           >
             {productList.map((product) => {
-              console.log("ids", product);
               const isActive = activeProducts.includes(product.id);
               const hasAsin = Boolean(product.asin);
               const isCurrentlyCopied = copiedId === product.asin;
