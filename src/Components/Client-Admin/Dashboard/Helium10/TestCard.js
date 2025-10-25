@@ -13,7 +13,6 @@ import {
 } from "@mui/material";
 import "./Helium.css";
 import SettingsIcon from "@mui/icons-material/Settings";
-
 import {
   ArrowDownward,
   ArrowUpward,
@@ -35,9 +34,7 @@ dayjs.extend(weekOfYear);
 dayjs.extend(utc);
 dayjs.extend(timezone);
 dayjs.locale("en");
-
 const TIMEZONE = "US/Pacific";
-
 const MetricItem = ({
   title,
   value,
@@ -49,45 +46,40 @@ const MetricItem = ({
   loading = false,
 }) => {
   const theme = useTheme();
-  const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
-
+  const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
   const absValue = Math.abs(value ?? 0);
   const absChange = Math.abs(change ?? 0);
-
-  const displayValue = `${(value ?? 0) < 0 ? "-" : ""}${
-    currencySymbol
+  const displayValue = `${(value ?? 0) < 0 ? "-" : ""}${currencySymbol
       ? new Intl.NumberFormat("en-US", {
+        style: "currency",
+        currency: "USD",
+        minimumFractionDigits: 2,
+        maximumFractionDigits: 2,
+      }).format(Math.abs(value ?? 0))
+      : percentSymbol
+        ? `${Math.abs(value ?? 0)}%`
+        : new Intl.NumberFormat("en-US", {
+          minimumFractionDigits: 0,
+          maximumFractionDigits: 0,
+        }).format(Math.abs(value ?? 0))
+    }`;
+  const displayChange =
+    change !== undefined
+      ? `${change < 0 ? "-" : ""}${currencySymbol
+        ? new Intl.NumberFormat("en-US", {
           style: "currency",
           currency: "USD",
           minimumFractionDigits: 2,
           maximumFractionDigits: 2,
-        }).format(Math.abs(value ?? 0))
-      : percentSymbol
-      ? `${Math.abs(value ?? 0)}%`
-      : new Intl.NumberFormat("en-US", {
-          minimumFractionDigits: 0,
-          maximumFractionDigits: 0,
-        }).format(Math.abs(value ?? 0))
-  }`;
-  const displayChange =
-    change !== undefined
-      ? `${change < 0 ? "-" : ""}${
-          currencySymbol
-            ? new Intl.NumberFormat("en-US", {
-                style: "currency",
-                currency: "USD",
-                minimumFractionDigits: 2,
-                maximumFractionDigits: 2,
-              }).format(Math.abs(change ?? 0))
-            : percentSymbol
-            ? `${Math.abs(change ?? 0)}%`
-            : new Intl.NumberFormat("en-US", {
-                minimumFractionDigits: 0,
-                maximumFractionDigits: 0,
-              }).format(Math.abs(change ?? 0))
-        }`
+        }).format(Math.abs(change ?? 0))
+        : percentSymbol
+          ? `${Math.abs(change ?? 0)}%`
+          : new Intl.NumberFormat("en-US", {
+            minimumFractionDigits: 0,
+            maximumFractionDigits: 0,
+          }).format(Math.abs(change ?? 0))
+      }`
       : "";
-
   return (
     <Card
       sx={{
@@ -99,16 +91,15 @@ const MetricItem = ({
     >
       <CardContent sx={{ py: { xs: 0.3, sm: 0.5 }, px: { xs: 1, sm: 2 } }}>
         <Box display="flex" justifyContent="space-between" alignItems="center">
-          <Typography 
-            sx={{ 
-              fontSize: { xs: 12, sm: 14 }, 
-              color: "text.secondary" 
+          <Typography
+            sx={{
+              fontSize: { xs: 12, sm: 14 },
+              color: "text.secondary",
             }}
           >
             {title}
           </Typography>
         </Box>
-
         <Box
           display="flex"
           justifyContent="flex-start"
@@ -125,10 +116,9 @@ const MetricItem = ({
               {loading ? "..." : displayValue}
             </Typography>
           </Tooltip>
-
           {change !== undefined && (
             <Typography
-              sx={{ 
+              sx={{
                 fontSize: { xs: 10, sm: 11 },
                 color: isNegative ? "error.main" : "success.main",
                 display: "flex",
@@ -150,7 +140,6 @@ const MetricItem = ({
     </Card>
   );
 };
-
 const TestCard = ({
   marketPlaceId,
   country,
@@ -163,39 +152,31 @@ const TestCard = ({
   fulfillment_channel,
 }) => {
   const theme = useTheme();
-  const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
-  const isTablet = useMediaQuery(theme.breakpoints.between('sm', 'md'));
-  const isSmallScreen = useMediaQuery(theme.breakpoints.down('md'));
-
+  const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
+  const isTablet = useMediaQuery(theme.breakpoints.between("sm", "md"));
+  const isSmallScreen = useMediaQuery(theme.breakpoints.down("md"));
   const API_TODAY = dayjs("02/09/2025", "DD/MM/YYYY").tz(TIMEZONE);
-
-  // Combined state for dates and preset
   const [currentDates, setCurrentDates] = useState({
     selectedDate: API_TODAY,
-    displayDate: API_TODAY
+    displayDate: API_TODAY,
   });
   const formatNumber = (value) => (value ?? 0).toLocaleString("en-US");
   const [currentPreset, setCurrentPreset] = useState(widgetData);
-
-  // Data state
   const [dataState, setDataState] = useState({
     metrics: {},
     previous: {},
     difference: {},
     bindGraph: [],
   });
-  // const hasInitializedDates = useRef(false);
   const [tooltipData, setTooltipData] = useState(null);
   const [loading, setLoading] = useState(false);
   const [dataLoading, setDataLoading] = useState(false);
-
   const userData = JSON.parse(localStorage.getItem("user") || "{}");
   const userId = userData?.id || "";
   const graphContainerRef = useRef(null);
   const svgRef = useRef(null);
   const [svgOffset, setSvgOffset] = useState({ left: 0, top: 0 });
   const [open, setOpen] = useState(false);
-
   const [visibleMetrics, setVisibleMetrics] = useState([
     "gross_revenue_without_tax",
     "gross_revenue_with_tax",
@@ -207,13 +188,11 @@ const TestCard = ({
     "margin",
     "business_value",
   ]);
-
   const handleOpen = () => setOpen(true);
   const handleClose = () => {
     setOpen(false);
     fetchMetrics(currentDates.selectedDate, currentDates.displayDate);
   };
-
   const handleMetricToggle = (metric) => {
     setVisibleMetrics((prev) =>
       prev.includes(metric)
@@ -221,18 +200,14 @@ const TestCard = ({
         : [...prev, metric]
     );
   };
-
   const handleReset = () => setVisibleMetrics([]);
   const handleApply = () => console.log("Applied Metrics:", visibleMetrics);
-
   useEffect(() => {
     if (svgRef.current) {
       const rect = svgRef.current.getBoundingClientRect();
       setSvgOffset({ left: rect.left, top: rect.top });
     }
   }, []);
-
-  // Fetch data when dates change
   useEffect(() => {
     fetchMetrics(currentDates.selectedDate, currentDates.displayDate);
   }, [
@@ -246,20 +221,15 @@ const TestCard = ({
     fulfillment_channel,
     marketPlaceId?.id,
   ]);
-
   const latestRequestRef = useRef(0);
-
   const fetchMetrics = async (selectedDate, displayDate) => {
     setDataLoading(true);
-    console.log("Fetching metrics from testcard", new Date());
-
-    const requestId = ++latestRequestRef.current; // Increment the token
-
+    const requestId = ++latestRequestRef.current;
     try {
       const payload = {
-        target_date:"01/09/2025",
+        target_date: "01/09/2025",
         user_id: userId,
-        country:country,
+        country: country,
         preset: currentPreset,
         marketplace_id: marketPlaceId.id,
         brand_id: brand_id,
@@ -268,24 +238,18 @@ const TestCard = ({
         fulfillment_channel: fulfillment_channel,
         timezone: TIMEZONE,
       };
-
       if (DateStartDate && dayjs(DateStartDate).isValid()) {
         payload.start_date = dayjs(DateStartDate).format("DD/MM/YYYY");
       }
-
       if (DateEndDate && dayjs(DateEndDate).isValid()) {
         payload.end_date = dayjs(DateEndDate).format("DD/MM/YYYY");
       }
-
       const response = await axios.post(
         `${process.env.REACT_APP_IP}get_metrics_by_date_range/`,
         payload
       );
-
-      // ✅ Only update state if it's the latest request
       if (requestId === latestRequestRef.current) {
         const data = response.data.data;
-
         setDataState({
           metrics: data.targeted || {},
           previous: data.previous || {},
@@ -300,7 +264,6 @@ const TestCard = ({
             }))
             .sort((a, b) => a.dateObj - b.dateObj),
         });
-
         const selectedMetricKeys = Object.keys(data.targeted || {});
         setVisibleMetrics(selectedMetricKeys);
       }
@@ -327,7 +290,6 @@ const TestCard = ({
         DateEndDate
       ).format("MMMM D, YYYY")}`;
     }
-
     switch (widgetData) {
       case "Today":
       case "Yesterday":
@@ -345,7 +307,6 @@ const TestCard = ({
         return selectedDate.format(isMobile ? "MMM DD" : "ddd, MMM DD");
     }
   };
-
   const getSubtitleText = (
     widgetData,
     DateStartDate,
@@ -355,7 +316,6 @@ const TestCard = ({
   ) => {
     const today = API_TODAY;
     if (DateStartDate && DateEndDate) return "Custom Date Range";
-
     if (widgetData === "Today" || widgetData === "Yesterday") {
       return selectedDate.isSame(today, "day") ? (
         "Today"
@@ -377,18 +337,13 @@ const TestCard = ({
     }
     return widgetData;
   };
-
-  // Initialize dates based on widget data
   useEffect(() => {
     const today = API_TODAY;
     let newDisplayDate, newSelectedDate;
-
-    // Handle custom date range
     if (DateStartDate && DateEndDate) {
       newDisplayDate = dayjs(DateStartDate);
       newSelectedDate = dayjs(DateEndDate);
     } else {
-      // Handle preset date ranges
       switch (widgetData) {
         case "Today":
           newDisplayDate = today;
@@ -406,7 +361,6 @@ const TestCard = ({
           newDisplayDate = today.clone().subtract(1, "week").startOf("week");
           newSelectedDate = today.clone().subtract(1, "week").endOf("week");
           break;
-
         case "Last 7 days":
           newDisplayDate = today.subtract(6, "day");
           newSelectedDate = today;
@@ -456,15 +410,12 @@ const TestCard = ({
           newSelectedDate = today;
       }
     }
-
     setCurrentDates({
       displayDate: newDisplayDate,
       selectedDate: newSelectedDate,
     });
-
     setCurrentPreset(widgetData);
   }, [widgetData, DateStartDate, DateEndDate]);
-
   const formatCurrency = (value) =>
     new Intl.NumberFormat("en-US", {
       style: "currency",
@@ -472,7 +423,6 @@ const TestCard = ({
       minimumFractionDigits: 2,
       maximumFractionDigits: 2,
     }).format(value ?? 0);
-
   const METRICS_CONFIG = {
     gross_revenue_without_tax: {
       title: "Gross Revenue (No Tax)",
@@ -480,8 +430,8 @@ const TestCard = ({
         date.isSame(today, "day")
           ? `Yesterday: ${formatCurrency(prev)}`
           : `${date.subtract(1, "day").format("MMM DD")}: ${formatCurrency(
-              prev
-            )}`,
+            prev
+          )}`,
       currencySymbol: "$",
     },
     gross_revenue_with_tax: {
@@ -490,8 +440,8 @@ const TestCard = ({
         date.isSame(today, "day")
           ? `Yesterday: ${formatCurrency(prev)}`
           : `${date.subtract(1, "day").format("MMM DD")}: ${formatCurrency(
-              prev
-            )}`,
+            prev
+          )}`,
       currencySymbol: "$",
     },
     total_orders: {
@@ -501,7 +451,6 @@ const TestCard = ({
           ? `Yesterday: ${prev || "0"}`
           : `${date.subtract(1, "day").format("MMM DD")}: ${prev || "0"}`,
     },
-
     total_units: {
       title: "Units Sold",
       tooltip: (date, today, prev) =>
@@ -515,8 +464,8 @@ const TestCard = ({
         date.isSame(today, "day")
           ? `Yesterday: ${formatCurrency(prev)}`
           : `${date.subtract(1, "day").format("MMM DD")}: ${formatCurrency(
-              prev
-            )}`,
+            prev
+          )}`,
       currencySymbol: "$",
     },
     refund: {
@@ -532,8 +481,8 @@ const TestCard = ({
         date.isSame(today, "day")
           ? `Yesterday: ${formatCurrency(prev)}`
           : `${date.subtract(1, "day").format("MMM DD")}: ${formatCurrency(
-              prev
-            )}`,
+            prev
+          )}`,
       currencySymbol: "$",
     },
     net_profit: {
@@ -542,12 +491,22 @@ const TestCard = ({
         date.isSame(today, "day")
           ? `Yesterday: ${formatCurrency(prev)}`
           : `${date.subtract(1, "day").format("MMM DD")}: ${formatCurrency(
-              prev
-            )}`,
+            prev
+          )}`,
+      currencySymbol: "$",
+    },
+    expenses: {
+      title: "Expenses",
+      tooltip: (date, today, prev) =>
+        date.isSame(today, "day")
+          ? `Yesterday: ${formatCurrency(prev)}`
+          : `${date.subtract(1, "day").format("MMM DD")}: ${formatCurrency(
+            prev
+          )}`,
       currencySymbol: "$",
     },
     margin: {
-      title: "Margin",
+      title: "Profit Margin",
       tooltip: (date, today, prev) =>
         date.isSame(today, "day")
           ? `Yesterday: ${prev?.toFixed(2)}%`
@@ -560,17 +519,14 @@ const TestCard = ({
         date.isSame(today, "day")
           ? `Yesterday: ${formatCurrency(prev)}`
           : `${date.subtract(1, "day").format("MMM DD")}: ${formatCurrency(
-              prev
-            )}`,
+            prev
+          )}`,
       currencySymbol: "$",
     },
   };
-
   const today = API_TODAY;
-
   const handlePrevious = () => {
     const today = API_TODAY;
-
     if (DateStartDate && DateEndDate) {
       const rangeDays =
         dayjs(DateEndDate).diff(dayjs(DateStartDate), "day") + 1;
@@ -580,31 +536,23 @@ const TestCard = ({
       }));
     } else {
       const newSelectedDate = currentDates.selectedDate.subtract(1, "day");
-
-      // Determine what preset this date represents
-      let newPreset = "Custom"; // Default fallback
-
+      let newPreset = "Custom";
       if (newSelectedDate.isSame(today, "day")) {
         newPreset = "Today";
       } else if (newSelectedDate.isSame(today.subtract(1, "day"), "day")) {
         newPreset = "Yesterday";
       } else {
-        // For other dates, we'll use a custom approach - keep original preset but with different target_date
         newPreset = widgetData;
       }
-
       setCurrentDates((prev) => ({
         ...prev,
         selectedDate: newSelectedDate,
       }));
-
       setCurrentPreset(newPreset);
     }
   };
-
   const handleNext = () => {
     const today = API_TODAY;
-
     if (DateStartDate && DateEndDate) {
       const rangeDays =
         dayjs(DateEndDate).diff(dayjs(DateStartDate), "day") + 1;
@@ -616,28 +564,21 @@ const TestCard = ({
       }));
     } else if (!currentDates.selectedDate.isSame(today, "day")) {
       const newSelectedDate = currentDates.selectedDate.add(1, "day");
-
-      // Determine what preset this date represents
-      let newPreset = "Custom"; // Default fallback
-
+      let newPreset = "Custom";
       if (newSelectedDate.isSame(today, "day")) {
         newPreset = "Today";
       } else if (newSelectedDate.isSame(today.subtract(1, "day"), "day")) {
         newPreset = "Yesterday";
       } else {
-        // For other dates, we'll use a custom approach - keep original preset but with different target_date
         newPreset = widgetData;
       }
-
       setCurrentDates((prev) => ({
         ...prev,
         selectedDate: newSelectedDate,
       }));
-
       setCurrentPreset(newPreset);
     }
   };
-
   const handleBackToToday = () => {
     const today = API_TODAY;
     if (DateStartDate && DateEndDate) {
@@ -655,7 +596,6 @@ const TestCard = ({
       setCurrentPreset("Today");
     }
   };
-
   const getGraphPoints = (metric = "gross_revenue_without_tax") => {
     const maxValue = Math.max(...dataState.bindGraph.map((d) => d[metric]), 1);
     const width = isMobile ? 200 : 280;
@@ -667,7 +607,6 @@ const TestCard = ({
       })
       .join(" ");
   };
-
   const getCirclePoints = (metric = "gross_revenue_without_tax") => {
     const maxValue = Math.max(...dataState.bindGraph.map((d) => d[metric]), 1);
     const width = isMobile ? 200 : 280;
@@ -678,7 +617,6 @@ const TestCard = ({
       value: item[metric],
     }));
   };
-
   const metricBlockStyle = {
     flex: { xs: "0 0 150px", sm: "0 0 180px" },
     display: "flex",
@@ -688,7 +626,6 @@ const TestCard = ({
     py: { xs: 0.5, sm: 1 },
     px: { xs: 1, sm: 2 },
   };
-
   return (
     <Box
       sx={{
@@ -698,6 +635,7 @@ const TestCard = ({
         width: { xs: "100%", sm: "99%" },
         boxShadow: "0 2px 8px rgba(0, 0, 0, 0.05)",
         py: 0.5,
+        mt: -5,
       }}
     >
       {loading ? (
@@ -713,444 +651,465 @@ const TestCard = ({
         </Box>
       ) : (
         <>
-        <Box
-          sx={{
-            px: { xs: 1, sm: 2 },
-            py: { xs: 1, sm: 1.5 },
-            borderBottom: "1px solid #e0e0e0",
-            textAlign: "left",
-          }}
-        >
-          <Typography
-            variant="h6"
-            fontWeight="bold"
-            color="#020202ff"
-            sx={{
-              fontFamily: "'Nunito Sans', sans-serif",
-              fontSize: { xs: 16, sm: 18 },
-            }}
-          >
-            Summary
-          </Typography>
-        </Box>
-        <Box
-          sx={{
-            display: "flex",
-            flexWrap: "wrap",
-            justifyContent: "flex-start",
-            width: "100%",
-            px: { xs: 1, sm: 2 },
-          }}
-        >
-          {/* Date Picker */}
           <Box
             sx={{
-              ...metricBlockStyle,
-              borderRight: { xs: "none", sm: "1px solid #e0e0e0" },
-              borderLeft: "none",
-              width: { xs: "100%", sm: "auto" },
+              px: { xs: 1, sm: 2 },
+              py: { xs: 1, sm: 1.5 },
+              borderBottom: "1px solid #e0e0e0",
+              textAlign: "left",
             }}
           >
-            <Box display="flex" alignItems="center" gap={1}>
-              <IconButton
-                size="small"
-                onClick={handlePrevious}
-                disabled={dataLoading}
-                sx={{ padding: { xs: '4px', sm: '8px' } }}
-              >
-                <ChevronLeft sx={{ fontSize: { xs: 18, sm: 24 } }} />
-              </IconButton>
-
-              <Tooltip
-                title={`${currentDates.displayDate.format(
-                  "DD/MM/YYYY"
-                )} - ${currentDates.selectedDate.format("DD/MM/YYYY")}`}
-              >
-                <Box>
-                  <Typography
-                    fontWeight="bold"
-                    sx={{
-                      color: "#485E75",
-                      fontFamily: "'Nunito Sans', sans-serif",
-                      fontSize: { xs: 12, sm: 14 },
-                      opacity: dataLoading ? 0.7 : 1,
-                    }}
-                  >
-                    {getDisplayDateText(
-                      currentPreset,
-                      DateStartDate,
-                      DateEndDate,
-                      currentDates.displayDate,
-                      currentDates.selectedDate
-                    )}
-                    {dataLoading && <span style={{ marginLeft: 8 }}>...</span>}
-                  </Typography>
-                  <Box display="flex" justifyContent="center">
+            <Typography
+              variant="h6"
+              fontWeight="bold"
+              color="#020202ff"
+              sx={{
+                fontFamily: "'Nunito Sans', sans-serif",
+                fontSize: { xs: 16, sm: 18 },
+              }}
+            >
+              Executive Overview
+            </Typography>
+          </Box>
+          <Box
+            sx={{
+              display: "flex",
+              flexWrap: "wrap",
+              justifyContent: "center",
+              width: "100%",
+              px: { xs: 1, sm: 2 },
+            }}
+          >
+            {/* Date Picker */}
+            <Box
+              sx={{
+                ...metricBlockStyle,
+                borderRight: { xs: "none", sm: "1px solid #e0e0e0" },
+                borderLeft: "none",
+                width: { xs: "100%", sm: "auto" },
+              }}
+            >
+              <Box display="flex" alignItems="center" gap={1}>
+                <IconButton
+                  size="small"
+                  onClick={handlePrevious}
+                  disabled={dataLoading}
+                  sx={{ padding: { xs: "4px", sm: "8px" } }}
+                >
+                  <ChevronLeft sx={{ fontSize: { xs: 18, sm: 24 } }} />
+                </IconButton>
+                <Tooltip
+                  title={`${currentDates.displayDate.format(
+                    "DD/MM/YYYY"
+                  )} - ${currentDates.selectedDate.format("DD/MM/YYYY")}`}
+                >
+                  <Box>
                     <Typography
-                      variant="caption"
-                      color="text.secondary"
+                      fontWeight="bold"
                       sx={{
-                        display: "flex",
-                        alignItems: "center",
-                        justifyContent: "center",
-                        textAlign: "center",
-                        width: "100%",
-                        fontSize: { xs: 11, sm: 14 },
+                        color: "#485E75",
+                        fontFamily: "'Nunito Sans', sans-serif",
+                        fontSize: { xs: 12, sm: 14 },
+                        opacity: dataLoading ? 0.7 : 1,
                       }}
                     >
-                      {getSubtitleText(
+                      {getDisplayDateText(
                         currentPreset,
                         DateStartDate,
                         DateEndDate,
                         currentDates.displayDate,
                         currentDates.selectedDate
                       )}
+                      {dataLoading && (
+                        <span style={{ marginLeft: 8 }}>...</span>
+                      )}
                     </Typography>
+                    <Box display="flex" justifyContent="center">
+                      <Typography
+                        variant="caption"
+                        color="text.secondary"
+                        sx={{
+                          display: "flex",
+                          alignItems: "center",
+                          justifyContent: "center",
+                          textAlign: "center",
+                          width: "100%",
+                          fontSize: { xs: 11, sm: 14 },
+                        }}
+                      >
+                        {getSubtitleText(
+                          currentPreset,
+                          DateStartDate,
+                          DateEndDate,
+                          currentDates.displayDate,
+                          currentDates.selectedDate
+                        )}
+                      </Typography>
+                    </Box>
                   </Box>
-                </Box>
-              </Tooltip>
-
-              {!currentDates.selectedDate.isSame(today, "day") && (
-                <IconButton
-                  size="small"
-                  onClick={handleNext}
-                  disabled={dataLoading}
-                  sx={{ padding: { xs: '4px', sm: '8px' } }}
-                >
-                  <ChevronRight sx={{ fontSize: { xs: 18, sm: 24 } }} />
-                </IconButton>
-              )}
-            </Box>
-          </Box>
-
-          {/* Gross Revenue */}
-          {visibleMetrics.includes("gross_revenue_without_tax") && (
-            <Box sx={metricBlockStyle}>
-              <MetricItem
-                title="Gross Revenue (No Tax)"
-                value={dataState.metrics.gross_revenue_without_tax}
-                change={dataState.difference.gross_revenue_without_tax}
-                isNegative={String(
-                  dataState.difference.gross_revenue_without_tax
-                ).startsWith("-")}
-                tooltip={
-                  currentDates.selectedDate.isSame(today, "day")
-                    ? `Yesterday: ${formatCurrency(
-                        dataState.previous.gross_revenue_without_tax
-                      )}`
-                    : `${currentDates.selectedDate
-                        .subtract(1, "day")
-                        .format("MMM DD")}: ${formatCurrency(
-                        dataState.previous.gross_revenue_without_tax
-                      )}`
-                }
-                currencySymbol="$"
-                loading={dataLoading}
-              />
-            </Box>
-          )}
-          {visibleMetrics.includes("gross_revenue_with_tax") && (
-            <Box sx={metricBlockStyle}>
-              <MetricItem
-                title="Gross Revenue"
-                value={dataState.metrics.gross_revenue_with_tax}
-                change={dataState.difference.gross_revenue_with_tax}
-                isNegative={String(
-                  dataState.difference.gross_revenue_with_tax
-                ).startsWith("-")}
-                tooltip={
-                  currentDates.selectedDate.isSame(today, "day")
-                    ? `Yesterday: ${formatCurrency(
-                        dataState.previous.gross_revenue_with_tax
-                      )}`
-                    : `${currentDates.selectedDate
-                        .subtract(1, "day")
-                        .format("MMM DD")}: ${formatCurrency(
-                        dataState.previous.gross_revenue_with_tax
-                      )}`
-                }
-                currencySymbol="$"
-                loading={dataLoading}
-              />
-            </Box>
-          )}
-
-          {/* Chart */}
-          {(visibleMetrics.includes("gross_revenue_without_tax") ||
-            visibleMetrics.includes("gross_revenue_with_tax")) && (
-            <Box sx={{ borderRight: { xs: "none", sm: "1px solid #e0e0e0" } }}>
-              <Box
-                ref={graphContainerRef}
-                sx={{
-                  ...metricBlockStyle,
-                  position: "relative",
-                  overflow: "visible",
-                  flexDirection: "column",
-                  opacity: dataLoading ? 0.6 : 1,
-                }}
-                onMouseLeave={(e) => {
-                  // Only clear tooltip if really leaving the container
-                  const rect = e.currentTarget.getBoundingClientRect();
-                  const x = e.clientX;
-                  const y = e.clientY;
-
-                  if (
-                    x < rect.left ||
-                    x > rect.right ||
-                    y < rect.top ||
-                    y > rect.bottom
-                  ) {
-                    setTimeout(() => setTooltipData(null), 100);
-                  }
-                }}
-              >
-                <Box
-                  sx={{
-                    width: "100%",
-                    height: { xs: 70, sm: 80 },
-                    position: "relative",
-                    overflow: "visible",
-                  }}
-                >
-                  <svg ref={svgRef} width="100%" height={isMobile ? 50 : 60}>
-                    {[20, 30, 40].map((y, idx) => (
-                      <line
-                        key={idx}
-                        x1="0"
-                        y1={y}
-                        x2="100%"
-                        y2={y}
-                        stroke="#eee"
-                        strokeWidth="1"
-                      />
-                    ))}
-                    <line
-                      x1="0"
-                      y1={isMobile ? 46 : 48}
-                      x2="100%"
-                      y2={isMobile ? 46 : 48}
-                      stroke="#000"
-                      strokeWidth="1"
-                    />
-
-                    {!dataLoading && (
-                      <>
-                        <polyline
-                          points={getGraphPoints("gross_revenue_without_tax")}
-                          style={{
-                            fill: "none",
-                            stroke: theme.palette.primary.main,
-                            strokeWidth: isMobile ? 1.5 : 2,
-                          }}
-                        />
-                        <polyline
-                          points={getGraphPoints("gross_revenue_with_tax")}
-                          style={{
-                            fill: "none",
-                            stroke: "#FF9800",
-                            strokeWidth: isMobile ? 1.5 : 2,
-                          }}
-                        />
-
-                        {getCirclePoints("gross_revenue_without_tax").map(
-                          (point, index) => (
-                            <circle
-                              key={`no-tax-${index}`}
-                              cx={point.cx}
-                              cy={point.cy}
-                              r={isMobile ? 6 : 8}
-                              fill="transparent"
-                              stroke="transparent"
-                              style={{
-                                pointerEvents: "all",
-                                cursor: "pointer",
-                              }}
-                              onMouseEnter={(e) => {
-                                e.stopPropagation();
-                                setTooltipData({ ...point, index });
-                              }}
-                              onMouseLeave={(e) => {
-                                e.stopPropagation();
-                                setTimeout(() => setTooltipData(null), 50);
-                              }}
-                            />
-                          )
-                        )}
-                        {getCirclePoints("gross_revenue_with_tax").map(
-                          (point, index) => (
-                            <circle
-                              key={`with-tax-${index}`}
-                              cx={point.cx}
-                              cy={point.cy}
-                              r={isMobile ? 6 : 8}
-                              fill="transparent"
-                              stroke="transparent"
-                              style={{
-                                pointerEvents: "all",
-                                cursor: "pointer",
-                              }}
-                              onMouseEnter={(e) => {
-                                e.stopPropagation();
-                                setTooltipData({ ...point, index });
-                              }}
-                              onMouseLeave={(e) => {
-                                e.stopPropagation();
-                                setTimeout(() => setTooltipData(null), 50);
-                              }}
-                            />
-                          )
-                        )}
-
-                        {tooltipData && (
-                          <>
-                            <circle
-                              cx={tooltipData.cx}
-                              cy={tooltipData.cy}
-                              r={isMobile ? 4 : 6}
-                              fill="white"
-                              stroke={theme.palette.primary.main}
-                              strokeWidth="2"
-                              style={{ pointerEvents: "none" }}
-                            />
-                            <circle
-                              cx={tooltipData.cx}
-                              cy={tooltipData.cy}
-                              r={isMobile ? 2 : 3}
-                              fill={theme.palette.primary.main}
-                              style={{ pointerEvents: "none" }}
-                            />
-                          </>
-                        )}
-                      </>
-                    )}
-                  </svg>
-
-                  {/* Graph X-axis Dates */}
-                  {!dataLoading && (
-                    <Box
-                      sx={{
-                        position: "absolute",
-                        top: isMobile ? 42 : 52,
-                        left: 0,
-                        right: 0,
-                        display: "flex",
-                        justifyContent: "space-between",
-                        fontSize: { xs: 9, sm: 11 },
-                        color: "#555",
-                        px: 1,
-                        marginTop: "3px",
-                      }}
-                    >
-                      <span>{dataState.bindGraph[0]?.date}</span>
-                      <span>
-                        {
-                          dataState.bindGraph[dataState.bindGraph.length - 1]
-                            ?.date
-                        }
-                      </span>
-                    </Box>
-                  )}
-
-                  {dataLoading && (
-                    <Box
-                      sx={{
-                        position: "absolute",
-                        top: "50%",
-                        left: "50%",
-                        transform: "translate(-50%, -50%)",
-                        fontSize: { xs: 10, sm: 12 },
-                        color: "#666",
-                      }}
-                    >
-                      Loading...
-                    </Box>
-                  )}
-                </Box>
-
-                {/* Tooltip */}
-                {tooltipData && !dataLoading && (
-                  <Box
-                    sx={{
-                      position: "fixed",
-                      left: Math.max(
-                        10,
-                        Math.min(
-                          window.innerWidth - 160,
-                          svgOffset.left + tooltipData.cx - 80
-                        )
-                      ),
-                      top: Math.max(10, svgOffset.top + tooltipData.cy - 70),
-                      backgroundColor: "white",
-                      border: "1px solid #d0d7de",
-                      borderRadius: 2,
-                      padding: { xs: "6px 10px", sm: "8px 12px" },
-                      fontSize: { xs: 11, sm: 12 },
-                      pointerEvents: "none",
-                      zIndex: 1000,
-                      boxShadow: "0 8px 24px rgba(0,0,0,0.15)",
-                      whiteSpace: "nowrap",
-                      maxWidth: 200,
-                    }}
+                </Tooltip>
+                {!currentDates.selectedDate.isSame(today, "day") && (
+                  <IconButton
+                    size="small"
+                    onClick={handleNext}
+                    disabled={dataLoading}
+                    sx={{ padding: { xs: "4px", sm: "8px" } }}
                   >
-                    <Typography 
-                      fontWeight="bold" 
-                      sx={{ fontSize: { xs: 12, sm: 14 } }} 
-                      color="#485E75"
-                    >
-                      {dayjs(tooltipData.fullDate).format("MMM DD, YYYY")}
-                    </Typography>
-                    <Typography 
-                      sx={{ fontSize: { xs: 12, sm: 14 } }} 
-                      color="#FF9800" 
-                      fontWeight="bold"
-                    >
-                      Gross Revenue:{" "}
-                      {formatCurrency(tooltipData.gross_revenue_with_tax)}
-                    </Typography>
-                  </Box>
+                    <ChevronRight sx={{ fontSize: { xs: 18, sm: 24 } }} />
+                  </IconButton>
                 )}
               </Box>
             </Box>
-          )}
-
-          {/* Other Metric Cards */}
-          {[
-            "total_orders",
-            "total_units",
-            "total_tax",
-            "refund",
-            "total_cogs",
-            "margin",
-            "business_value",
-          ].map((id, idx) => {
-            const item = METRICS_CONFIG[id];
-
-            return (
-              visibleMetrics.includes(id) && (
-                <Box key={idx} sx={metricBlockStyle}>
-                  <MetricItem
-                    title={item.title}
-                    value={dataState.metrics[id]}
-                    change={dataState.difference[id]}
-                    isNegative={String(dataState.difference[id]).startsWith(
-                      "-"
+            {/* Gross Revenue */}
+            {visibleMetrics.includes("gross_revenue_without_tax") && (
+              <Box sx={metricBlockStyle}>
+                <MetricItem
+                  title="Gross Revenue (No Tax)"
+                  value={dataState.metrics.gross_revenue_without_tax}
+                  change={dataState.difference.gross_revenue_without_tax}
+                  isNegative={String(
+                    dataState.difference.gross_revenue_without_tax
+                  ).startsWith("-")}
+                  tooltip={
+                    currentDates.selectedDate.isSame(today, "day")
+                      ? `Yesterday: ${formatCurrency(
+                        dataState.previous.gross_revenue_without_tax
+                      )}`
+                      : `${currentDates.selectedDate
+                        .subtract(1, "day")
+                        .format("MMM DD")}: ${formatCurrency(
+                          dataState.previous.gross_revenue_without_tax
+                        )}`
+                  }
+                  currencySymbol="$"
+                  loading={dataLoading}
+                />
+              </Box>
+            )}
+            {visibleMetrics.includes("gross_revenue_with_tax") && (
+              <Box sx={metricBlockStyle}>
+                <MetricItem
+                  title="Gross Revenue"
+                  value={dataState.metrics.gross_revenue_with_tax}
+                  change={dataState.difference.gross_revenue_with_tax}
+                  isNegative={String(
+                    dataState.difference.gross_revenue_with_tax
+                  ).startsWith("-")}
+                  tooltip={
+                    currentDates.selectedDate.isSame(today, "day")
+                      ? `Yesterday: ${formatCurrency(
+                        dataState.previous.gross_revenue_with_tax
+                      )}`
+                      : `${currentDates.selectedDate
+                        .subtract(1, "day")
+                        .format("MMM DD")}: ${formatCurrency(
+                          dataState.previous.gross_revenue_with_tax
+                        )}`
+                  }
+                  currencySymbol="$"
+                  loading={dataLoading}
+                />
+              </Box>
+            )}
+            {/* Chart */}
+            {(visibleMetrics.includes("gross_revenue_without_tax") ||
+              visibleMetrics.includes("gross_revenue_with_tax")) && (
+                <Box
+                  sx={{ borderRight: { xs: "none", sm: "1px solid #e0e0e0" } }}
+                >
+                  <Box
+                    ref={graphContainerRef}
+                    sx={{
+                      ...metricBlockStyle,
+                      position: "relative",
+                      overflow: "visible",
+                      flexDirection: "column",
+                      opacity: dataLoading ? 0.6 : 1,
+                    }}
+                    onMouseLeave={(e) => {
+                      const rect = e.currentTarget.getBoundingClientRect();
+                      const x = e.clientX;
+                      const y = e.clientY;
+                      if (
+                        x < rect.left ||
+                        x > rect.right ||
+                        y < rect.top ||
+                        y > rect.bottom
+                      ) {
+                        setTimeout(() => setTooltipData(null), 100);
+                      }
+                    }}
+                  >
+                    <Box
+                      sx={{
+                        width: "100%",
+                        height: { xs: 70, sm: 80 },
+                        position: "relative",
+                        overflow: "visible",
+                      }}
+                    >
+                      <svg ref={svgRef} width="100%" height={isMobile ? 50 : 60}>
+                        {/* Grid lines */}
+                        {[20, 30, 40].map((y, idx) => (
+                          <line
+                            key={idx}
+                            x1="0"
+                            y1={y}
+                            x2="100%"
+                            y2={y}
+                            stroke="#eee"
+                            strokeWidth="1"
+                          />
+                        ))}
+                        {/* X-axis */}
+                        <line
+                          x1="0"
+                          y1={isMobile ? 46 : 48}
+                          x2="100%"
+                          y2={isMobile ? 46 : 48}
+                          stroke="#000"
+                          strokeWidth="1"
+                        />
+                        {!dataLoading && (
+                          <>
+                            {/* Revenue lines */}
+                            <polyline
+                              points={getGraphPoints("gross_revenue_without_tax")}
+                              style={{
+                                fill: "none",
+                                stroke: theme.palette.primary.main,
+                                strokeWidth: isMobile ? 1.5 : 2,
+                              }}
+                            />
+                            <polyline
+                              points={getGraphPoints("gross_revenue_with_tax")}
+                              style={{
+                                fill: "none",
+                                stroke: "#FF9800",
+                                strokeWidth: isMobile ? 1.5 : 2,
+                              }}
+                            />
+                            {getCirclePoints("gross_revenue_with_tax").map(
+                              (point, index) => (
+                                <circle
+                                  key={`visible-with-tax-${index}`}
+                                  cx={point.cx}
+                                  cy={point.cy}
+                                  r={isMobile ? 3 : 4}
+                                  fill="#FF9800"
+                                  stroke="white"
+                                  strokeWidth="1.5"
+                                  style={{
+                                    pointerEvents: "none",
+                                    transition: "r 0.2s ease",
+                                  }}
+                                />
+                              )
+                            )}
+                            {/* Invisible larger circles for easier hovering - gross_revenue_without_tax */}
+                            {/* {getCirclePoints("gross_revenue_without_tax").map((point, index) => (
+        <circle
+          key={`hover-no-tax-${index}`}
+          cx={point.cx}
+          cy={point.cy}
+          r={isMobile ? 8 : 10}
+          fill="transparent"
+          stroke="transparent"
+          style={{
+            pointerEvents: "all",
+            cursor: "pointer",
+          }}
+          onMouseEnter={(e) => {
+            e.stopPropagation();
+            setTooltipData({ ...point, index });
+          }}
+          onMouseLeave={(e) => {
+            e.stopPropagation();
+            setTimeout(() => setTooltipData(null), 50);
+          }}
+        />
+      ))} */}
+                            {/* Invisible larger circles for easier hovering - gross_revenue_with_tax */}
+                            {getCirclePoints("gross_revenue_with_tax").map(
+                              (point, index) => (
+                                <circle
+                                  key={`hover-with-tax-${index}`}
+                                  cx={point.cx}
+                                  cy={point.cy}
+                                  r={isMobile ? 8 : 10}
+                                  fill="transparent"
+                                  stroke="transparent"
+                                  style={{
+                                    pointerEvents: "all",
+                                    cursor: "pointer",
+                                  }}
+                                  onMouseEnter={(e) => {
+                                    e.stopPropagation();
+                                    setTooltipData({ ...point, index });
+                                  }}
+                                  onMouseLeave={(e) => {
+                                    e.stopPropagation();
+                                    setTimeout(() => setTooltipData(null), 50);
+                                  }}
+                                />
+                              )
+                            )}
+                            {/* Highlight circle when hovering */}
+                            {tooltipData && (
+                              <>
+                                <circle
+                                  cx={tooltipData.cx}
+                                  cy={tooltipData.cy}
+                                  r={isMobile ? 6 : 8}
+                                  fill="white"
+                                  stroke={
+                                    tooltipData.gross_revenue_with_tax
+                                      ? "#FF9800"
+                                      : theme.palette.primary.main
+                                  }
+                                  strokeWidth="2"
+                                  style={{ pointerEvents: "none" }}
+                                />
+                                <circle
+                                  cx={tooltipData.cx}
+                                  cy={tooltipData.cy}
+                                  r={isMobile ? 3 : 4}
+                                  fill={
+                                    tooltipData.gross_revenue_with_tax
+                                      ? "#FF9800"
+                                      : theme.palette.primary.main
+                                  }
+                                  style={{ pointerEvents: "none" }}
+                                />
+                              </>
+                            )}
+                          </>
+                        )}
+                      </svg>
+                      {/* Graph X-axis Dates */}
+                      {!dataLoading && (
+                        <Box
+                          sx={{
+                            position: "absolute",
+                            top: isMobile ? 42 : 52,
+                            left: 0,
+                            right: 0,
+                            display: "flex",
+                            justifyContent: "space-between",
+                            fontSize: { xs: 9, sm: 11 },
+                            color: "#555",
+                            px: 1,
+                            marginTop: "3px",
+                          }}
+                        >
+                          <span>{dataState.bindGraph[0]?.date}</span>
+                          <span>
+                            {
+                              dataState.bindGraph[dataState.bindGraph.length - 1]
+                                ?.date
+                            }
+                          </span>
+                        </Box>
+                      )}
+                      {dataLoading && (
+                        <Box
+                          sx={{
+                            position: "absolute",
+                            top: "50%",
+                            left: "50%",
+                            transform: "translate(-50%, -50%)",
+                            fontSize: { xs: 10, sm: 12 },
+                            color: "#666",
+                          }}
+                        >
+                          Loading...
+                        </Box>
+                      )}
+                    </Box>
+                    {/* Tooltip */}
+                    {tooltipData && !dataLoading && (
+                      <Box
+                        sx={{
+                          position: "fixed",
+                          left: Math.max(
+                            10,
+                            Math.min(
+                              window.innerWidth - 160,
+                              svgOffset.left + tooltipData.cx - 80
+                            )
+                          ),
+                          top: Math.max(10, svgOffset.top + tooltipData.cy - 70),
+                          backgroundColor: "white",
+                          border: "1px solid #d0d7de",
+                          borderRadius: 2,
+                          padding: { xs: "6px 10px", sm: "8px 12px" },
+                          fontSize: { xs: 11, sm: 12 },
+                          pointerEvents: "none",
+                          zIndex: 1000,
+                          boxShadow: "0 8px 24px rgba(0,0,0,0.15)",
+                          whiteSpace: "nowrap",
+                          maxWidth: 200,
+                        }}
+                      >
+                        <Typography
+                          fontWeight="bold"
+                          sx={{ fontSize: { xs: 12, sm: 14 } }}
+                          color="#485E75"
+                        >
+                          {dayjs(tooltipData.fullDate).format("MMM DD, YYYY")}
+                        </Typography>
+                        <Typography
+                          sx={{ fontSize: { xs: 12, sm: 14 } }}
+                          color="#FF9800"
+                          fontWeight="bold"
+                        >
+                          Gross Revenue:{" "}
+                          {formatCurrency(tooltipData.gross_revenue_with_tax)}
+                        </Typography>
+                      </Box>
                     )}
-                    tooltip={item.tooltip(
-                      currentDates.selectedDate,
-                      today,
-                      dataState.previous[id]
-                    )}
-                    currencySymbol={item.currencySymbol}
-                    percentSymbol={item.percentSymbol}
-                    loading={dataLoading}
-                  />
+                  </Box>
                 </Box>
-              )
-            );
-          })}
-
-          {/* Settings Toggle */}
-          <Box
+              )}
+            {/* Other Metric Cards */}
+            {[
+              "total_orders",
+              "total_units",
+              "total_tax",
+              "refund",
+              "total_cogs",
+              "net_profit",
+              "expenses",
+              "margin",
+              "business_value",
+            ].map((id, idx) => {
+              const item = METRICS_CONFIG[id];
+              return (
+                visibleMetrics.includes(id) && (
+                  <Box key={idx} sx={metricBlockStyle}
+                  >
+                    <MetricItem
+                      title={item.title}
+                      value={dataState.metrics[id]}
+                      change={dataState.difference[id]}
+                      isNegative={String(dataState.difference[id]).startsWith(
+                        "-"
+                      )}
+                      tooltip={item.tooltip(
+                        currentDates.selectedDate,
+                        today,
+                        dataState.previous[id]
+                      )}
+                      currencySymbol={item.currencySymbol}
+                      percentSymbol={item.percentSymbol}
+                      loading={dataLoading}
+                    />
+                  </Box>
+                )
+              );
+            })}
+            {/* Settings Toggle */}
+            {/* <Box
             onClick={handleOpen}
             sx={{
               marginTop: "-1px",
@@ -1167,10 +1126,9 @@ const TestCard = ({
           >
             <SettingsIcon sx={{ fontSize: { xs: 16, sm: 18 } }} />
             <Box sx={{ display: { xs: "none", sm: "block" } }}>Choose Metrics</Box>
-          </Box>
-
-          {/* Settings Dialog */}
-          <Dialog 
+          </Box> */}
+            {/* Settings Dialog */}
+            {/* <Dialog 
             open={open} 
             onClose={handleClose} 
             maxWidth="sm" 
@@ -1187,12 +1145,11 @@ const TestCard = ({
                 onApply={handleApply}
               />
             </DialogContent>
-          </Dialog>
-        </Box>
+          </Dialog> */}
+          </Box>
         </>
       )}
     </Box>
   );
 };
-
 export default TestCard;

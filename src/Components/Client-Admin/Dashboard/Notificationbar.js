@@ -65,86 +65,60 @@ function Notificationbar() {
 
   return (
     <AppBar position="fixed" sx={{ backgroundColor: accentColor, zIndex: 1201 }}>
-      <Toolbar sx={{ justifyContent: "space-between" }}>
-        {/* LEFT: Logo + (Optional) Drawer Trigger */}
-        <Box sx={{ display: "flex", alignItems: "center" }}>
-          {isSmall && (
-            <IconButton color="inherit" edge="start" onClick={handleMobileMenu}>
-              <MenuIcon />
-            </IconButton>
-          )}
-          <IconButton edge="start" color="inherit" aria-label="logo">
-            <img
-              src={require("../../assets/MarketLynxe.png")}
-              alt="Logo"
-              style={{
-                height: isSmall ? "32px" : "40px",
-                width: "auto",
-                backgroundColor: "#fff",
-                padding: "2px",
-                borderRadius: "2px",
+     <Toolbar sx={{ display: 'flex', justifyContent: 'space-between' }}>
+    {/* LEFT: Logo + (Optional) Drawer Trigger */}
+    <Box sx={{ display: "flex", alignItems: "center", flex: 1 }}>
+      {isSmall && (
+        <IconButton color="inherit" edge="start" onClick={handleMobileMenu}>
+          <MenuIcon />
+        </IconButton>
+      )}
+      <IconButton edge="start" color="inherit" aria-label="logo">
+        <img
+          src={require("../../assets/MarketLynxe.png")}
+          alt="Logo"
+          style={{
+            height: isSmall ? "32px" : "40px",
+            width: "auto",
+            backgroundColor: "#fff",
+            padding: "2px",
+            borderRadius: "2px",
+          }}
+        />
+      </IconButton>
+    </Box>
+
+    {/* CENTER: Country Selector (Large screens only) */}
+    
+
+    {/* RIGHT SECTION */}
+    <Box sx={{ display: "flex", alignItems: "center", justifyContent: 'flex-end', gap: 1, flex: 1 }}>
+       <Box
+              sx={{
+                fontSize: "20px",
+                fontFamily:
+                  "'Nunito Sans', -apple-system, 'Segoe UI', 'Roboto', 'Helvetica Neue', 'Arial', sans-serif",
+                fontWeight: 500,
+                flexShrink: 0,
               }}
-            />
-          </IconButton>
-        </Box>
+            >
+              Welcome User
+            </Box>
+      {/* Notification Icon */}
+      {!isSmall && (
+        <IconButton color="inherit">
+          <Notifications sx={{ fontSize: 26 }} />
+        </IconButton>
+      )}
 
-        {/* CENTER: Title */}
-        {!isSmall && (
-          <Typography
-            variant={isMedium ? "subtitle1" : "h6"}
-            sx={{ flexGrow: 1, textAlign: "center", fontWeight: 600 }}
-          >
-            MarketPlace Management
-          </Typography>
-        )}
-
-        {/* RIGHT SECTION */}
-        <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
-          {/* Country Selector */}
-          {!isSmall && (
-            <LocalizationProvider dateAdapter={AdapterDayjs}>
-              <FormControl
-                size="small"
-                sx={{
-                  minWidth: 130,
-                  pr: 1,
-                  "& .MuiOutlinedInput-root": {
-                    backgroundColor: "white",
-                    "& fieldset": { borderColor: "#cacaca" },
-                    "&:hover fieldset": { borderColor: accentColor },
-                    "&.Mui-focused fieldset": { borderColor: accentColor },
-                  },
-                }}
-              >
-                <InputLabel shrink={selectedCountry !== ""}></InputLabel>
-                <Select
-                  value={selectedCountry}
-                  onChange={(e) => setSelectedCountry(e.target.value)}
-                  displayEmpty
-                  inputProps={{ "aria-label": "country select" }}
-                >
-                  <MenuItem value="US">United States</MenuItem>
-                  <MenuItem value="UK">United Kingdom</MenuItem>
-                </Select>
-              </FormControl>
-            </LocalizationProvider>
-          )}
-
-          {/* Notification Icon */}
-          {!isSmall && (
-            <IconButton color="inherit">
-              <Notifications sx={{ fontSize: 26 }} />
-            </IconButton>
-          )}
-
-          {/* Profile */}
-          <IconButton color="inherit" onClick={handleProfileClick}>
-            <Avatar sx={{ bgcolor: "white", color: accentColor }}>
-              <AccountCircle />
-            </Avatar>
-          </IconButton>
-        </Box>
-      </Toolbar>
+      {/* Profile */}
+      <IconButton color="inherit" onClick={handleProfileClick}>
+        <Avatar sx={{ bgcolor: "white", color: accentColor }}>
+          <AccountCircle />
+        </Avatar>
+      </IconButton>
+    </Box>
+  </Toolbar>
 
       {/* --- Profile Menu --- */}
       <Menu anchorEl={anchorEl} open={open} onClose={handleProfileClose}>

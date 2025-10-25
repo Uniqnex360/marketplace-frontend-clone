@@ -187,7 +187,6 @@ const periods = responseData || {};
         });
 
       setPeriodData(formattedData);
-      console.log("Formatted Period Data:", formattedData);
     } catch (error) {
       console.error("Error fetching metrics:", error);
       setPeriodData([]);

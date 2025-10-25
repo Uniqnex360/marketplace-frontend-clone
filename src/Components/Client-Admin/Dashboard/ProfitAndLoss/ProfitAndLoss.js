@@ -328,7 +328,6 @@ const ProfitAndLoss = ({
       // Add null checks for the response data
       const responseData = response?.data || {};
       const customData = responseData?.custom || {};
-      console.log('response of fetch profit and losst',responseData)
       setSummaryDate(customData?.dateRanges || null);
       setSummaryOther(customData?.netProfitCalculation || null);
       setSummary(customData?.summary || null);
@@ -730,7 +729,7 @@ const ProfitAndLoss = ({
                 flexWrap: "wrap",
               }}
             >
-              {events && (
+              {/* {events && (
                 <Button
                   variant="outlined"
                   size="small"
@@ -745,7 +744,7 @@ const ProfitAndLoss = ({
                 >
                   + Add Note
                 </Button>
-              )}
+              )} */}
               <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
                 <Typography
                   variant="body2"

@@ -417,7 +417,6 @@ const CompareChart = ({
   useEffect(() => {
     if (!chartData || Object.keys(chartData).length === 0) return;
     const localGraphData = Object.values(chartData);
-    console.log("varialbe", localGraphData);
     if (localGraphData.length > 0) {
       const startDate = new Date(localGraphData[0].current_date);
       const endDate = new Date(
@@ -432,7 +431,6 @@ const CompareChart = ({
         widgetData === "Today" || widgetData === "Yesterday"
           ? `${formattedStart}, ${year}`
           : `${formattedStart} - ${formattedEnd}, ${year}`;
-      console.log(`📊 Widget (${widgetData}): ${displayRange}`);
       setCompareDateFilter(displayRange); 
     }
   }, [chartData, widgetData]);
@@ -911,7 +909,7 @@ const CompareChart = ({
                 </Card>
               );
             })}
-            <Box
+            {/* <Box
               onClick={handleOpen}
               sx={{
                 marginTop: "-1px",
@@ -946,7 +944,7 @@ const CompareChart = ({
                   onApply={handleApply}
                 />
               </DialogContent>
-            </Dialog>
+            </Dialog> */}
           </Box>
         </Grid>
 

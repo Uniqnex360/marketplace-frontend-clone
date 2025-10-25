@@ -149,7 +149,6 @@ function ClientDashboardpage() {
     return preset;
   };
   const continents = ["US", "UK"];
-  console.log("activefilters", activeFilters);
   const [value, setValue] = useState([dayjs().subtract(6, "day"), dayjs()]);
   const [selectedPreset, setSelectedPreset] = useState("Today");
   const [hasMore, setHasMore] = React.useState(true);
@@ -594,8 +593,6 @@ function ClientDashboardpage() {
     setMergedProducts(productuniqueById);
   };
   useEffect(() => {
-    console.log(mergedProducts, "mergedProducts");
-    console.log(selectedFulfillment, "selectedFulfillment");
   }, [mergedProducts, selectedFulfillment]);
   const handleCategoryChange = (event) => {
     const selectedName = event.target.value;
@@ -770,7 +767,7 @@ function ClientDashboardpage() {
         gap: 2,
       }}
     >
-      <Box
+      {/* <Box
         sx={{
           fontSize: "20px",
           fontFamily:
@@ -779,8 +776,8 @@ function ClientDashboardpage() {
           flexShrink: 0,
         }}
       >
-        Welcome {JSON.parse(localStorage.getItem("user"))?.name||"User"}
-      </Box>
+        Welcome User
+      </Box> */}
 
       {/* Filters in one line */}
       <Box
@@ -793,8 +790,33 @@ function ClientDashboardpage() {
           flex: 1,
         }}
       >
+              <Box sx={{ width: "180px" }}>
+                <LocalizationProvider dateAdapter={AdapterDayjs}>
+                  <FormControl
+                    size="small"
+                    sx={{
+                      minWidth: 180,
+                      "& .MuiOutlinedInput-root": {
+                        backgroundColor: "white",
+                        "& fieldset": { borderColor: "#cacaca" },
+                      },
+                    }}
+                  >
+                    <InputLabel shrink={selectedCountry !== ""}></InputLabel>
+                    <Select
+                      value={selectedCountry}
+                      onChange={(e) => setSelectedCountry(e.target.value)}
+                      displayEmpty
+                      inputProps={{ "aria-label": "country select" }}
+                    >
+                      <MenuItem value="US">United States</MenuItem>
+                      <MenuItem value="UK">United Kingdom</MenuItem>
+                    </Select>
+                  </FormControl>
+                </LocalizationProvider>
+              </Box>
         {/* Brand Selector */}
-        <Box>
+       <Box sx={{ width: "190px" }}>
           <BrandSelector
             selectedBrand={selectedBrand}
             setSelectedBrand={setSelectedBrand}
@@ -1048,7 +1070,7 @@ function ClientDashboardpage() {
             renderInput={(params) => (
               <TextField
                 {...params}
-                label="ASIN / WPID"
+                label="Product ID"
                 size="small"
                 placeholder="Search ASIN..."
                 InputProps={{
