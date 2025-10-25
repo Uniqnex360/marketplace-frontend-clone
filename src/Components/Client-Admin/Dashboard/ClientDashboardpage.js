@@ -1135,7 +1135,7 @@ function ClientDashboardpage() {
           </FormControl>
         </Box>
 
-        <Box sx={{ width: "130px", ml: 2 ,mb:1}}>
+        <Box sx={{ width: "130px", ml: 2}}>
           <LocalizationProvider dateAdapter={AdapterDayjs}>
             <DatePicker
               label="Start Date"
@@ -1154,7 +1154,7 @@ function ClientDashboardpage() {
           </LocalizationProvider>
         </Box>
 
-        <Box sx={{ width: "130px",mb:1 }}>
+        <Box sx={{ width: "130px" }}>
           <LocalizationProvider dateAdapter={AdapterDayjs}>
             <DatePicker
               label="End Date"
