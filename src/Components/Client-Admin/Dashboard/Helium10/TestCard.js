@@ -29,6 +29,7 @@ import ChooseMetrics from "./ChooseMetrics";
 import DottedCircleLoading from "../../../Loading/DotLoading";
 import SkeletonLoadingUI from "./SummaryCardLoading";
 import customParseFormat from "dayjs/plugin/customParseFormat";
+import { getCurrencySymbol } from "../../../../utils/currencySymbol";
 dayjs.extend(customParseFormat);
 dayjs.extend(weekOfYear);
 dayjs.extend(utc);
@@ -50,36 +51,32 @@ const MetricItem = ({
   const absValue = Math.abs(value ?? 0);
   const absChange = Math.abs(change ?? 0);
   const displayValue = `${(value ?? 0) < 0 ? "-" : ""}${currencySymbol
-      ? new Intl.NumberFormat("en-US", {
-        style: "currency",
-        currency: "USD",
+    ? `${currencySymbol}${Math.abs(value ?? 0).toLocaleString("en-US", {
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 2,
+    })}`
+    : percentSymbol
+      ? `${Math.abs(value ?? 0)}%`
+      : new Intl.NumberFormat("en-US", {
+        minimumFractionDigits: 0,
+        maximumFractionDigits: 0,
+      }).format(Math.abs(value ?? 0))
+  }`;
+  const displayChange =
+  change !== undefined
+    ? `${change < 0 ? "-" : ""}${currencySymbol
+      ? `${currencySymbol}${Math.abs(change ?? 0).toLocaleString("en-US", {
         minimumFractionDigits: 2,
         maximumFractionDigits: 2,
-      }).format(Math.abs(value ?? 0))
+      })}`
       : percentSymbol
-        ? `${Math.abs(value ?? 0)}%`
+        ? `${Math.abs(change ?? 0)}%`
         : new Intl.NumberFormat("en-US", {
           minimumFractionDigits: 0,
           maximumFractionDigits: 0,
-        }).format(Math.abs(value ?? 0))
-    }`;
-  const displayChange =
-    change !== undefined
-      ? `${change < 0 ? "-" : ""}${currencySymbol
-        ? new Intl.NumberFormat("en-US", {
-          style: "currency",
-          currency: "USD",
-          minimumFractionDigits: 2,
-          maximumFractionDigits: 2,
         }).format(Math.abs(change ?? 0))
-        : percentSymbol
-          ? `${Math.abs(change ?? 0)}%`
-          : new Intl.NumberFormat("en-US", {
-            minimumFractionDigits: 0,
-            maximumFractionDigits: 0,
-          }).format(Math.abs(change ?? 0))
-      }`
-      : "";
+    }`
+    : "";
   return (
     <Card
       sx={{
@@ -419,13 +416,12 @@ const stableManufacturer = JSON.stringify(manufacturer_name);
     });
     setCurrentPreset(widgetData);
   }, [widgetData, DateStartDate, DateEndDate]);
+  const currencySymbol=getCurrencySymbol(country)
   const formatCurrency = (value) =>
-    new Intl.NumberFormat("en-US", {
-      style: "currency",
-      currency: "USD",
-      minimumFractionDigits: 2,
-      maximumFractionDigits: 2,
-    }).format(value ?? 0);
+  `${currencySymbol}${(value ?? 0).toLocaleString("en-US", {
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2,
+  })}`;
   const METRICS_CONFIG = {
     gross_revenue_without_tax: {
       title: "Gross Revenue (No Tax)",
@@ -435,7 +431,7 @@ const stableManufacturer = JSON.stringify(manufacturer_name);
           : `${date.subtract(1, "day").format("MMM DD")}: ${formatCurrency(
             prev
           )}`,
-      currencySymbol: "$",
+      currencySymbol: currencySymbol,
     },
     gross_revenue_with_tax: {
       title: "Gross Revenue",
@@ -445,7 +441,7 @@ const stableManufacturer = JSON.stringify(manufacturer_name);
           : `${date.subtract(1, "day").format("MMM DD")}: ${formatCurrency(
             prev
           )}`,
-      currencySymbol: "$",
+      currencySymbol: currencySymbol,
     },
     total_orders: {
       title: "Orders",
@@ -469,7 +465,7 @@ const stableManufacturer = JSON.stringify(manufacturer_name);
           : `${date.subtract(1, "day").format("MMM DD")}: ${formatCurrency(
             prev
           )}`,
-      currencySymbol: "$",
+      currencySymbol: currencySymbol,
     },
     refund: {
       title: "Refunds",
@@ -486,7 +482,7 @@ const stableManufacturer = JSON.stringify(manufacturer_name);
           : `${date.subtract(1, "day").format("MMM DD")}: ${formatCurrency(
             prev
           )}`,
-      currencySymbol: "$",
+      currencySymbol: currencySymbol,
     },
     net_profit: {
       title: "Net Profit",
@@ -496,7 +492,7 @@ const stableManufacturer = JSON.stringify(manufacturer_name);
           : `${date.subtract(1, "day").format("MMM DD")}: ${formatCurrency(
             prev
           )}`,
-      currencySymbol: "$",
+      currencySymbol: currencySymbol,
     },
     expenses: {
       title: "Expenses",
@@ -506,7 +502,7 @@ const stableManufacturer = JSON.stringify(manufacturer_name);
           : `${date.subtract(1, "day").format("MMM DD")}: ${formatCurrency(
             prev
           )}`,
-      currencySymbol: "$",
+      currencySymbol: currencySymbol,
     },
     margin: {
       title: "Profit Margin",
@@ -524,7 +520,7 @@ const stableManufacturer = JSON.stringify(manufacturer_name);
           : `${date.subtract(1, "day").format("MMM DD")}: ${formatCurrency(
             prev
           )}`,
-      currencySymbol: "$",
+      currencySymbol: currencySymbol,
     },
   };
   const today = API_TODAY;
@@ -683,7 +679,6 @@ const stableManufacturer = JSON.stringify(manufacturer_name);
               px: { xs: 1, sm: 2 },
             }}
           >
-            {/* Date Picker */}
             <Box
               sx={{
                 ...metricBlockStyle,
@@ -784,7 +779,7 @@ const stableManufacturer = JSON.stringify(manufacturer_name);
                           dataState.previous.gross_revenue_without_tax
                         )}`
                   }
-                  currencySymbol="$"
+                  currencySymbol={currencySymbol}
                   loading={dataLoading}
                 />
               </Box>
@@ -809,7 +804,7 @@ const stableManufacturer = JSON.stringify(manufacturer_name);
                           dataState.previous.gross_revenue_with_tax
                         )}`
                   }
-                  currencySymbol="$"
+                  currencySymbol={currencySymbol}
                   loading={dataLoading}
                 />
               </Box>

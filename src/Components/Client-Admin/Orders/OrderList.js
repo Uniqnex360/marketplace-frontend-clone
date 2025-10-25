@@ -51,6 +51,8 @@ import AppsIcon from "@mui/icons-material/Apps";
 import ShoppingCartIcon from "@mui/icons-material/ShoppingCart";
 import ImageIcon from "@mui/icons-material/Image";
 import { useEnhancedCategories } from "../../../utils/UseEnhancedCategories";
+import CountrySelector from "../../../utils/countrySelector";
+import { formatCurrency } from "../../../utils/currencyFormatter";
 
 const OrderList = ({ fetchOrdersFromParent }) => {
   const theme = useTheme();
@@ -423,7 +425,7 @@ const enhancedCategories = useEnhancedCategories(categories);
           justifyContent: "flex-end",
           alignItems: "center",
           position: "fixed",
-          top: 0,
+          top: -40,
           right: 0,
           marginTop: { xs: "10px", md: "20px" },
           width: { xs: "100%", md: "108%" },
@@ -447,9 +449,28 @@ const enhancedCategories = useEnhancedCategories(categories);
             width: "100%",
           }}
         >
+         <Box sx={{ 
+    marginTop: { xs: 0, md: "-7px" },
+    width: { xs: "100%", md: "auto" },
+    display: "flex",
+    justifyContent: "flex-start"
+  }}>
+    <CountrySelector
+      selectedCountry={selectedCountry}
+      onCountryChange={(country) => {
+        setSelectedCountry(country);
+        setPage(1); // Reset to first page when country changes
+      }}
+      minWidth={150}
+      sx={{
+        width: { xs: "100%", md: 150 }
+      }}
+    />
+  </Box>
+    
           {/* Marketplace Selector */}
           <Box sx={{ width: { xs: "100%", md: "auto" } }}>
-            <FormControl size="small" sx={{ width: { xs: "100%", md: 150 } }}>
+            <FormControl size="small" sx={{ width: { xs: "100%", md: 180 } }}>
               <Select
                 value={selectedCategory?.id || "all"}
                 onChange={(e) => {
@@ -497,7 +518,7 @@ const enhancedCategories = useEnhancedCategories(categories);
                 label="status"
                 onChange={(e) => setSelectedStatus(e.target.value)}
               >
-                <MenuItem value="all">All Statuses</MenuItem>
+                <MenuItem value="all">All Status</MenuItem>
                 <MenuItem value="Pending">Pending</MenuItem>
                 <MenuItem value="Shipped">Shipped</MenuItem>
                 <MenuItem value="Canceled">Canceled</MenuItem>
@@ -763,10 +784,10 @@ const enhancedCategories = useEnhancedCategories(categories);
                         {order.total_quantity ? order.total_quantity : "N/A"}
                       </TableCell>
                       <TableCell align="center" sx={{ paddingLeft: "3px", fontSize: { xs: "0.8rem", md: "0.9rem" } }}>
-                        {order.total_price && !isNaN(order.total_price)
-                          ? `$${order.total_price.toFixed(2)}`
-                          : "N/A"}
-                      </TableCell>
+  {order.total_price && !isNaN(order.total_price)
+    ? formatCurrency(order.total_price.toFixed(2), selectedCountry)
+    : "N/A"}
+</TableCell>
                       <TableCell
                         sx={{
                           textAlign: "center",

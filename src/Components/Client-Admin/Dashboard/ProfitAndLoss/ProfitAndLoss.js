@@ -1,7 +1,6 @@
 import React, { useEffect, useState, useRef } from "react";
 import axios from "axios";
 import { formatCurrency } from '../../../../utils/currencyFormatter';
-import { format, parseISO } from "date-fns";
 import {
   ResponsiveContainer,
   LineChart,
@@ -42,6 +41,7 @@ import html2canvas from "html2canvas";
 import { saveAs } from "file-saver";
 import dayjs from "dayjs";
 import utc from "dayjs/plugin/utc";
+import { getCurrencySymbol } from "../../../../utils/currencySymbol";
 
 const ProfitAndLoss = ({
   widgetData,
@@ -434,8 +434,9 @@ const ProfitAndLoss = ({
   };
 
   const yAxisTickFormatter = (value) => {
-    return `$${value}`;
-  };
+  const currencySymbol = getCurrencySymbol(country);
+  return `${currencySymbol}${value}`;
+};
 
   const yAxisUnitsTickFormatter = (value) => {
     return value;
@@ -453,78 +454,80 @@ const ProfitAndLoss = ({
       : [];
 
   const CustomTooltip = ({ active, payload, label }) => {
-    if (active && payload && payload.length) {
-      const dateObj = dayjs(label);
-      const today = dayjs().format("YYYY-MM-YYYY-MM-DD");
-      const yesterday = dayjs().subtract(1, "day").format("YYYY-MM-DD");
-      const valueDate = dateObj.format("YYYY-MM-DD");
+  const currencySymbol = getCurrencySymbol(country);
+  
+  if (active && payload && payload.length) {
+    const dateObj = dayjs(label);
+    const today = dayjs().format("YYYY-MM-YYYY-MM-DD");
+    const yesterday = dayjs().subtract(1, "day").format("YYYY-MM-DD");
+    const valueDate = dateObj.format("YYYY-MM-DD");
 
-      const isTodayOrYesterday =
-        (valueDate === today && widgetData === "Today") ||
-        (valueDate === yesterday && widgetData === "Yesterday");
+    const isTodayOrYesterday =
+      (valueDate === today && widgetData === "Today") ||
+      (valueDate === yesterday && widgetData === "Yesterday");
 
-      const dateLabel = isTodayOrYesterday ? (
-        <>
-          {dateObj.format("MMM D")} (<span>{dateObj.format("HH:mm")}</span>)
-        </>
-      ) : (
-        dateObj.format("MMM DD, YY")
-      );
+    const dateLabel = isTodayOrYesterday ? (
+      <>
+        {dateObj.format("MMM D")} (<span>{dateObj.format("HH:mm")}</span>)
+      </>
+    ) : (
+      dateObj.format("MMM DD, YY")
+    );
 
-      return (
-        <div
-          style={{
-            backgroundColor: "#fff",
-            padding: isMobile ? "8px" : "10px",
-            width: isMobile ? "180px" : "230px",
-            border: "1px solid #ccc",
-            fontSize: isMobile ? "12px" : "14px",
-          }}
-        >
-          <p className="label" style={{ margin: "0 0 8px 0" }}>
-            {dateLabel}
-          </p>
-          {payload.map((item, index) => (
-            <div
-              key={`item-${index}`}
+    return (
+      <div
+        style={{
+          backgroundColor: "#fff",
+          padding: isMobile ? "8px" : "10px",
+          width: isMobile ? "180px" : "230px",
+          border: "1px solid #ccc",
+          fontSize: isMobile ? "12px" : "14px",
+        }}
+      >
+        <p className="label" style={{ margin: "0 0 8px 0" }}>
+          {dateLabel}
+        </p>
+        {payload.map((item, index) => (
+          <div
+            key={`item-${index}`}
+            style={{
+              display: "flex",
+              justifyContent: "space-between",
+              alignItems: "center",
+              marginBottom: "6px",
+            }}
+          >
+            <span
               style={{
                 display: "flex",
-                justifyContent: "space-between",
                 alignItems: "center",
-                marginBottom: "6px",
+                color: "#485E75",
               }}
             >
               <span
                 style={{
-                  display: "flex",
-                  alignItems: "center",
-                  color: "#485E75",
+                  display: "inline-block",
+                  width: "8px",
+                  height: "8px",
+                  borderRadius: "50%",
+                  backgroundColor: item.color,
+                  marginRight: "6px",
                 }}
-              >
-                <span
-                  style={{
-                    display: "inline-block",
-                    width: "8px",
-                    height: "8px",
-                    borderRadius: "50%",
-                    backgroundColor: item.color,
-                    marginRight: "6px",
-                  }}
-                />
-                {formatMetricName(item.name)}
-              </span>
-              <span style={{ color: "#000", fontWeight: "bold" }}>
-                {item.name === "units"|| item.name==='Orders'
-                  ? item.value
-                  : `$${Number(item.value).toFixed(2)}`}
-              </span>
-            </div>
-          ))}
-        </div>
-      );
-    }
-    return null;
-  };
+              />
+              {formatMetricName(item.name)}
+            </span>
+            <span style={{ color: "#000", fontWeight: "bold" }}>
+              {item.name === "units" || item.name === 'Orders'
+                ? item.value
+                : `${currencySymbol}${Number(item.value).toFixed(2)}`}
+            </span>
+          </div>
+        ))}
+      </div>
+    );
+  }
+  return null;
+};
 
   function formatMetricName(metric) {
     switch (metric) {
@@ -547,7 +550,7 @@ const ProfitAndLoss = ({
   const summaryData = [
     {
       label: "Base Price",
-      value: formatCurrency(summaryOther?.current?.base_price),
+      value: formatCurrency(summaryOther?.current?.base_price,country),
       delta: (
         summaryOther?.current?.base_price - summaryOther?.previous?.base_price
       )?.toFixed(2),
@@ -556,7 +559,7 @@ const ProfitAndLoss = ({
     {
       label: "Total Tax",
       
-      value:formatCurrency(summaryOther?.current?.totalTax),
+      value:formatCurrency(summaryOther?.current?.totalTax,country),
       delta: (
         summaryOther?.current?.totalTax - summaryOther?.previous?.totalTax
       )?.toFixed(2),
@@ -564,7 +567,7 @@ const ProfitAndLoss = ({
     {
       label: "Shipping",
       
-      value: formatCurrency(summaryOther?.current?.shipping_cost),
+      value: formatCurrency(summaryOther?.current?.shipping_cost,country),
       delta: (
         summaryOther?.current?.shipping_cost -
         summaryOther?.previous?.shipping_cost
@@ -575,14 +578,14 @@ const ProfitAndLoss = ({
     {
       label: "Gross Revenue",
       
-      value: formatCurrency(summaryOther?.current?.gross),
+      value: formatCurrency(summaryOther?.current?.gross,country),
       delta: summary?.grossRevenue?.delta?.toFixed(2),
     },
     // { label: "Reimbursements", value: `$${summaryOther?.current?.reimbursements?.toFixed(2) ?? '0.00'}`, delta: (summaryOther?.current?.reimbursements - summaryOther?.previous?.reimbursements)?.toFixed(2) },
     {
       label: "Channel Fees",
       
-      value: formatCurrency(summaryOther?.current?.channel_fee),
+      value: formatCurrency(summaryOther?.current?.channel_fee,country),
       delta: (
         summaryOther?.current?.channel_fee - summaryOther?.previous?.channel_fee
       )?.toFixed(2),
@@ -590,7 +593,7 @@ const ProfitAndLoss = ({
     {
       label: "Refunds",
       
-      value:formatCurrency(summaryOther?.current?.productRefunds),
+      value:formatCurrency(summaryOther?.current?.productRefunds,country),
       delta: (
         summaryOther?.current?.productRefunds -
         summaryOther?.previous?.productRefunds
@@ -601,7 +604,7 @@ const ProfitAndLoss = ({
     {
       label: "COGS",
      
-      value:  formatCurrency(summaryOther?.current?.cogs),
+      value:  formatCurrency(summaryOther?.current?.cogs,country),
       delta: (
         summaryOther?.current?.cogs - summaryOther?.previous?.cogs
       )?.toFixed(2),
@@ -610,7 +613,7 @@ const ProfitAndLoss = ({
     {
       label: "Total Tax (Cost)",
       
-      value: formatCurrency(summaryOther?.current?.totalTax),
+      value: formatCurrency(summaryOther?.current?.totalTax,country),
       delta: (
         summaryOther?.current?.totalCosts -
         summaryOther?.previous?.totalTaxWithheld
@@ -618,13 +621,13 @@ const ProfitAndLoss = ({
     },
       {
   label: "Expenses",
-  value: formatCurrency(summary?.expenses?.current),
+  value: formatCurrency(summary?.expenses?.current,country),
   delta: summary?.expenses?.delta?.toFixed(2),
 },
     {
       label: "Net Profit",
       
-      value: formatCurrency(summary?.netProfit?.current),
+      value: formatCurrency(summary?.netProfit?.current,country),
       delta: summary?.netProfit?.delta?.toFixed(2),
     },
   ];
@@ -695,7 +698,7 @@ const ProfitAndLoss = ({
               gap: { xs: 2, sm: 0 },
             }}
           >
-            <Box sx={{ marginTop: { xs: "0", sm: "-30px" } }}>
+            <Box sx={{ marginTop: { xs: "0", sm: "-30px" },paddingTop: { xs: "10px", sm: "15px" }  }}>
               <Typography
                 variant="h5"
                 sx={{

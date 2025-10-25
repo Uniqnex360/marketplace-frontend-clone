@@ -31,7 +31,6 @@ import DonutChart from "./DonutChart";
 import { formatCurrency } from "../../../utils/currencyFormatter";
 import { fetchMarketplaceList } from "../../../utils/marketplace";
 import { useMarketplace } from "../../../utils/MarketplaceProvider";
-
 const CardComponent = ({
   widgetData,
   country,
@@ -47,7 +46,6 @@ const CardComponent = ({
   const [market, setMarket] = useState("");
   const [shipping, setShipping] = useState({});
   const [fulfillment, setFulfillment] = useState({});
-//   const [categories, setCategories] = useState([]);
   const [orderData, setOrderData] = useState([]);
   const [totalOrders, setTotalOrders] = useState(0);
   const [filter, setFilter] = useState("all");
@@ -55,11 +53,9 @@ const CardComponent = ({
   const [chartOffset, setChartOffset] = useState(0);
   const chartContainerRef = useRef(null);
   const lastFetchParamsRef = useRef(null);
-  const {categories,loading:marketplaceLoading,error}=useMarketplace()
-
+  const { categories, loading: marketplaceLoading, error } = useMarketplace();
   const userData = localStorage.getItem("user");
   let userIds = "";
-
   if (userData) {
     const data = JSON.parse(userData);
     userIds = data.id;
@@ -67,12 +63,10 @@ const CardComponent = ({
   const handleFilterChange = (event) => {
     setFilter(event.target.value);
   };
-
   const handleScroll = (direction) => {
     if (chartContainerRef.current) {
       const containerWidth = chartContainerRef.current.offsetWidth;
-      const scrollAmount = containerWidth * 0.8; // Scroll 80% of the container width
-
+      const scrollAmount = containerWidth * 0.8;
       if (direction === "left") {
         chartContainerRef.current.scrollLeft -= scrollAmount;
         setChartOffset((prevOffset) => Math.max(0, prevOffset - scrollAmount));
@@ -82,43 +76,13 @@ const CardComponent = ({
       }
     }
   };
-  
-//   useEffect(()=>{
-//     fetchMarketplaceListAPI()
-//   },[userIds])
-
-// const fetchMarketplaceListAPI = async () => {
-//     try {
-//       const categoryData = await fetchMarketplaceList(userIds,'Cardcomponent');
-//             setCategories(categoryData);
-
-//     } catch (error) {
-//       console.error("Error fetching marketplace list:", error);
-//     }
-//   };
   const fetchData = async () => {
     try {
       setLoading(true);
-
-      // Fetch marketplace categories
-      // const marketplaceResponse = await axios.get(
-      //     `${process.env.REACT_APP_IP}getMarketplaceList/`,
-      //     { params: { user_id: userIds } }
-      //   );
-      //   const categoryData = marketplaceResponse.data.data.map((item) => ({
-      //     id: item.id,
-      //     name: item.name,
-      //     imageUrl: item.image_url,
-
-      // }));
-    //   const categoryData = await fetchMarketplaceList(userIds);
-    //   setCategories(categoryData);
-
-      // Fetch sales analytics
       const orderResponse = await axios.post(
         `${process.env.REACT_APP_IP}salesAnalytics/`,
         {
-          country:country,
+          country: country,
           preset: widgetData,
           marketplace_id: marketPlaceId.id,
           date_range: filter,
@@ -131,27 +95,22 @@ const CardComponent = ({
           timezone: "US/Pacific",
         }
       );
-
       if (orderResponse.data?.data) {
         setOrder(orderResponse.data.data);
-
-        // Map the data to format it for the chart
         const formattedData = orderResponse.data.data.order_days.map(
           (item) => ({
-            date: new Date(item.date), // Convert date string to Date object
+            date: new Date(item.date),
             revenue: item.order_value,
-            orderCount: item.order_count, // Add order count
+            orderCount: item.order_count,
           })
         );
-
         setSalesData(formattedData);
       }
-
       const orderSam = await axios.get(
         `${process.env.REACT_APP_IP}ordersCountForDashboard/`,
         {
           params: {
-            country:country,
+            country: country,
             preset: widgetData,
             marketplace_id: marketPlaceId.id,
             start_date: DateStartDate,
@@ -164,11 +123,9 @@ const CardComponent = ({
           },
         }
       );
-
       if (orderSam.data?.data) {
         const { total_order_count, ...marketplaces } = orderSam.data.data;
         setTotalOrders(total_order_count?.value || 0);
-
         if (marketPlaceId.id === "all") {
           const pieData = Object.entries(marketplaces)
             .filter(([name, data]) => data?.count > 0)
@@ -183,14 +140,12 @@ const CardComponent = ({
         } else {
           const marketplaceName = Object.keys(marketplaces)[0];
           const marketplaceData = marketplaces[marketplaceName];
-
           if (marketplaceData) {
             console.log("000banu", marketplaceData);
-            let color = "#000000"; // Default color
+            let color = "#000000";
             if (marketplaceName === "Amazon") color = "#0b3954";
             else if (marketplaceName === "Walmart") color = "#ff6663";
             else if (marketplaceName === "custom") color = "#9381ff";
-
             setOrderData([
               {
                 name: marketplaceName,
@@ -199,7 +154,7 @@ const CardComponent = ({
                   2
                 ),
                 color: color,
-                orderValue: marketplaceData?.order_value || 0, // Bind orderValue here
+                orderValue: marketplaceData?.order_value || 0,
               },
             ]);
           } else {
@@ -213,7 +168,6 @@ const CardComponent = ({
       setLoading(false);
     }
   };
-
   useEffect(() => {
     const currentParams = JSON.stringify({
       preset: widgetData,
@@ -227,8 +181,6 @@ const CardComponent = ({
       manufacturer_name,
       user_id: userIds,
     });
-
-    // Only fetch if params have changed
     if (lastFetchParamsRef.current !== currentParams) {
       lastFetchParamsRef.current = currentParams;
       fetchData();
@@ -245,22 +197,22 @@ const CardComponent = ({
     country,
     JSON.stringify(product_id),
   ]);
-const PASTEL_COLORS = {
-  Amazon: "#A8D5E2",      // Pastel Blue
-  Walmart: "#FFB5A7",     // Pastel Coral
-  custom: "#C5A3FF",      // Pastel Purple
-  default: [
-    "#FFD4A3",            // Pastel Peach
-    "#B5EAD7",            // Pastel Mint
-    "#FFDFD3",            // Pastel Pink
-    "#E2F0CB",            // Pastel Lime
-    "#C7CEEA",            // Pastel Lavender
-    "#FFCCD5",            // Pastel Rose
-    "#B4E7CE",            // Pastel Teal
-    "#FFF4A3",            // Pastel Yellow
-  ]
-};
-const getPastelColor = (name, index) => {
+  const PASTEL_COLORS = {
+    Amazon: "#A8D5E2",
+    Walmart: "#FFB5A7",
+    custom: "#C5A3FF",
+    default: [
+      "#FFD4A3",
+      "#B5EAD7",
+      "#FFDFD3",
+      "#E2F0CB",
+      "#C7CEEA",
+      "#FFCCD5",
+      "#B4E7CE",
+      "#FFF4A3",
+    ],
+  };
+  const getPastelColor = (name, index) => {
     if (PASTEL_COLORS[name]) {
       return PASTEL_COLORS[name];
     }
@@ -274,8 +226,7 @@ const getPastelColor = (name, index) => {
     }
     return color;
   };
-
-  if (loading||marketplaceLoading) {
+  if (loading || marketplaceLoading) {
     return (
       <Box
         sx={{
@@ -291,14 +242,12 @@ const getPastelColor = (name, index) => {
       </Box>
     );
   }
-
   const formatDateTick = (tickItem) => {
-    return format(tickItem, "MMM dd"); // Format date as "Month Day" (e.g., "Jan 01")
+    return format(tickItem, "MMM dd");
   };
-   const renderCustomLabel = (entry) => {
+  const renderCustomLabel = (entry) => {
     return entry.name;
   };
-
   return (
     <Box p={2}>
       <Grid container spacing={2}>
@@ -312,8 +261,8 @@ const getPastelColor = (name, index) => {
               display: "flex",
               flexDirection: "column",
               justifyContent: "center",
-              border: "1px solid #ccc", // ✅ Adds the border
-              borderRadius: 2, // Optional: rounded corners
+              border: "1px solid #ccc",
+              borderRadius: 2,
               boxShadow: "none",
             }}
           >
@@ -323,7 +272,7 @@ const getPastelColor = (name, index) => {
                   display: "flex",
                   justifyContent: "space-between",
                   alignItems: "center",
-                  px:4
+                  px: 4,
                 }}
               >
                 <Typography
@@ -341,130 +290,124 @@ const getPastelColor = (name, index) => {
                   {totalOrders}
                 </Typography>
               </Box>
-
-
-{totalOrders > 0 ? (
-  <Box sx={{ position: 'relative' }}>
-    <ResponsiveContainer width="100%" height={200}>
-      <PieChart>
-        <Pie
-          data={orderData}
-          dataKey="value"
-          nameKey="name"
-          innerRadius={35}
-          outerRadius={60}
-          cx="50%"
-          cy="50%"
-        >
-          {orderData.map((entry, index) => (
-            <Cell key={`cell-${index}`} fill={entry.color} />
-          ))}
-        </Pie>
-        <Tooltip
-          formatter={(value, name, props) => {
-            const { payload } = props;
-            if (payload) {
-              const marketplaceData = orderData.find(
-                (item) => item.name === payload.name
-              );
-              if (marketplaceData) {
-                const orderValue = marketplaceData.orderValue || 0;
-                return [
-                  `Order Count: ${marketplaceData.value} | Order Value: ${formatCurrency(orderValue)}`
-                ];
-              }
-            }
-            return [value];
-          }}
-          contentStyle={{ fontSize: "14px" }}
-        />
-      </PieChart>
-    </ResponsiveContainer>
-    
-    {/* Custom Legend Below Chart */}
-    <Box
-      sx={{
-        display: 'grid',
-        gridTemplateColumns: 'repeat(3, 1fr)',
-        gap: '12px',
-        mt: 2,
-        px: 2,
-      }}
-    >
-      {orderData.map((entry, index) => (
-        <Box
-          key={`legend-${index}`}
-          sx={{
-            display: 'flex',
-            alignItems: 'center',
-            gap: '8px',
-          }}
-        >
-          <Box
-            sx={{
-              width: 12,
-              height: 12,
-              backgroundColor: entry.color,
-              borderRadius: '50%',
-              flexShrink: 0,
-            }}
-          />
-          <Typography
-            variant="body2"
-            sx={{
-              fontSize: '0.75rem',
-              color: '#333',
-              overflow: 'hidden',
-              textOverflow: 'ellipsis',
-              whiteSpace: 'nowrap',
-            }}
-          >
-            {entry.name} ({entry.percentage}%)
-          </Typography>
-        </Box>
-      ))}
-    </Box>
-  </Box>
-) : (
-  <Box
-    sx={{
-      display: "flex",
-      justifyContent: "center",
-      alignItems: "center",
-      height: 200,
-    }}
-  >
-    <Typography
-      variant="body2"
-      sx={{
-        textAlign: "center",
-        fontSize: "1rem",
-        fontWeight: "bold",
-        color: "#888",
-      }}
-    >
-      No total orders found
-    </Typography>
-  </Box>
-)}
+              {totalOrders > 0 ? (
+                <Box sx={{ position: "relative" }}>
+                  <ResponsiveContainer width="100%" height={200}>
+                    <PieChart>
+                      <Pie
+                        data={orderData}
+                        dataKey="value"
+                        nameKey="name"
+                        innerRadius={35}
+                        outerRadius={60}
+                        cx="50%"
+                        cy="50%"
+                      >
+                        {orderData.map((entry, index) => (
+                          <Cell key={`cell-${index}`} fill={entry.color} />
+                        ))}
+                      </Pie>
+                      <Tooltip
+                        formatter={(value, name, props) => {
+                          const { payload } = props;
+                          if (payload) {
+                            const marketplaceData = orderData.find(
+                              (item) => item.name === payload.name
+                            );
+                            if (marketplaceData) {
+                              const orderValue =
+                                marketplaceData.orderValue || 0;
+                              return [
+                                `Order Count: ${
+                                  marketplaceData.value
+                                } | Order Value: ${formatCurrency(orderValue,country)}`,
+                              ];
+                            }
+                          }
+                          return [value];
+                        }}
+                        contentStyle={{ fontSize: "14px" }}
+                      />
+                    </PieChart>
+                  </ResponsiveContainer>
+                  {/* Custom Legend Below Chart */}
+                  <Box
+                    sx={{
+                      display: "grid",
+                      gridTemplateColumns: "repeat(3, 1fr)",
+                      gap: "12px",
+                      mt: 2,
+                      px: 2,
+                    }}
+                  >
+                    {orderData.map((entry, index) => (
+                      <Box
+                        key={`legend-${index}`}
+                        sx={{
+                          display: "flex",
+                          alignItems: "center",
+                          gap: "8px",
+                        }}
+                      >
+                        <Box
+                          sx={{
+                            width: 12,
+                            height: 12,
+                            backgroundColor: entry.color,
+                            borderRadius: "50%",
+                            flexShrink: 0,
+                          }}
+                        />
+                        <Typography
+                          variant="body2"
+                          sx={{
+                            fontSize: "0.75rem",
+                            color: "#333",
+                            overflow: "hidden",
+                            textOverflow: "ellipsis",
+                            whiteSpace: "nowrap",
+                          }}
+                        >
+                          {entry.name} ({entry.percentage}%)
+                        </Typography>
+                      </Box>
+                    ))}
+                  </Box>
+                </Box>
+              ) : (
+                <Box
+                  sx={{
+                    display: "flex",
+                    justifyContent: "center",
+                    alignItems: "center",
+                    height: 200,
+                  }}
+                >
+                  <Typography
+                    variant="body2"
+                    sx={{
+                      textAlign: "center",
+                      fontSize: "1rem",
+                      fontWeight: "bold",
+                      color: "#888",
+                    }}
+                  >
+                    No total orders found
+                  </Typography>
+                </Box>
+              )}
             </CardContent>
           </Card>
         </Grid>
-
         {/* Custom Bar Chart */}
         {/* <Grid item xs={12} sm={6}>
                     <CustomBarChart marketPlaceId={marketPlaceId} />
                 </Grid> */}
-
         {/* <Grid item xs={12} sm={4}>
-                       
                 <DonutChart marketPlaceId={marketPlaceId}  DateStartDate={DateStartDate} DateEndDate={DateEndDate}/>
-                 
-                
                         </Grid> */}
       </Grid>
     </Box>
   );
 };
-
 export default CardComponent;

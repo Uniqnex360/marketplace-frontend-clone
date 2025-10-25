@@ -37,6 +37,7 @@ import NoteModel from "../NoteModel";
 import InfoOutlinedIcon from "@mui/icons-material/InfoOutlined";
 import TooltipName from "./TooltipName";
 import DottedCircleLoading from "../../../Loading/DotLoading";
+import { formatCurrency } from "../../../../utils/currencyFormatter";
 // import './Helium.css';
 dayjs.extend(utc);
 dayjs.extend(timezone);
@@ -88,6 +89,7 @@ const CustomTooltip = ({
   productList,
   tab,
   hoveredProductId,
+  country
 }) => {
   if (!active || !payload || payload.length === 0) return null;
   const filteredPayload = hoveredProductId
@@ -99,13 +101,10 @@ const CustomTooltip = ({
     ? dayjs(label).format("MMM D, h:mm A") // For hourly data
     : dayjs(label).format("MMM D");
   // Helper function to format tooltip values based on tab
-  const formatTooltipValue = (value, tab) => {
+  const formatTooltipValue = (value, tab,country) => {
     switch (tab) {
       case 0: // Revenue
-        return new Intl.NumberFormat("en-US", {
-          style: "currency",
-          currency: "USD",
-        }).format(value);
+        return formatCurrency(value, country); 
       case 1: // Units Sold
         return `${value} units`;
       case 2: // Refunds
@@ -156,7 +155,7 @@ const CustomTooltip = ({
                 </Typography>
               </Stack>
               <Typography fontWeight="bold" fontSize={14}>
-                {formatTooltipValue(entry.value, tab)}
+                {formatTooltipValue(entry.value, tab,country)}
               </Typography>
             </Stack>
             <Stack direction="row" spacing={1} alignItems="center">
@@ -187,6 +186,7 @@ const CustomTooltip = ({
   );
 };
 export default function TopProductsChart({
+  country,
   startDate,
   endDate,
   widgetData,
@@ -208,7 +208,7 @@ export default function TopProductsChart({
   const [tooltipText, setTooltipText] = useState("Copy ASIN");
   const [copied, setCopied] = useState(false);
   const copyTimeoutRef = useRef(null);
-   const stableBrandId = JSON.stringify(brand_id);
+  const stableBrandId = JSON.stringify(brand_id);
 const stableManufacturer = JSON.stringify(manufacturer_name);
   const isTodayOrYesterday =
     widgetData === "Today" || widgetData === "Yesterday";
@@ -352,15 +352,15 @@ const stableManufacturer = JSON.stringify(manufacturer_name);
     }
   };
   // Helper function to format Y-axis values based on tab
-  const formatYAxisTick = (value) => {
+  const formatYAxisTick = (value,country) => {
     switch (tab) {
       case 0: // Revenue
         if (value >= 1000000) {
-          return `$${(value / 1000000).toFixed(1)}M`;
+          return `${formatCurrency(value / 1000000, country)}M`;
         } else if (value >= 1000) {
-          return `$${(value / 1000).toFixed(1)}K`;
+          return `${formatCurrency(value / 1000, country)}K`
         } else {
-          return `$${Math.round(value)}`;
+           return formatCurrency(value, country);
         }
       case 1: // Units Sold
         if (value >= 1000) {
@@ -371,7 +371,7 @@ const stableManufacturer = JSON.stringify(manufacturer_name);
       case 2: // Refunds
         return Math.round(value).toString();
       default:
-        return `$${Math.round(value)}`;
+        return formatCurrency(value, country);
     }
   };
   const generateTickTimes = (graphData) => {
@@ -437,7 +437,6 @@ const stableManufacturer = JSON.stringify(manufacturer_name);
     DateStartDate,
     DateEndDate,
   ]);
- 
   useEffect(() => {
     if (apiResponse?.data?.results?.items) {
       const items = apiResponse.data.results.items;
@@ -821,7 +820,7 @@ const stableManufacturer = JSON.stringify(manufacturer_name);
                 {/* Y Axis with dynamic formatting based on tab */}
                 <YAxis
                   tick={{ fontSize: "12px", fill: "#666" }}
-                  tickFormatter={formatYAxisTick}
+                  tickFormatter={(value) => formatYAxisTick(value, country)}
                   axisLine={false}
                   tickLine={false}
                   domain={["auto", "auto"]}
@@ -834,6 +833,7 @@ const stableManufacturer = JSON.stringify(manufacturer_name);
                       productList={productList}
                       tab={tab}
                       hoveredProductId={hoveredProductId}
+                      country={country} 
                     />
                   }
                   wrapperStyle={{ zIndex: 1000 }}

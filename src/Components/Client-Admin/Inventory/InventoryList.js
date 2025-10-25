@@ -47,6 +47,7 @@ import InventoryChannel from "./InventoryCahnnel";
 import { useMarketplace } from "../../../utils/MarketplaceProvider";
 import { ArrowDropDownIcon } from "@mui/x-date-pickers";
 import ImageIcon from "@mui/icons-material/Image";
+import CountrySelector from "../../../utils/countrySelector";
 
 const InventoryList = ({ fetchOrdersFromParent }) => {
   const theme = useTheme();
@@ -56,6 +57,8 @@ const InventoryList = ({ fetchOrdersFromParent }) => {
   const {
     categories,
     loading: marketplaceLoading,
+    selectedCountry,       
+  setSelectedCountry
   } = useMarketplace();
   const navigate = useNavigate();
   
@@ -298,138 +301,178 @@ const InventoryList = ({ fetchOrdersFromParent }) => {
 
   return (
     <Box sx={{ flex: 1, width: "100%", px: { xs: 1, sm: 2 } }}>
-      {/* Header Section with Filters */}
-      <Box
-        sx={{
-          display: "flex",
-          flexDirection: "column",
-          gap: 2,
-          my: 2,
-          justifyContent: "flex-end",
-          alignItems: "center",
-          position: "fixed",
-          top: 0,
-          right: 0,
-          marginTop: { xs: "10px", md: "20px" },
-          width: { xs: "100%", md: "108%" },
-          backgroundColor: "white",
-          zIndex: 100,
-          px: { xs: 2, md: 0 },
-          boxShadow: { xs: "0 2px 4px rgba(0,0,0,0.1)", md: "none" },
+<Box
+  sx={{
+    display: "flex",
+    flexDirection: "column",
+    gap: 2,
+    my: 2,
+    justifyContent: "flex-end",
+    alignItems: "center",
+    position: "fixed",
+    top: 0,
+    right: 0,
+    marginTop: { xs: "10px", md: "20px" },
+    width: { xs: "100%", md: "108%" },
+    backgroundColor: "white",
+    zIndex: 100,
+    px: { xs: 2, md: 0 },
+    pb: 2,
+    boxShadow: { xs: "0 2px 4px rgba(0,0,0,0.1)", md: "none" },
+  }}
+>
+  <Box
+    sx={{
+      display: "flex",
+      flexDirection: { xs: "column", md: "row" },
+      gap: { xs: 1, md: 2 },
+      my: 2,
+      marginRight: { xs: 0, md: "4%" },
+      justifyContent: { xs: "center", md: "flex-end" },
+      alignItems: { xs: "stretch", md: "center" },
+      marginTop: { xs: "4%", md: "6%" },
+      width: "100%",
+    }}
+  >
+    {/* Country Selector */}
+    <Box sx={{ width: { xs: "100%", md: "auto" } }}>
+      <CountrySelector
+        selectedCountry={selectedCountry}
+        onCountryChange={(country) => {
+          setSelectedCountry(country);
+          setPage(1);
         }}
-      >
-        <Box
-          sx={{
-            display: "flex",
-            flexDirection: { xs: "column", md: "row" },
-            gap: { xs: 1, md: 2 },
-            my: 2,
-            marginRight: { xs: 0, md: "4%" },
-            justifyContent: { xs: "center", md: "flex-end" },
-            alignItems: { xs: "stretch", md: "center" },
-            marginTop: { xs: "4%", md: "6%" },
-            width: "100%",
+        minWidth={150}
+        sx={{
+          width: { xs: "100%", md: 150 }
+        }}
+      />
+    </Box>
+
+    {/* Marketplace Selector */}
+    <Box sx={{ width: { xs: "100%", md: "auto" } }}>
+      <FormControl size="small" sx={{ width: { xs: "100%", md: 150 } }}>
+        <Select
+          value={selectedCategory?.id || "all"}
+          onChange={(e) => {
+            const selected = enhancedCategories.find(
+              (cat) => cat.id === e.target.value
+            );
+            if (selected) {
+              handleMarketplaceSelect(selected);
+            }
+          }}
+          displayEmpty
+          renderValue={(selected) => {
+            const category = enhancedCategories.find(cat => cat.id === selected);
+            if (!category) return "All Channels";
+            
+            if (category.id === "all") {
+              return <span>{category.name}</span>;
+            }
+            
+            return (
+              <Box display="flex" alignItems="center" gap={1}>
+                {category.icon ||
+                  (category.imageUrl ? (
+                    <img
+                      src={category.imageUrl}
+                      alt={category.name}
+                      width={18}
+                      height={14}
+                    />
+                  ) : (
+                    <ImageIcon fontSize="small" />
+                  ))}
+                <span>{category.name}</span>
+              </Box>
+            );
           }}
         >
-          {/* Marketplace Selector */}
-          <Box sx={{ width: { xs: "100%", md: "auto" } }}>
-            <FormControl size="small" sx={{ width: { xs: "100%", md: 150 } }}>
-              <Select
-                value={selectedCategory?.id || "all"}
-                onChange={(e) => {
-                  const selected = enhancedCategories.find(
-                    (cat) => cat.id === e.target.value
-                  );
-                  if (selected) {
-                    handleMarketplaceSelect(selected);
-                  }
-                }}
-                displayEmpty
-              >
-                {marketplaceLoading ? (
-                  <MenuItem disabled>Loading...</MenuItem>
-                ) : (
-                  enhancedCategories.map((category) => (
-                    <MenuItem key={category.id} value={category.id}>
-                      <Box display="flex" alignItems="center" gap={1}>
-                        {category.icon ||
-                          (category.imageUrl ? (
-                            <img
-                              src={category.imageUrl}
-                              alt={category.name}
-                              width={18}
-                              height={14}
-                            />
-                          ) : (
-                            <ImageIcon fontSize="small" />
-                          ))}
-                        <span>{category.name}</span>
-                      </Box>
-                    </MenuItem>
-                  ))
-                )}
-              </Select>
-            </FormControl>
-          </Box>
+          {marketplaceLoading ? (
+            <MenuItem disabled>Loading...</MenuItem>
+          ) : (
+            enhancedCategories.map((category) => (
+              <MenuItem key={category.id} value={category.id}>
+                <Box display="flex" alignItems="center" gap={1}>
+                  {category.icon ||
+                    (category.imageUrl ? (
+                      <img
+                        src={category.imageUrl}
+                        alt={category.name}
+                        width={18}
+                        height={14}
+                      />
+                    ) : category.id !== "all" ? (
+                      <ImageIcon fontSize="small" />
+                    ) : null)}
+                  <span>{category.name}</span>
+                </Box>
+              </MenuItem>
+            ))
+          )}
+        </Select>
+      </FormControl>
+    </Box>
 
-          {/* Search Field */}
-          <TextField
-            size="small"
-            placeholder="Search by Product Title, Sku..."
-            value={searchQuery}
-            onChange={handleSearchChange}
-            sx={{
-              width: { xs: "100%", md: 300 },
-              "& input": {
-                fontSize: "14px",
-              },
-              p:{xs:2,md:0} 
-            }}
-          />
+    {/* Search Field */}
+    <TextField
+      size="small"
+      placeholder="Search by Product Title, Sku..."
+      value={searchQuery}
+      onChange={handleSearchChange}
+      sx={{
+        width: { xs: "100%", md: 300 },
+        "& input": {
+          fontSize: "14px",
+        },
+      }}
+    />
 
-          {/* Action Buttons */}
-          <Box sx={{ 
-            display: "flex", 
-            gap: 1, 
-            width: { xs: "100%", md: "auto" },
-            justifyContent: { xs: "flex-end", md: "flex-start" } 
-          }}>
-            <Tooltip title="Reset" arrow>
-              <Button
-                variant="outlined"
-                sx={{
-                  backgroundColor: "#000080",
-                  minWidth: "auto",
-                  padding: "6px",
-                  display: "flex",
-                  justifyContent: "center",
-                  alignItems: "center",
-                  flex: { xs: 0, md: "none" },
-                  width: { xs: "48px", md: "auto" },
-                  "&:hover": {
-                    backgroundColor: "darkblue",
-                  },
-                }}
-                onClick={handleResetChange} 
-              >
-                <Refresh sx={{ color: "white", fontSize: { xs: "18px", md: "20px" } }} />
-              </Button>
-            </Tooltip>
-          </Box>
+    {/* Action Buttons */}
+    <Box sx={{ 
+      display: "flex", 
+      gap: 1, 
+      width: { xs: "100%", md: "auto" },
+      justifyContent: { xs: "flex-end", md: "flex-start" } 
+    }}>
+      <Tooltip title="Reset" arrow>
+        <Button
+          variant="outlined"
+          sx={{
+            backgroundColor: "#000080",
+            minWidth: "auto",
+            padding: "6px",
+            display: "flex",
+            justifyContent: "center",
+            alignItems: "center",
+            flex: { xs: 0, md: "none" },
+            width: { xs: "48px", md: "auto" },
+            "&:hover": {
+              backgroundColor: "darkblue",
+            },
+          }}
+          onClick={handleResetChange} 
+        >
+          <Refresh sx={{ color: "white", fontSize: { xs: "18px", md: "20px" } }} />
+        </Button>
+      </Tooltip>
+    </Box>
 
-          {/* Inventory Count */}
-          <Typography variant="body2" sx={{ 
-            textAlign: { xs: "center", md: "left" },
-            width: { xs: "100%", md: "auto" },
-            mt: { xs: 1, md: 0 }
-          }}>
-            Total Inventory: {orderCount ? orderCount : "0"}
-          </Typography>
-        </Box>
-      </Box>
+    {/* Inventory Count */}
+    <Typography variant="body2" sx={{ 
+      textAlign: { xs: "center", md: "left" },
+      width: { xs: "100%", md: "auto" },
+      mt: { xs: 1, md: 0 }
+    }}>
+      Total Inventory: {orderCount ? orderCount : "0"}
+    </Typography>
+  </Box>
+</Box>
+
 
       {/* Main Content */}
-      <Box sx={{ paddingTop: { xs: "180px", md: "150px" } }}>
+      <Box sx={{ paddingTop: { xs: "220px", md: "180px" } }}>
         {loading ? (
           <div style={{ textAlign: "center", padding: "20px" }}>
             <DottedCircleLoading />

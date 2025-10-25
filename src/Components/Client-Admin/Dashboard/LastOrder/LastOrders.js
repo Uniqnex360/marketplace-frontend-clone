@@ -33,6 +33,7 @@ import CustomizeTooltip from "../../CustomTooltip/CustomTooltip";
 import LatestOrdersSkeleton from "./LastOrderLoading";
 import timezone from "dayjs/plugin/timezone";
 import utc from "dayjs/plugin/utc";
+import { formatCurrency } from "../../../../utils/currencyFormatter";
 dayjs.locale("en-in");
 dayjs.extend(localizedFormat);
 dayjs.extend(utc);
@@ -93,7 +94,7 @@ const CustomTooltip = React.memo(({ active, payload }) => {
   return null;
 });
 
-const OrderCard = React.memo(({ order }) => {
+const OrderCard = React.memo(({ order,country }) => {
   const [tooltipText, setTooltipText] = useState("");
   const [loading, setLoading] = useState(false);
   const systemTimeZone = Intl.DateTimeFormat().resolvedOptions().timeZone;
@@ -178,7 +179,7 @@ const OrderCard = React.memo(({ order }) => {
           >
             Price:{" "}
             <Box component="span" sx={{ color: "grey" }}>
-              ${order.price}
+              {formatCurrency(order.price,country)}
             </Box>{" "}
             Quantity:{" "}
             <Box component="span" sx={{ color: "grey" }}>
@@ -295,6 +296,7 @@ const OrderCard = React.memo(({ order }) => {
 
 const LastOrders = React.memo(
   ({
+    country,
     marketPlaceId,
     brand_id,
     product_id,
@@ -309,7 +311,7 @@ const LastOrders = React.memo(
     const theme = useTheme();
     const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
     const isTablet = useMediaQuery(theme.breakpoints.between('sm', 'md'));
-
+    
     const fetchLatestOrders = useCallback(async () => {
       try {
         setLoading(true);
@@ -528,9 +530,9 @@ const LastOrders = React.memo(
                   },
                 }}
               >
-                {latestOrders.map((order) => (
-                  <OrderCard key={order.id} order={order} />
-                ))}
+               {latestOrders.map((order, index) => (
+  <OrderCard key={`${order.id}-${index}`} order={order} country={country} />
+))}
               </Paper>
             </Grid>
           </>

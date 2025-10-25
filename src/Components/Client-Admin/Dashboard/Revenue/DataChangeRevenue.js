@@ -51,6 +51,7 @@ import NoteModel from "../NoteModel";
 import { parse, format, parseISO, isValid } from "date-fns";
 import { enUS } from "date-fns/locale";
 import DottedCircleLoading from "../../../Loading/DotLoading";
+import { formatCurrency } from "../../../../utils/currencyFormatter";
 
 const metricColors = {
   gross_revenue: "#00b894",
@@ -233,11 +234,11 @@ const CompareChart = ({
       setCompareDropDown(data.comapre_past);
       setCompareTotal(data.compare_total);
       setChartData(data?.graph);
-      const formatCurrency = (amount) =>
-        `$${Number(amount || 0).toLocaleString(undefined, {
-          minimumFractionDigits: 2,
-          maximumFractionDigits: 2,
-        })}`;
+      // const formatCurrency = (amount) =>
+      //   `$${Number(amount || 0).toLocaleString(undefined, {
+      //     minimumFractionDigits: 2,
+      //     maximumFractionDigits: 2,
+      //   })}`;
       const formatPercentage = (value) => `${Number(value || 0).toFixed(2)}%`;
       const formatNumber = (value) => Number(value || 0).toLocaleString();
       const availableMetrics = Object.keys(data.total);
@@ -251,14 +252,14 @@ const CompareChart = ({
           .map((metric) => ({
             label: metricLabels[metric.id],
             value: metric.isCurrency
-              ? formatCurrency(data.total[metric.id])
+              ? formatCurrency(data.total[metric.id],country)
               : metric.isPercentage
               ? formatPercentage(data.total[metric.id])
               : formatNumber(data.total[metric.id]),
             compareValue:
               data.compare_total?.[metric.id] !== undefined
                 ? metric.isCurrency
-                  ? formatCurrency(data.compare_total[metric.id])
+                  ? formatCurrency(data.compare_total[metric.id],country)
                   : metric.isPercentage
                   ? formatPercentage(data.compare_total[metric.id])
                   : formatNumber(data.compare_total[metric.id])
@@ -481,7 +482,7 @@ const CompareChart = ({
           key.toLowerCase().includes("amount") ||
           key.toLowerCase().includes("spend")
         ) {
-          return `$${val.toFixed(2)}`;
+          return formatCurrency(val, country);
         } else if (key.toLowerCase() === "roas") {
           return val.toFixed(2); 
         } else {
@@ -1169,7 +1170,7 @@ const CompareChart = ({
                         !m.isPercentage
                     );
                     if (firstCurrency)
-                      return `$${Number(value).toLocaleString()}`;
+                      return formatCurrency(value, country);
                     if (firstNonCurrency) return Number(value).toLocaleString();
                     return value;
                   }}

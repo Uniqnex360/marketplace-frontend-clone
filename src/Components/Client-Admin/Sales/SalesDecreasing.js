@@ -24,7 +24,6 @@ import {
     useMediaQuery
 } from '@mui/material';
 import { ArrowUpward, ArrowDownward, MoreVert, Download, Delete } from '@mui/icons-material';
-import InfoOutlinedIcon from '@mui/icons-material/InfoOutlined';
 import InsertDriveFileIcon from '@mui/icons-material/InsertDriveFile';
 import { saveAs } from 'file-saver';
 
@@ -34,7 +33,7 @@ import ArrowDownwardIcon from '@mui/icons-material/ArrowDownward';
 import CustomizeTooltip from '../CustomTooltip/CustomTooltip';
 import { formatCurrency } from '../../../utils/currencyFormatter';
 
-const SalesDecreasing = ({ userId, marketPlaceId, brand_id, product_id, manufacturer_name, fulfillment_channel, DateStartDate, DateEndDate ,products}) => {
+const SalesDecreasing = ({ country,userId, marketPlaceId, brand_id, product_id, manufacturer_name, fulfillment_channel, DateStartDate, DateEndDate ,products}) => {
     // const [products, setProducts] = useState([]);
     const [tooltipText, setTooltipText] = useState('Copy ASIN');
     const [copied, setCopied] = useState(false);
@@ -556,7 +555,7 @@ const SalesDecreasing = ({ userId, marketPlaceId, brand_id, product_id, manufact
                                             padding: { xs: '8px', sm: '16px' }
                                         }}
                                     >
-                                        {formatCurrency(item.grossRevenue)}
+                                        {formatCurrency(item.grossRevenue,country)}
                                     </TableCell>
 
                                     <TableCell
@@ -569,7 +568,7 @@ const SalesDecreasing = ({ userId, marketPlaceId, brand_id, product_id, manufact
                                             padding: { xs: '8px', sm: '16px' }
                                         }}
                                     >
-                                        {formatCurrency(item.netProfit)}
+                                        {formatCurrency(item.netProfit,country)}
                                     </TableCell>
 
                                     <TableCell

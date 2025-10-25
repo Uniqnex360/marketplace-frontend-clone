@@ -39,6 +39,8 @@ import ShoppingCartIcon from "@mui/icons-material/ShoppingCart";
 import { useMarketplace } from "../../../utils/MarketplaceProvider";
 import ImageIcon from "@mui/icons-material/Image";
 import { useEnhancedCategories } from "../../../utils/UseEnhancedCategories";
+import CountrySelector from "../../../utils/countrySelector";
+import { formatCurrency } from "../../../utils/currencyFormatter";
 
 const ProductTable = () => {
   const location = useLocation();
@@ -225,7 +227,7 @@ const ProductTable = () => {
             name: "N/A",
           },
           quantity: product.quantity || 0,
-          price: product.price ? `$${product.price}` : "$0.00",
+          price: product.price ? formatCurrency(product.price, selectedCountry) : formatCurrency('0.00', selectedCountry),
         }));
 
         setProductData(products);
@@ -409,6 +411,25 @@ const ProductTable = () => {
     boxShadow: { xs: "0 2px 8px rgba(0,0,0,0.1)", md: "none" },
   }}
 >
+  <Box sx={{ 
+    marginTop: { xs: 0, md: "-7px" },
+    width: { xs: "100%", md: "auto" },
+    display: "flex",
+    justifyContent: "flex-start"
+  }}>
+    <CountrySelector
+      selectedCountry={selectedCountry}
+      onCountryChange={(country) => {
+        setSelectedCountry(country);
+        setPage(1); // Reset to first page when country changes
+      }}
+      minWidth={150}
+      sx={{
+        width: { xs: "100%", md: 150 }
+      }}
+    />
+  </Box>
+
   {/* Marketplace Selector - Full width on mobile */}
   <Box sx={{ 
     marginTop: { xs: 0, md: "-7px" },

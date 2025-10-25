@@ -40,6 +40,7 @@ import ArrowDownwardIcon from "@mui/icons-material/ArrowDownward";
 import DottedCircleLoading from "../../../Loading/DotLoading";
 import CardComponent from "../CardComponet";
 import { formatCurrency } from "../../../../utils/currencyFormatter";
+import { getCurrencySymbol } from "../../../../utils/currencySymbol";
 dayjs.extend(utc);
 
 const fontStyles = {
@@ -49,9 +50,16 @@ const fontStyles = {
     "'Nunito Sans', -apple-system, 'Segoe UI', 'Roboto', 'Helvetica Neue', 'Arial', sans-serif",
 };
 
-function MarketplaceRow({ row, index, isMobile }) {
+function MarketplaceRow({ row, index, isMobile,country }) {
   const [open, setOpen] = useState(false);
   const isFirstRow = index === 0;
+    const formatCurrency = (value) => {
+    const currencySymbol = getCurrencySymbol(country);
+    return `${currencySymbol}${(value ?? 0).toLocaleString("en-US", {
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 2,
+    })}`;
+  };
   const cellStyle = {
     ...fontStyles,
     color: "black",
@@ -540,14 +548,14 @@ export default function AllMarketplace({
                   {
                     title: "Gross Revenue",
                     value: formatCurrency(
-                      allMarketplaceData?.grossRevenue?.current
+                      allMarketplaceData?.grossRevenue?.current,country
                     ),
                     change:
                       (allMarketplaceData?.grossRevenue?.delta >= 0
                         ? "+"
                         : "-") +
                       formatCurrency(
-                        Math.abs(allMarketplaceData?.grossRevenue?.delta || 0)
+                        Math.abs(allMarketplaceData?.grossRevenue?.delta || 0),country
                       ),
                     changeType:
                       allMarketplaceData?.grossRevenue?.delta >= 0
@@ -558,11 +566,11 @@ export default function AllMarketplace({
                     title: "Expenses",
                     value:
                       "-" +
-                      formatCurrency(allMarketplaceData?.expenses?.current),
+                      formatCurrency(allMarketplaceData?.expenses?.current,country),
                     change:
                       (allMarketplaceData?.expenses?.delta >= 0 ? "+" : "-") +
                       formatCurrency(
-                        Math.abs(allMarketplaceData?.expenses?.delta || 0)
+                        Math.abs(allMarketplaceData?.expenses?.delta || 0,country)
                       ),
                     changeType:
                       allMarketplaceData?.expenses?.delta >= 0 ? "up" : "down",
@@ -570,12 +578,12 @@ export default function AllMarketplace({
                   {
                     title: "Net Profit",
                     value: formatCurrency(
-                      allMarketplaceData?.netProfit?.current
+                      allMarketplaceData?.netProfit?.current,country
                     ),
                     change:
                       (allMarketplaceData?.netProfit?.delta >= 0 ? "+" : "-") +
                       formatCurrency(
-                        Math.abs(allMarketplaceData?.netProfit?.delta || 0)
+                        Math.abs(allMarketplaceData?.netProfit?.delta || 0),country
                       ),
                     changeType:
                       allMarketplaceData?.netProfit?.delta >= 0 ? "up" : "down",
@@ -852,6 +860,7 @@ export default function AllMarketplace({
                         row={row} 
                         index={index} 
                         isMobile={isMobile}
+                        country={country}
                       />
                     ))}
                   </TableBody>

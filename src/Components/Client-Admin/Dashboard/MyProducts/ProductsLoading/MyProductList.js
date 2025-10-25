@@ -125,6 +125,7 @@ const NumberIndicator = ({ value, change }) => (
 );
 
 const MyProductList = ({
+  country,
   widgetData,
   marketPlaceId,
   brand_id,
@@ -459,6 +460,7 @@ const MyProductList = ({
       activeColumnCategoryTab,
       sortValues,
       filterParent,
+      country,
       filterSku,
     });
     
@@ -482,6 +484,7 @@ const MyProductList = ({
     sortValues,
     filterParent,
     filterSku,
+    country
   ]);
   
   const fetchMyProducts = async (currentPage) => {
@@ -497,6 +500,7 @@ const MyProductList = ({
       const response = await axios.post(
         `${process.env.REACT_APP_IP}get_products_with_pagination/`,
         {
+          country:country,
           parent: tab === 0, 
           preset: widgetData,
           marketplace_id: marketPlaceId.id,
@@ -1278,6 +1282,7 @@ const MyProductList = ({
               onSort={handleSortChange}
               isParentType={TabType}
               imageSize={selectedImageSize}
+              country={country}
             />
           </Box>
         )}

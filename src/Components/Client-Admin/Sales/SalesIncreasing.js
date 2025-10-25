@@ -34,6 +34,7 @@ import CustomizeTooltip from '../CustomTooltip/CustomTooltip';
 import { formatCurrency } from '../../../utils/currencyFormatter';
 
 const SalesIncreasing = ({
+  country,
   userId,
   marketPlaceId,
   brand_id,
@@ -533,7 +534,7 @@ const SalesIncreasing = ({
                     color: '#485E75',
                     padding: { xs: '8px', sm: '16px' }
                   }}>
-                    {formatCurrency(item.grossRevenue)}
+                    {formatCurrency(item.grossRevenue,country)}
                   </TableCell>
                   <TableCell sx={{
                     fontSize: { xs: '12px', sm: '14px' },
@@ -541,7 +542,7 @@ const SalesIncreasing = ({
                     color: '#485E75',
                     padding: { xs: '8px', sm: '16px' }
                   }}>
-                     {formatCurrency(item.netProfit)}
+                     {formatCurrency(item.netProfit,country)}
                   </TableCell>
                   <TableCell sx={{ padding: { xs: '8px', sm: '16px' } }}>
                     <Box display="flex" alignItems="center" gap={1}>

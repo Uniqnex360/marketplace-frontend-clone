@@ -34,6 +34,7 @@ import { format } from "date-fns";
 import DonutChart from "./DonutChart";
 import { utcToZonedTime, zonedTimeToUtc } from "date-fns-tz";
 import { fetchMarketplaceList } from "../../../utils/marketplace";
+import { formatCurrency } from "../../../utils/currencyFormatter";
 
 const TotalOrdersGraph = ({
   widgetData,
@@ -279,7 +280,7 @@ const TotalOrdersGraph = ({
                   marginBottom: { xs: 0.5, sm: 1 } 
                 }}
               >
-                ${order?.total_sales ? order.total_sales.toFixed(2) : 0}
+                 {formatCurrency(order?.total_sales || 0, country)}
               </Typography>
 
               <Box
@@ -337,7 +338,7 @@ const TotalOrdersGraph = ({
                           tick={{ fontSize: isMobile ? 10 : 12 }}
                         />
                         <Tooltip
-                          formatter={(value) => `$${value.toFixed(2)}`}
+                          formatter={(value) => formatCurrency(value,country)}
                           labelFormatter={(label) => {
                             const pacificTime = utcToZonedTime(
                               label,

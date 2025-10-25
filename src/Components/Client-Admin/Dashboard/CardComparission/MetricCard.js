@@ -23,6 +23,7 @@ import { styled } from "@mui/material/styles";
 import NotificationTooltip from "./NotificationTooltip";
 import { Delete } from "@mui/icons-material";
 import DottedCircleLoading from "../../../Loading/DotLoading";
+import { getCurrencySymbol } from "../../../../utils/currencySymbol";
 
 const CustomPopover = styled(Popover)(({ theme }) => ({
   "& .MuiPopover-paper": {
@@ -50,14 +51,6 @@ const formatterShort = new Intl.DateTimeFormat("en-US", {
   timeZone: "UTC",
 });
 
-const formatCurrency = (value) => {
-  return new Intl.NumberFormat("en-US", {
-    style: "currency",
-    currency: "USD",
-    minimumFractionDigits: 2,
-    maximumFractionDigits: 2,
-  }).format(value ?? 0);
-};
 
 function OrderInfoPopover({
   open,
@@ -140,9 +133,16 @@ function OrderInfoPopover({
     </Box>
   );
 }
-
+const formatCurrency = (value,country) => {
+    const currencySymbol = getCurrencySymbol(country);
+    return `${currencySymbol}${(value ?? 0).toLocaleString(undefined, {
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 2,
+    })}`;
+  };
 const PerformanceCard = ({
   title,
+  country,
   date,
   previous,
   netPrevious,
@@ -184,10 +184,12 @@ const PerformanceCard = ({
   const isSmallScreen = useMediaQuery(theme.breakpoints.down('md'));
 
   const openOrder = Boolean(anchorElOrders);
-  const previousGrossRevenue = parseFloat(previous);
+  const previousGrossRevenue = parseFloat(
+  previous?.replace(/[^\d.-]/g, "") || "0"
+);
   const currentGrossRevenue = parseFloat(
-    grossRevenue?.replace("$", "").replace(",", "")
-  );
+  grossRevenue?.replace(/[^\d.-]/g, "") || "0"
+);
   const grossRevenueDiff = currentGrossRevenue - previousGrossRevenue;
   const grossRevenuePercentageChange =
     !isNaN(previousGrossRevenue) && previousGrossRevenue !== 0
@@ -195,11 +197,11 @@ const PerformanceCard = ({
       : 0;
 
   const netPreviousValue = parseFloat(
-    netPrevious?.replace("$", "").replace(",", "")
-  );
+  netPrevious?.replace(/[^\d.-]/g, "") || "0"
+);
   const currentNetProfitValue = parseFloat(
-    netProfit?.replace("$", "").replace(",", "")
-  );
+  netProfit?.replace(/[^\d.-]/g, "") || "0"
+);
   const netProfitDiff = currentNetProfitValue - netPreviousValue;
   const netProfitPercentageChange =
     !isNaN(netPreviousValue) && netPreviousValue !== 0
@@ -275,6 +277,7 @@ const PerformanceCard = ({
     setOpenNetProfitPopover(false);
     setAnchorElNetProfit(null);
   };
+
 
   const formatDate = (dateString) => {
     if (!dateString) return "";
@@ -524,10 +527,10 @@ const PerformanceCard = ({
                     >
                       {(() => {
                         const current = parseFloat(
-                          grossRevenue?.replace("$", "").replace(/,/g, "") ||
-                            "0"
-                        );
-                        const prev = parseFloat(previous || "0");
+  grossRevenue?.replace(/[^\d.-]/g, "") || "0"
+);
+                        const prev = parseFloat(previous?.replace(/[^\d.-]/g, "") || "0");
+
                         const value = current - prev;
                         return formatCurrency(value);
                       })()}
@@ -740,12 +743,11 @@ const PerformanceCard = ({
                       >
                         {(() => {
                           const profit = parseFloat(
-                            netProfit?.replace("$", "").replace(/,/g, "") || "0"
-                          );
+  netProfit?.replace(/[^\d.-]/g, "") || "0"
+);
                           const previous = parseFloat(
-                            netPrevious?.replace("$", "").replace(/,/g, "") ||
-                              "0"
-                          );
+  netPrevious?.replace(/[^\d.-]/g, "") || "0"
+);
                           const difference = profit - previous;
                           return formatCurrency(difference);
                         })()}
@@ -950,7 +952,7 @@ const MetricCard = ({
   const [metricsData, setMetricsData] = useState(null);
   const [loading, setLoading] = useState(false);
   let lastParamsRef = useRef("");
-
+  
   useEffect(() => {
     const currentParams = JSON.stringify({
       preset: widgetData,
@@ -1009,129 +1011,138 @@ const MetricCard = ({
     }
   };
 
-  const transformData = (data) => {
-    if (!data) return [];
+  const transformData = (data,country) => {
+  if (!data) return [];
 
-    const safeFormatDate = (dateString, formatter) => {
-      try {
-        return dateString ? formatter.format(new Date(dateString)) : "";
-      } catch (e) {
-        console.warn("Date formatting error:", e);
-        return "";
-      }
-    };
-
-    const safeGet = (obj, path, defaultValue = 0) => {
-      try {
-        return (
-          path.split(".").reduce((acc, part) => acc && acc[part], obj) ??
-          defaultValue
-        );
-      } catch (e) {
-        return defaultValue;
-      }
-    };
-
-    const periods = ["today", "yesterday", "last7Days", "custom"];
-
-    return periods.reduce((acc, period) => {
-      if (!data[period]) return acc;
-
-      const periodData = data[period];
-
-      try {
-        const getLocal = (range, key, fallbackKey = key) =>
-          range?.[key] || range?.[fallbackKey];
-
-        const cardData = {
-          title:
-            period === "last7Days"
-              ? "Last 7 Days"
-              : period.charAt(0).toUpperCase() + period.slice(1),
-
-          dateRange: periodData.dateRanges?.current
-            ? `${safeFormatDate(
-                getLocal(periodData.dateRanges.current, "from_local", "from"),
-                formatterLong
-              )} - ${safeFormatDate(
-                getLocal(periodData.dateRanges.current, "to_local", "to"),
-                formatterLong
-              )}`
-            : "",
-
-          dateRangePrev: periodData.dateRanges?.previous
-            ? `${safeFormatDate(
-                getLocal(periodData.dateRanges.previous, "from_local", "from"),
-                formatterLong
-              )} - ${safeFormatDate(
-                getLocal(periodData.dateRanges.previous, "to_local", "to"),
-                formatterLong
-              )}`
-            : "",
-
-          dateRangeFormat: periodData.dateRanges?.current
-            ? `${safeFormatDate(
-                getLocal(periodData.dateRanges.current, "from_local", "from"),
-                formatterShort
-              )} - ${safeFormatDate(
-                getLocal(periodData.dateRanges.current, "to_local", "to"),
-                formatterShort
-              )}`
-            : "",
-
-          dateRangePrevFormat: periodData.dateRanges?.previous
-            ? `${safeFormatDate(
-                getLocal(periodData.dateRanges.previous, "from_local", "from"),
-                formatterShort
-              )} - ${safeFormatDate(
-                getLocal(periodData.dateRanges.previous, "to_local", "to"),
-                formatterShort
-              )}`
-            : "",
-
-          grossRevenue: formatCurrency(
-            safeGet(periodData, "summary.grossRevenue.current", 0)
-          ),
-
-          expenses: `-${formatCurrency(
-            safeGet(periodData, "summary.expenses.current", 0)
-          )}`,
-
-          netProfit: formatCurrency(
-            safeGet(periodData, "summary.netProfit.current", 0)
-          ),
-
-          netPrevious: formatCurrency(
-            safeGet(periodData, "summary.netProfit.previous", 0)
-          ),
-
-          margin: `${safeGet(periodData, "summary.margin.current", 0).toFixed(
-            2
-          )}%`,
-
-          orders: safeGet(periodData, "summary.orders.current", 0),
-          unitsSold: safeGet(periodData, "summary.unitsSold.current", 0),
-          refunds: safeGet(periodData, "summary.refunds.current", 0),
-          previous: safeGet(periodData, "summary.grossRevenue.previous", 0),
-
-          revenueChange: (() => {
-            const delta = safeGet(periodData, "summary.grossRevenue.delta", 0);
-            const sign = delta >= 0 ? "+" : "";
-            return `${sign}${formatCurrency(Math.abs(delta))}`;
-          })(),
-
-          netProfitCalculation: periodData.netProfitCalculation || {},
-        };
-
-        acc.push(cardData);
-      } catch (error) {
-        console.error(`Error processing ${period} data:`, error);
-      }
-
-      return acc;
-    }, []);
+  const safeFormatDate = (dateString, formatter) => {
+    try {
+      return dateString ? formatter.format(new Date(dateString)) : "";
+    } catch (e) {
+      console.warn("Date formatting error:", e);
+      return "";
+    }
   };
-  const processedData = metricsData ? transformData(metricsData) : [];
+
+  const safeGet = (obj, path, defaultValue = 0) => {
+    try {
+      return (
+        path.split(".").reduce((acc, part) => acc && acc[part], obj) ??
+        defaultValue
+      );
+    } catch (e) {
+      return defaultValue;
+    }
+  };
+
+  const periods = ["today", "yesterday", "last7Days", "custom"];
+
+  return periods.reduce((acc, period) => {
+    if (!data[period]) return acc;
+
+    const periodData = data[period];
+
+    try {
+      const getLocal = (range, key, fallbackKey = key) =>
+        range?.[key] || range?.[fallbackKey];
+
+      const cardData = {
+        title:
+          period === "last7Days"
+            ? "Last 7 Days"
+            : period.charAt(0).toUpperCase() + period.slice(1),
+
+        dateRange: periodData.dateRanges?.current
+          ? `${safeFormatDate(
+              getLocal(periodData.dateRanges.current, "from_local", "from"),
+              formatterLong
+            )} - ${safeFormatDate(
+              getLocal(periodData.dateRanges.current, "to_local", "to"),
+              formatterLong
+            )}`
+          : "",
+
+        dateRangePrev: periodData.dateRanges?.previous
+          ? `${safeFormatDate(
+              getLocal(periodData.dateRanges.previous, "from_local", "from"),
+              formatterLong
+            )} - ${safeFormatDate(
+              getLocal(periodData.dateRanges.previous, "to_local", "to"),
+              formatterLong
+            )}`
+          : "",
+
+        dateRangeFormat: periodData.dateRanges?.current
+          ? `${safeFormatDate(
+              getLocal(periodData.dateRanges.current, "from_local", "from"),
+              formatterShort
+            )} - ${safeFormatDate(
+              getLocal(periodData.dateRanges.current, "to_local", "to"),
+              formatterShort
+            )}`
+          : "",
+
+        dateRangePrevFormat: periodData.dateRanges?.previous
+          ? `${safeFormatDate(
+              getLocal(periodData.dateRanges.previous, "from_local", "from"),
+              formatterShort
+            )} - ${safeFormatDate(
+              getLocal(periodData.dateRanges.previous, "to_local", "to"),
+              formatterShort
+            )}`
+          : "",
+
+        grossRevenue: formatCurrency(
+          safeGet(periodData, "summary.grossRevenue.current", 0),
+          country // Pass country parameter
+        ),
+
+        expenses: `-${formatCurrency(
+          safeGet(periodData, "summary.expenses.current", 0),
+          country // Pass country parameter
+        )}`,
+
+        netProfit: formatCurrency(
+          safeGet(periodData, "summary.netProfit.current", 0),
+          country // Pass country parameter
+        ),
+
+        netPrevious: formatCurrency(
+          safeGet(periodData, "summary.netProfit.previous", 0),
+          country // Pass country parameter
+        ),
+
+        margin: `${safeGet(periodData, "summary.margin.current", 0).toFixed(
+          2
+        )}%`,
+
+        orders: safeGet(periodData, "summary.orders.current", 0),
+        unitsSold: safeGet(periodData, "summary.unitsSold.current", 0),
+        refunds: safeGet(periodData, "summary.refunds.current", 0),
+        
+        // Update this to use formatCurrency with country
+        previous: formatCurrency(
+          safeGet(periodData, "summary.grossRevenue.previous", 0),
+          country // Pass country parameter
+        ),
+
+        revenueChange: (() => {
+          const delta = safeGet(periodData, "summary.grossRevenue.delta", 0);
+          const sign = delta >= 0 ? "+" : "";
+          return `${sign}${formatCurrency(Math.abs(delta), country)}`; // Pass country parameter
+        })(),
+
+        netProfitCalculation: periodData.netProfitCalculation || {},
+      };
+
+      acc.push(cardData);
+    } catch (error) {
+      console.error(`Error processing ${period} data:`, error);
+    }
+
+    return acc;
+  }, []);
+};
+  const processedData = metricsData ? transformData(metricsData,country) : [];
 
   return (
     <Container maxWidth="xl" sx={{ px: { xs: 1, sm: 2 } }}>
@@ -1171,7 +1182,7 @@ const MetricCard = ({
           <Grid container spacing={{ xs: 1.5, sm: 2 }}>
             {processedData.map((cardData, idx) => (
               <Grid item xs={12} sm={6} md={6} xl={3} key={idx}>
-                <PerformanceCard {...cardData} />
+                <PerformanceCard {...cardData} country={country}/>
               </Grid>
             ))}
           </Grid>

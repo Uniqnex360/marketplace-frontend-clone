@@ -41,8 +41,6 @@ import AttachMoneyOutlined from "@mui/icons-material/AttachMoneyOutlined";
 import ShoppingCartOutlined from "@mui/icons-material/ShoppingCartOutlined";
 import TestCard from "./Helium10/TestCard";
 import MetricCard from "./CardComparission/MetricCard";
-import SalesIncreasing from "../Sales/SalesIncreasing";
-import SalesDecreasing from "../Sales/SalesDecreasing";
 import AllMarketplace from "./AllMarketplace/AllMarketplace";
 import ProfitAndLoss from "./ProfitAndLoss/ProfitAndLoss";
 import MyProductList from "./MyProducts/ProductsLoading/MyProductList";
@@ -55,6 +53,7 @@ import { fetchMarketplaceList } from "../../../utils/marketplace";
 import { useMarketplace } from "../../../utils/MarketplaceProvider";
 import ProductPerformanceContainer from "../../../utils/SalesTrends";
 import { useEnhancedCategories } from "../../../utils/UseEnhancedCategories";
+import CountrySelector from "../../../utils/countrySelector";
 
 function ClientDashboardpage() {
   const [selectedCategory, setSelectedCategory] = useState({
@@ -772,36 +771,18 @@ function ClientDashboardpage() {
           flex: 1,
         }}
       >
-              <Box sx={{ width: "180px" }}>
-                <LocalizationProvider dateAdapter={AdapterDayjs}>
-                  <FormControl
-                    size="small"
-                    sx={{
-                      minWidth: 180,
-                      "& .MuiOutlinedInput-root": {
-                        backgroundColor: "white",
-                        "& fieldset": { borderColor: "#cacaca" },
-                      },
-                    }}
-                  >
-                    <InputLabel shrink={selectedCountry !== ""}></InputLabel>
-                    <Select
-                      value={selectedCountry}
-                      onChange={(e) =>{ setSelectedCountry(e.target.value)
-                        setActiveFilters(prev=>{
-                          const filtered=prev.filter(f=>f.type!=='country')
-                          return [...filtered,{type:'country',value:e.target.value,label:e.target.value}]
-                        })
-                      }}
-                      displayEmpty
-                      inputProps={{ "aria-label": "country select" }}
-                    >
-                      <MenuItem value="US">United States</MenuItem>
-                      <MenuItem value="UK">United Kingdom</MenuItem>
-                    </Select>
-                  </FormControl>
-                </LocalizationProvider>
-              </Box>
+             <Box sx={{ width: "180px" }}>
+  <CountrySelector
+    selectedCountry={selectedCountry}
+    onCountryChange={(country) => {
+      setSelectedCountry(country);
+      setActiveFilters(prev => {
+        const filtered = prev.filter(f => f.type !== 'country');
+        return [...filtered, { type: 'country', value: country, label: country }];
+      });
+    }}
+  />
+</Box>
        <Box sx={{ width: "190px" }}>
           <BrandSelector
             selectedBrand={selectedBrand}
@@ -1135,7 +1116,7 @@ function ClientDashboardpage() {
           </FormControl>
         </Box>
 
-        <Box sx={{ width: "130px", ml: 2}}>
+        <Box sx={{ width: "130px", ml: 2 }}>
           <LocalizationProvider dateAdapter={AdapterDayjs}>
             <DatePicker
               label="Start Date"
@@ -1269,7 +1250,95 @@ function ClientDashboardpage() {
             DateEndDate={appliedEndDate}
           />
         </Grid>
-        <Grid container spacing={2}>
+         <Grid item xs={12} sm={12} sx={{ width: "99%" }}>
+            <AllMarketplace
+              country={selectedCountry}
+              widgetData={appliedPreset}
+              marketPlaceId={
+                selectedCategory === "all" ? selectedCategory : filterFinal
+              }
+              brand_id={selectedBrandFilter}
+              product_id={mergedProductsFilter}
+              manufacturer_name={selectedManufacturerFilter}
+              fulfillment_channel={selectedFulfillment}
+              DateStartDate={appliedStartDate}
+              DateEndDate={appliedEndDate}
+            />
+          </Grid>
+          <Grid item xs={12} sm={12} sx={{ width: "99%" }}>
+            <ProfitAndLoss
+              country={selectedCountry}
+              widgetData={appliedPreset}
+              marketPlaceId={
+                selectedCategory == "all" ? selectedCategory : filterFinal
+              }
+              brand_id={selectedBrandFilter}
+              fulfillment_channel={selectedFulfillment}
+              manufacturer_name={selectedManufacturerFilter}
+              product_id={mergedProductsFilter}
+              DateStartDate={appliedStartDate}
+              DateEndDate={appliedEndDate}
+            />
+          </Grid>
+        
+        <Grid item xs={12} sm={12}>
+          <PeriodComparission
+            country={selectedCountry}
+            marketPlaceId={
+              selectedCategory === "all" ? selectedCategory : filterFinal
+            }
+            brand_id={selectedBrandFilter}
+            product_id={mergedProductsFilter}
+            manufacturer_name={selectedManufacturerFilter}
+            fulfillment_channel={selectedFulfillment}
+          />
+        </Grid>
+        <Grid item xs={12} sm={12}>
+          <MetricCard
+            country={selectedCountry}
+            startDate={appliedStartDateHelium}
+            endDate={appliedEndDateHelium}
+            widgetData={appliedPreset}
+            marketPlaceId={
+              selectedCategory === "all" ? selectedCategory : filterFinal
+            }
+            brand_id={selectedBrandFilter}
+            product_id={mergedProductsFilter}
+            manufacturer_name={selectedManufacturerFilter}
+            fulfillment_channel={selectedFulfillment}
+            DateStartDate={appliedStartDate}
+            DateEndDate={appliedEndDate}
+          />
+        </Grid>
+        <Grid item xs={12} sm={12}>
+          <ProductPerformanceContainer
+            country={selectedCountry}
+            userId={userIds}
+            marketPlaceId={
+              selectedCategory === "all" ? selectedCategory : filterFinal
+            }
+            brand_id={selectedBrandFilter}
+            product_id={mergedProductsFilter}
+            manufacturer_name={selectedManufacturerFilter}
+            fulfillment_channel={selectedFulfillment}
+            DateStartDate={appliedStartDate}
+            DateEndDate={appliedEndDate}
+          />
+          <Grid
+            item
+            xs={12}
+            sm={12}
+            sx={{ width: "100%", borderRadius: "2px" }}
+          >
+            <Box
+              sx={{
+                padding: "16px",
+              }}
+            >
+              <InsightCategory />
+            </Box>
+          </Grid>
+         <Grid container spacing={2}>
           <Grid
             item
             xs={12}
@@ -1383,6 +1452,7 @@ function ClientDashboardpage() {
                 )}
                 {tab === 1 && (
                   <TopProducts
+                  country={selectedCountry}
                     startDate={appliedStartDateHelium}
                     endDate={appliedEndDateHelium}
                     widgetData={appliedPreset}
@@ -1417,6 +1487,7 @@ function ClientDashboardpage() {
                 )}
                 {tab === 3 && (
                   <LastOrders
+                  country={selectedCountry}
                     marketPlaceId={
                       selectedCategory === "all"
                         ? selectedCategory
@@ -1432,95 +1503,9 @@ function ClientDashboardpage() {
             </Box>
           </Grid>
         </Grid>
-        <Grid item xs={12} sm={12}>
-          <PeriodComparission
-            country={selectedCountry}
-            marketPlaceId={
-              selectedCategory === "all" ? selectedCategory : filterFinal
-            }
-            brand_id={selectedBrandFilter}
-            product_id={mergedProductsFilter}
-            manufacturer_name={selectedManufacturerFilter}
-            fulfillment_channel={selectedFulfillment}
-          />
-        </Grid>
-        <Grid item xs={12} sm={12}>
-          <MetricCard
-            country={selectedCountry}
-            startDate={appliedStartDateHelium}
-            endDate={appliedEndDateHelium}
-            widgetData={appliedPreset}
-            marketPlaceId={
-              selectedCategory === "all" ? selectedCategory : filterFinal
-            }
-            brand_id={selectedBrandFilter}
-            product_id={mergedProductsFilter}
-            manufacturer_name={selectedManufacturerFilter}
-            fulfillment_channel={selectedFulfillment}
-            DateStartDate={appliedStartDate}
-            DateEndDate={appliedEndDate}
-          />
-        </Grid>
-        <Grid item xs={12} sm={12}>
-          <ProductPerformanceContainer
-            country={selectedCountry}
-            userId={userIds}
-            marketPlaceId={
-              selectedCategory === "all" ? selectedCategory : filterFinal
-            }
-            brand_id={selectedBrandFilter}
-            product_id={mergedProductsFilter}
-            manufacturer_name={selectedManufacturerFilter}
-            fulfillment_channel={selectedFulfillment}
-            DateStartDate={appliedStartDate}
-            DateEndDate={appliedEndDate}
-          />
-          <Grid
-            item
-            xs={12}
-            sm={12}
-            sx={{ width: "100%", borderRadius: "2px" }}
-          >
-            <Box
-              sx={{
-                padding: "16px",
-              }}
-            >
-              <InsightCategory />
-            </Box>
-          </Grid>
-          <Grid item xs={12} sm={12} sx={{ width: "99%" }}>
-            <AllMarketplace
-              country={selectedCountry}
-              widgetData={appliedPreset}
-              marketPlaceId={
-                selectedCategory === "all" ? selectedCategory : filterFinal
-              }
-              brand_id={selectedBrandFilter}
-              product_id={mergedProductsFilter}
-              manufacturer_name={selectedManufacturerFilter}
-              fulfillment_channel={selectedFulfillment}
-              DateStartDate={appliedStartDate}
-              DateEndDate={appliedEndDate}
-            />
-          </Grid>
-          <Grid item xs={12} sm={12} sx={{ width: "99%" }}>
-            <ProfitAndLoss
-              country={selectedCountry}
-              widgetData={appliedPreset}
-              marketPlaceId={
-                selectedCategory == "all" ? selectedCategory : filterFinal
-              }
-              brand_id={selectedBrandFilter}
-              fulfillment_channel={selectedFulfillment}
-              manufacturer_name={selectedManufacturerFilter}
-              product_id={mergedProductsFilter}
-              DateStartDate={appliedStartDate}
-              DateEndDate={appliedEndDate}
-            />
-          </Grid>
           <Grid item xs={12} sm={12}>
             <MyProductList
+            country={selectedCountry}
               widgetData={appliedPreset}
               marketPlaceId={
                 selectedCategory == "all" ? selectedCategory : filterFinal
