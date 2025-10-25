@@ -153,7 +153,7 @@ function ClientDashboardpage() {
       height: 40,
     },
     "& .MuiInputLabel-root": { 
-      fontSize: "0.875rem" 
+      fontSize: "16px" 
     },
   }), []);
 
@@ -1135,7 +1135,7 @@ function ClientDashboardpage() {
           </FormControl>
         </Box>
 
-        <Box sx={{ width: "130px", ml: 1 }}>
+        <Box sx={{ width: "130px", ml: 2 }}>
           <LocalizationProvider dateAdapter={AdapterDayjs}>
             <DatePicker
               label="Start Date"
