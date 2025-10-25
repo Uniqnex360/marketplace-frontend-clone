@@ -148,6 +148,10 @@ function ClientDashboardpage() {
     }
     return preset;
   };
+  const setSelectedBrandImmediate=(brands)=>{
+    setSelectedBrand(brands)
+    setSelectedBrandFilter(brands.map(b=>b.id))
+  }
   const continents = ["US", "UK"];
   const [value, setValue] = useState([dayjs().subtract(6, "day"), dayjs()]);
   const [selectedPreset, setSelectedPreset] = useState("Today");
@@ -245,6 +249,13 @@ function ClientDashboardpage() {
       setSelectedPreset("");
     }
   }, [startDate, endDate]);
+  useEffect(()=>{
+    setSelectedManufacturerFilter(selectedManufacturer)
+    setMergedProductsFilter(mergedProducts)
+    setSelectedBrandFilter(brand_id)
+    setIsFiltering(true)
+
+  },[selectedManufacturer,mergedProducts,brand_id])
   useEffect(() => {
     if (befePreset || selectedPreset) {
       setStartDate(null);
@@ -584,6 +595,8 @@ function ClientDashboardpage() {
       updateActiveFilters("manufacturer", manufacturer, manufacturer, true);
     }
   };
+  
+
   const updateMergedProducts = (asinList, skuList) => {
     const merged = [...skuList, ...asinList];
     const uniqueById = Array.from(
@@ -612,76 +625,76 @@ function ClientDashboardpage() {
   const handleEndDateChange = (newValue) => {
     setEndDate(newValue);
   };
-  const handleApplyFilter = () => {
-    setBefePreset(selectedPreset);
-    setAppliedStartDateHelium(startDateHelium);
-    setAppliedEndDateHelium(endDateHelium);
-    setAppliedPreset(selectedPreset);
-    console.log("index", befePreset);
-    if (selectedCountry) {
-      updateActiveFilters("country", selectedCountry, selectedCountry, true);
-    }
-    if (selectedCategory) {
-      setSelectedManufacturerFilter(selectedManufacturer);
-      setMergedProductsFilter(mergedProducts);
-      setSelectedBrandFilter(brand_id);
-      if (!startDate || !endDate) {
-        setFilter(selectedCategory);
-        setFilterFinal(selectedCategory);
-        setIsFiltering(true);
-        toast.success("Filter applied successfully!", {
-          position: "top-right",
-          autoClose: 3000,
-          hideProgressBar: false,
-          closeOnClick: true,
-          pauseOnHover: true,
-          draggable: true,
-          progress: undefined,
-          theme: "colored",
-        });
-        return;
-      }
-    }
-    if (startDate && endDate) {
-      console.log("Raw:", startDate, endDate);
-      const start = new Date(startDate);
-      const end = new Date(endDate);
-      const formattedStartDate = start.toLocaleDateString("en-CA");
-      const formattedEndDate = end.toLocaleDateString("en-CA");
-      console.log("Formatted:", formattedStartDate, formattedEndDate);
-      setAppliedStartDate(formattedStartDate);
-      setAppliedEndDate(formattedEndDate);
-      setAppliedPreset("");
-      console.log("Applied end date:", formattedEndDate);
-      setFilter(selectedCategory);
-      setFilterFinal(selectedCategory);
-      setIsFiltering(true);
-      toast.success(
-        "Filter applied successfully with selected category and dates!",
-        {
-          position: "top-right",
-          autoClose: 3000,
-          hideProgressBar: false,
-          closeOnClick: true,
-          pauseOnHover: true,
-          draggable: true,
-          progress: undefined,
-          theme: "colored",
-        }
-      );
-    } else if (startDate && !endDate) {
-      toast.error("Please select both start and end dates.", {
-        position: "top-right",
-        autoClose: 3000,
-        hideProgressBar: false,
-        closeOnClick: true,
-        pauseOnHover: true,
-        draggable: true,
-        progress: undefined,
-        theme: "colored",
-      });
-    }
-  };
+  // const handleApplyFilter = () => {
+  //   setBefePreset(selectedPreset);
+  //   setAppliedStartDateHelium(startDateHelium);
+  //   setAppliedEndDateHelium(endDateHelium);
+  //   setAppliedPreset(selectedPreset);
+  //   console.log("index", befePreset);
+  //   if (selectedCountry) {
+  //     updateActiveFilters("country", selectedCountry, selectedCountry, true);
+  //   }
+  //   if (selectedCategory) {
+  //     setSelectedManufacturerFilter(selectedManufacturer);
+  //     setMergedProductsFilter(mergedProducts);
+  //     setSelectedBrandFilter(brand_id);
+  //     if (!startDate || !endDate) {
+  //       setFilter(selectedCategory);
+  //       setFilterFinal(selectedCategory);
+  //       setIsFiltering(true);
+  //       toast.success("Filter applied successfully!", {
+  //         position: "top-right",
+  //         autoClose: 3000,
+  //         hideProgressBar: false,
+  //         closeOnClick: true,
+  //         pauseOnHover: true,
+  //         draggable: true,
+  //         progress: undefined,
+  //         theme: "colored",
+  //       });
+  //       return;
+  //     }
+  //   }
+  //   if (startDate && endDate) {
+  //     console.log("Raw:", startDate, endDate);
+  //     const start = new Date(startDate);
+  //     const end = new Date(endDate);
+  //     const formattedStartDate = start.toLocaleDateString("en-CA");
+  //     const formattedEndDate = end.toLocaleDateString("en-CA");
+  //     console.log("Formatted:", formattedStartDate, formattedEndDate);
+  //     setAppliedStartDate(formattedStartDate);
+  //     setAppliedEndDate(formattedEndDate);
+  //     setAppliedPreset("");
+  //     console.log("Applied end date:", formattedEndDate);
+  //     setFilter(selectedCategory);
+  //     setFilterFinal(selectedCategory);
+  //     setIsFiltering(true);
+  //     toast.success(
+  //       "Filter applied successfully with selected category and dates!",
+  //       {
+  //         position: "top-right",
+  //         autoClose: 3000,
+  //         hideProgressBar: false,
+  //         closeOnClick: true,
+  //         pauseOnHover: true,
+  //         draggable: true,
+  //         progress: undefined,
+  //         theme: "colored",
+  //       }
+  //     );
+  //   } else if (startDate && !endDate) {
+  //     toast.error("Please select both start and end dates.", {
+  //       position: "top-right",
+  //       autoClose: 3000,
+  //       hideProgressBar: false,
+  //       closeOnClick: true,
+  //       pauseOnHover: true,
+  //       draggable: true,
+  //       progress: undefined,
+  //       theme: "colored",
+  //     });
+  //   }
+  // };
   const handleClearFilter = () => {
     setSelectedCategory({ id: "all", name: "All Channels" });
     setFilterFinal({ id: "all", name: "All Channels" });
@@ -805,7 +818,12 @@ function ClientDashboardpage() {
                     <InputLabel shrink={selectedCountry !== ""}></InputLabel>
                     <Select
                       value={selectedCountry}
-                      onChange={(e) => setSelectedCountry(e.target.value)}
+                      onChange={(e) =>{ setSelectedCountry(e.target.value)
+                        setActiveFilters(prev=>{
+                          const filtered=prev.filter(f=>f.type!=='country')
+                          return [...filtered,{type:'country',value:e.target.value,label:e.target.value}]
+                        })
+                      }}
                       displayEmpty
                       inputProps={{ "aria-label": "country select" }}
                     >
@@ -819,7 +837,19 @@ function ClientDashboardpage() {
        <Box sx={{ width: "190px" }}>
           <BrandSelector
             selectedBrand={selectedBrand}
-            setSelectedBrand={setSelectedBrand}
+            setSelectedBrand={(brands)=>{
+              setSelectedBrand(brands)
+              setActiveFilters(prev=>{
+              const filtered=prev.filter(f=>f.type!=='brand')
+              const brandFilters=brands.map(brand=>({
+                type:"brand",
+                value:brand.id,
+                label:brand.name
+              }))
+              return [...filtered,...brandFilters]
+            })
+            }}
+            
             brandList={brandList}
             inputValueBrand={inputValueBrand}
             setInputValueBrand={setInputValueBrand}
@@ -832,7 +862,6 @@ function ClientDashboardpage() {
           />
         </Box>
 
-        {/* SKU Selector */}
         <Box sx={{ width: "140px" }}>
           <Autocomplete
             multiple
@@ -853,7 +882,20 @@ function ClientDashboardpage() {
               setSkuLimit(11);
             }}
             value={selectedSku}
-            onChange={(event, newValue) => setSelectedSku(newValue)}
+            onChange={(event, newValue) => {
+              setSelectedSku(newValue)
+              setActiveFilters(prev=>{
+                const filtered=prev.filter(f=>f.type!=='sku')
+                const skuFilters=newValue.map(sku=>({
+                  type:'sku',
+                  value:sku.id,
+                  label:sku.sku
+                }))
+                return [...filtered,...skuFilters]
+              })
+              updateMergedProducts(selectedAsin, newValue);
+
+            }}
             renderTags={() => null}
             noOptionsText={inputValueSku ? "No options" : ""}
             renderOption={(props, option) => {
@@ -1046,7 +1088,20 @@ function ClientDashboardpage() {
               setInputValueAsin(newInputValue)
             }
             value={selectedAsin}
-            onChange={() => {}}
+            onChange={(event,newValue) => {
+              setSelectedAsin(newValue)
+              setActiveFilters(prev=>{
+                const filtered=prev.filter(f=>f.type!=='asin')
+                const asinFilters=newValue.map(asin=>({
+                  type:"asin",
+                  value:asin.id,
+                  label:asin.Asin
+                }))
+                return [...filtered,...asinFilters]
+              })
+               updateMergedProducts(newValue, selectedSku);
+
+            }}
             renderTags={() => null}
             renderOption={(props, option) => {
               const isSelected = selectedAsin.some((s) => s.id === option.id);
@@ -1102,6 +1157,8 @@ function ClientDashboardpage() {
               onChange={(e) => {
                 setSelectedPreset(e.target.value);
                 handlePresetSelectHelium(e.target.value);
+                setBefePreset(e.target.value)
+                setAppliedPreset(e.target.value)
               }}
             >
               {presets.map((preset) => (
@@ -1119,7 +1176,15 @@ function ClientDashboardpage() {
             <DatePicker
               label="Start Date"
               value={startDate}
-              onChange={handleStartDateChange}
+              onChange={(newValue)=>{
+                setStartDate(newValue)
+                if(newValue && endDate)
+                {
+                  setAppliedStartDate(newValue.toLocaleDateString("en-CA"));
+                  setAppliedEndDate(endDate.toLocaleDateString("en-CA"));
+                   setIsFiltering(true);
+                }
+              }}
               views={["year", "month", "day"]}
               disableFuture
               maxDate={endDate}
@@ -1146,7 +1211,15 @@ function ClientDashboardpage() {
             <DatePicker
               label="End Date"
               value={endDate}
-              onChange={handleEndDateChange}
+              onChange={(newValue)=>{
+                setEndDate(newValue)
+                if(startDate && newValue)
+                {
+                  setAppliedStartDate(startDate.toLocaleDateString('en-CA'))
+                  setAppliedEndDate(endDate.toLocaleDateString('en-US'))
+                  setIsFiltering(true)
+                }
+              }}
               views={["year", "month", "day"]}
               minDate={startDate}
               shouldDisableDate={(date) => date.isBefore(startDate, "day")}
@@ -1170,7 +1243,7 @@ function ClientDashboardpage() {
         {/* Action Buttons */}
         <Box sx={{ display: "flex", gap: 1, flexShrink: 0 }}>
           {/* Apply Button */}
-          <Tooltip title="Apply Filter" arrow>
+          {/* <Tooltip title="Apply Filter" arrow>
             <Button
               onClick={handleApplyFilter}
               variant="contained"
@@ -1187,7 +1260,7 @@ function ClientDashboardpage() {
             >
               <FilterAltIcon sx={{ color: "white", fontSize: "20px" }} />
             </Button>
-          </Tooltip>
+          </Tooltip> */}
 
           {/* Reset Button */}
           <Tooltip title="Reset" arrow>

@@ -702,7 +702,7 @@ const formatDateRange = (start, end) => {
 
         <Switch checked={events} onChange={() => setEvents(!events)} size="small" />
 
-        {events && (
+        {/* {events && (
             <Button
                 variant="outlined"
                 size="small"
@@ -717,7 +717,7 @@ const formatDateRange = (start, end) => {
             >
                 + Add Note
             </Button>
-        )}
+        )} */}
     </Box>
 
     <NoteModel open={openNote} onClose={() => setOpenNote(false)} />

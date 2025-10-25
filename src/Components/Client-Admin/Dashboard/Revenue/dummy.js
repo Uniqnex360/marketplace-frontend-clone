@@ -668,7 +668,7 @@ const CompareChart = ({ startDate, endDate, widgetData, marketPlaceId, brand_id,
                   Events
                 </Typography>
                 <Switch checked={events} onChange={() => setEvents(!events)} size="small" />
-                {events && (
+                {/* {events && (
                   <Button
                     variant="outlined"
                     size="small"
@@ -677,7 +677,7 @@ const CompareChart = ({ startDate, endDate, widgetData, marketPlaceId, brand_id,
                   >
                     + Add Note
                   </Button>
-                )}
+                )} */}
               </Box>
             </Box>
 

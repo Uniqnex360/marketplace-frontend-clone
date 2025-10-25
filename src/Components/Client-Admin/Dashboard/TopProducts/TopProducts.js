@@ -95,9 +95,9 @@ const CustomTooltip = ({
     : payload;
   // Only return null if there's nothing to display after filtering
   if (filteredPayload.length === 0) return null;
-   const formattedDate = label.includes(':') 
-    ? dayjs(label).format("MMM D, h:mm A")  // For hourly data
-    : dayjs(label).format("MMM D"); 
+  const formattedDate = label.includes(":")
+    ? dayjs(label).format("MMM D, h:mm A") // For hourly data
+    : dayjs(label).format("MMM D");
   // Helper function to format tooltip values based on tab
   const formatTooltipValue = (value, tab) => {
     switch (tab) {
@@ -230,20 +230,20 @@ export default function TopProductsChart({
     const label = isNumberOnly ? "WPID" : "ASIN";
     setTooltipText(`Copy ${label}`);
   };
- const hasRefundData = () => {
-  if (tab !== 2) return true;                    // not on Refund tab → show chart
-  if (!bindGraph.length) return false;           // no data at all → show message
-  
-  // Check if any active product has refund data > 0
-  const hasData = bindGraph.some(row =>
-    activeProducts.some(pid => {
-      const value = row[pid];
-      return value !== undefined && value !== null && value > 0;
-    })
-  );
-  
-  return hasData; // true = show chart, false = show message
-};
+  const hasRefundData = () => {
+    if (tab !== 2) return true; // not on Refund tab → show chart
+    if (!bindGraph.length) return false; // no data at all → show message
+
+    // Check if any active product has refund data > 0
+    const hasData = bindGraph.some((row) =>
+      activeProducts.some((pid) => {
+        const value = row[pid];
+        return value !== undefined && value !== null && value > 0;
+      })
+    );
+
+    return hasData; // true = show chart, false = show message
+  };
   const handleCopy = async (value) => {
     if (!value) return;
     const isNumberOnly = /^\d+$/.test(value);
@@ -458,27 +458,27 @@ export default function TopProductsChart({
       const isTodayOrYesterday =
         widgetData === "Today" || widgetData === "Yesterday";
       products.forEach((product) => {
-  Object.entries(product.chart || {}).forEach(([datetime, value]) => {
-    if (isTodayOrYesterday) {
-      // Simply use the datetime as-is for hourly data
-      const timeKey = dayjs(datetime).format("YYYY-MM-DD HH:mm:ss");
-      allTimestamps.add(timeKey);
-      if (!chartDataMap[timeKey]) {
-        chartDataMap[timeKey] = { date: timeKey };
-      }
-      chartDataMap[timeKey][product.id] = value;
-    } else {
-      // For date ranges, use date only
-      const dateOnly = datetime.split(" ")[0];
-      allTimestamps.add(dateOnly);
-      if (!chartDataMap[dateOnly]) {
-        chartDataMap[dateOnly] = { date: dateOnly };
-      }
-      chartDataMap[dateOnly][product.id] =
-        (chartDataMap[dateOnly][product.id] || 0) + value;
-    }
-  });
-});
+        Object.entries(product.chart || {}).forEach(([datetime, value]) => {
+          if (isTodayOrYesterday) {
+            // Simply use the datetime as-is for hourly data
+            const timeKey = dayjs(datetime).format("YYYY-MM-DD HH:mm:ss");
+            allTimestamps.add(timeKey);
+            if (!chartDataMap[timeKey]) {
+              chartDataMap[timeKey] = { date: timeKey };
+            }
+            chartDataMap[timeKey][product.id] = value;
+          } else {
+            // For date ranges, use date only
+            const dateOnly = datetime.split(" ")[0];
+            allTimestamps.add(dateOnly);
+            if (!chartDataMap[dateOnly]) {
+              chartDataMap[dateOnly] = { date: dateOnly };
+            }
+            chartDataMap[dateOnly][product.id] =
+              (chartDataMap[dateOnly][product.id] || 0) + value;
+          }
+        });
+      });
       const sortedChartData = [...allTimestamps]
         .sort((a, b) => dayjs(a).valueOf() - dayjs(b).valueOf())
         .map((timestamp) => chartDataMap[timestamp]);
@@ -759,7 +759,7 @@ export default function TopProductsChart({
           {/* Add Note and Events */}
           <Box display="flex" justifyContent="flex-end">
             <Box display="flex" alignItems="center" gap={2}>
-              {events && (
+              {/* {events && (
                 <Button
                   variant="outlined"
                   size="small"
@@ -774,7 +774,7 @@ export default function TopProductsChart({
                 >
                   + Add Note
                 </Button>
-              )}
+              )} */}
               <Typography
                 variant="body2"
                 sx={{ fontSize: "14px", lineHeight: 1 }}
@@ -789,101 +789,102 @@ export default function TopProductsChart({
             </Box>
           </Box>
           <NoteModel open={openNote} onClose={() => setOpenNote(false)} />
-            {hasRefundData() ? (
-
-          <ResponsiveContainer width="100%" height={400}>
-            <LineChart
-              data={bindGraph}
-              margin={{ top: 20, right: 30, left: 0, bottom: 20 }}
-            >
-              {/* Grid lines */}
-              <CartesianGrid
-                stroke="#e0e0e0"
-                strokeDasharray="3 3"
-                vertical={false}
-              />{" "}
-              {/* No vertical line on left */}
-              <XAxis
-                dataKey="date"
-                tick={{ fontSize: "12px", fill: "#666" }}
-                padding={{ left: 20, right: 20 }}
-                tickFormatter={(val) => {
-                  if (isTodayOrYesterday) {
-                    // For hourly data, val is already in Pacific time format
-                    return dayjs(val).format("h:mm A");
-                  } else {
-                    // For date ranges, val is just the date (YYYY-MM-DD)
-                    return dayjs(val).format("MMM D");
-                  }
-                }}
-              />
-              {/* Y Axis with dynamic formatting based on tab */}
-              <YAxis
-                tick={{ fontSize: "12px", fill: "#666" }}
-                tickFormatter={formatYAxisTick}
-                axisLine={false}
-                tickLine={false}
-                domain={["auto", "auto"]}
-                tickCount={5} // Increased from 2 to show better price ranges
-              />
-              {/* Tooltip */}
-              <Tooltip
-                content={
-                  <CustomTooltip
-                    productList={productList}
-                    tab={tab}
-                    hoveredProductId={hoveredProductId}
-                  />
-                }
-                wrapperStyle={{ zIndex: 1000 }}
-                filterNull={true}
-              />
-              {/* Line Series for Active Products */}
-              {activeProducts.map((productId) => {
-                const product = productList.find((p) => p.id === productId);
-                if (!product) return null;
-                return (
-                  <Line
-                    key={product.id}
-                    type="monotone"
-                    dataKey={product.id} // This is the ID that will appear in payload.dataKey
-                    stroke={product.color}
-                    strokeWidth={2.5}
-                    strokeLinecap="butt"
-                    strokeLinejoin="mitter"
-                    connectNulls={true}
-                    isAnimationActive={false}
-                    dot={
-                      Object.keys(product.chart).length <= 2 ? { r: 4 } : false
+          {hasRefundData() ? (
+            <ResponsiveContainer width="100%" height={400}>
+              <LineChart
+                data={bindGraph}
+                margin={{ top: 20, right: 30, left: 0, bottom: 20 }}
+              >
+                {/* Grid lines */}
+                <CartesianGrid
+                  stroke="#e0e0e0"
+                  strokeDasharray="3 3"
+                  vertical={false}
+                />{" "}
+                {/* No vertical line on left */}
+                <XAxis
+                  dataKey="date"
+                  tick={{ fontSize: "12px", fill: "#666" }}
+                  padding={{ left: 20, right: 20 }}
+                  tickFormatter={(val) => {
+                    if (isTodayOrYesterday) {
+                      // For hourly data, val is already in Pacific time format
+                      return dayjs(val).format("h:mm A");
+                    } else {
+                      // For date ranges, val is just the date (YYYY-MM-DD)
+                      return dayjs(val).format("MMM D");
                     }
-                    activeDot={{ r: 6, strokeWidth: 0 }}
-                    // These are crucial for setting the hovered product
-                    onMouseEnter={() => setHoveredProductId(product.id)}
-                    onMouseLeave={() => setHoveredProductId(null)} // Reset when leaving this specific line
-                  />
-                );
-              })}
-            </LineChart>
-          </ResponsiveContainer>
-            ):(
-              <Box
-         sx={{
-      width: "100%",
-      height: 400, // Match the chart height
-      display: "flex",
-      alignItems: "center",
-      justifyContent: "center",
-      color: "#888",
-      border: "1px dashed #ccc",
-      borderRadius: 2,
-      backgroundColor: '#f9f9f9'
-    }}
-    >
-      <Typography sx={{ fontSize: { xs: 14, sm: 16 } }}>
-        No refunds for the selected period
-      </Typography>
-    </Box>
-            )}
+                  }}
+                />
+                {/* Y Axis with dynamic formatting based on tab */}
+                <YAxis
+                  tick={{ fontSize: "12px", fill: "#666" }}
+                  tickFormatter={formatYAxisTick}
+                  axisLine={false}
+                  tickLine={false}
+                  domain={["auto", "auto"]}
+                  tickCount={5} // Increased from 2 to show better price ranges
+                />
+                {/* Tooltip */}
+                <Tooltip
+                  content={
+                    <CustomTooltip
+                      productList={productList}
+                      tab={tab}
+                      hoveredProductId={hoveredProductId}
+                    />
+                  }
+                  wrapperStyle={{ zIndex: 1000 }}
+                  filterNull={true}
+                />
+                {/* Line Series for Active Products */}
+                {activeProducts.map((productId) => {
+                  const product = productList.find((p) => p.id === productId);
+                  if (!product) return null;
+                  return (
+                    <Line
+                      key={product.id}
+                      type="monotone"
+                      dataKey={product.id} // This is the ID that will appear in payload.dataKey
+                      stroke={product.color}
+                      strokeWidth={2.5}
+                      strokeLinecap="butt"
+                      strokeLinejoin="mitter"
+                      connectNulls={true}
+                      isAnimationActive={false}
+                      dot={
+                        Object.keys(product.chart).length <= 2
+                          ? { r: 4 }
+                          : false
+                      }
+                      activeDot={{ r: 6, strokeWidth: 0 }}
+                      // These are crucial for setting the hovered product
+                      onMouseEnter={() => setHoveredProductId(product.id)}
+                      onMouseLeave={() => setHoveredProductId(null)} // Reset when leaving this specific line
+                    />
+                  );
+                })}
+              </LineChart>
+            </ResponsiveContainer>
+          ) : (
+            <Box
+              sx={{
+                width: "100%",
+                height: 400, // Match the chart height
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                color: "#888",
+                border: "1px dashed #ccc",
+                borderRadius: 2,
+                backgroundColor: "#f9f9f9",
+              }}
+            >
+              <Typography sx={{ fontSize: { xs: 14, sm: 16 } }}>
+                No refunds for the selected period
+              </Typography>
+            </Box>
+          )}
         </Grid>
       </Grid>
     </Box>

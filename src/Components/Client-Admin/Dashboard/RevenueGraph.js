@@ -1066,7 +1066,7 @@ setBindGraph(mergedGraphData);
 
   <Switch checked={events} onChange={() => setEvents(!events)} size="small" />
 
-  {events && (
+  {/* {events && (
     <Button
   variant="outlined"
   size="small"
@@ -1082,7 +1082,7 @@ setBindGraph(mergedGraphData);
   + Add Note
 </Button>
 
-  )}
+  )} */}
 </Box>
 
 <NoteModal open={openNote} onClose={() => setOpenNote(false)} />

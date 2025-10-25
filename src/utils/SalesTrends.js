@@ -20,7 +20,9 @@ const ProductPerformanceContainer = ({
 }) => {
   const [performanceData, setPerformanceData] = useState({});
   const [loading, setLoading] = useState(true);
-
+  const stableBrandId = JSON.stringify(brand_id);
+const stableProductId = JSON.stringify(product_id);
+const stableManufacturer = JSON.stringify(manufacturer_name);
   const fetchProductPerformance = async () => {
     try {
       setLoading(true);
@@ -50,7 +52,7 @@ const ProductPerformanceContainer = ({
 
   useEffect(() => {
     fetchProductPerformance();
-  }, [userId, marketPlaceId, brand_id, product_id, manufacturer_name, fulfillment_channel, DateStartDate, DateEndDate,country]);
+  }, [userId, marketPlaceId, stableBrandId, stableProductId, stableManufacturer, fulfillment_channel, DateStartDate, DateEndDate,country]);
 
   if (loading) {
     return (

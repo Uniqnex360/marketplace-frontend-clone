@@ -156,6 +156,9 @@ const TestCard = ({
   const isTablet = useMediaQuery(theme.breakpoints.between("sm", "md"));
   const isSmallScreen = useMediaQuery(theme.breakpoints.down("md"));
   const API_TODAY = dayjs("02/09/2025", "DD/MM/YYYY").tz(TIMEZONE);
+  const stableBrandId = JSON.stringify(brand_id);
+const stableProductId = JSON.stringify(product_id);
+const stableManufacturer = JSON.stringify(manufacturer_name);
   const [currentDates, setCurrentDates] = useState({
     selectedDate: API_TODAY,
     displayDate: API_TODAY,
@@ -214,10 +217,10 @@ const TestCard = ({
     currentDates.selectedDate,
     currentDates.displayDate,
     currentPreset,
-    brand_id,
+    stableBrandId,
     country,
-    product_id,
-    manufacturer_name,
+    stableProductId,
+    stableManufacturer,
     fulfillment_channel,
     marketPlaceId?.id,
   ]);

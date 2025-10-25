@@ -1106,7 +1106,7 @@ const CompareChart = ({
                   onChange={() => setEvents(!events)}
                   size="small"
                 />
-                {events && (
+                {/* {events && (
                   <Button
                     variant="outlined"
                     size="small"
@@ -1122,7 +1122,7 @@ const CompareChart = ({
                   >
                     + Add Note
                   </Button>
-                )}
+                )} */}
               </Box>
               <NoteModel 
                 open={openNote} 
