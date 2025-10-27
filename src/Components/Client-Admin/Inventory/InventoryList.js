@@ -166,6 +166,7 @@ const InventoryList = ({ fetchOrdersFromParent }) => {
           search_query: currentSearchQuery,
           sort_by: currentSortConfig.key,
           sort_by_value: currentSortConfig.direction === "asc" ? 1 : -1,
+          country:selectedCountry
         }
       );
 

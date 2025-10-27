@@ -437,7 +437,7 @@ const ProductTable = () => {
     display: "flex",
     justifyContent: "flex" // Center on mobile
   }}>
-    <FormControl size="small" sx={{ width: { xs: "100%", md: 150 } }}>
+    <FormControl size="small" sx={{ width: { xs: "100%", md: 180 } }}>
       <Select
         value={selectedCategory?.id || "all"}
         onChange={(e) => {

@@ -1027,10 +1027,9 @@ const enhancedCategories = useEnhancedCategories(categories);
                             px: { xs: 1, md: 2 },
                           }}
                         >
-                          $
-                          {order.order_total && !isNaN(order.order_total)
-                            ? order.order_total.toFixed(2)
-                            : "N/A"}
+                           {order.order_total && !isNaN(order.order_total)
+    ? formatCurrency(order.order_total.toFixed(2), selectedCountry)
+    : "N/A"}
                         </TableCell>
                         <TableCell sx={{ 
                           textAlign: "center", 

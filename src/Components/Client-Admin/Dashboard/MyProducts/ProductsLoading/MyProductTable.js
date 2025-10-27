@@ -469,7 +469,7 @@ const MyProductTable = ({ products, visibleColumns, onSort, isParentType, imageS
                                           gap: '4px',
                                         }}
                                       >
-                                        $ {Math.abs(row.refundsAmountforPeriod || 0)}
+                                         {formatCurrency(Math.abs(row.refundsAmountforPeriod || 0),country)}
                                         {row.refundsAmountforPeriod < 0 ? (
                                           <ArrowDownwardIcon sx={{ color: 'red', fontSize: 14 }} />
                                         ) : (

@@ -28,6 +28,7 @@ const CountrySelector = ({
 }) => {
   const countries = [
     { code: 'US', name: 'United States' },
+    { code: 'AU', name: 'Australia' },
     { code: 'UK', name: 'United Kingdom' },
   ];
 

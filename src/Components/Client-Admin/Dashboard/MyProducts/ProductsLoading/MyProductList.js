@@ -660,7 +660,6 @@ const MyProductList = ({
         minHeight: "400px",
       }}
     >
-      {/* My Products Title and Tabs */}
       <Box
         display="flex"
         sx={{ 
