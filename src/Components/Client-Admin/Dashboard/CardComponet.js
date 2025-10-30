@@ -283,9 +283,9 @@ const CardComponent = ({
               nameKey="name"
               cx="50%"
               cy="50%"
-              outerRadius={100}
-              label={(props) => <CustomLabel {...props} />}
-              labelLine={{ stroke: "#cccccc", strokeWidth: 1 }}
+              outerRadius={orderData.length === 1 ? 80 : 100} 
+              label={orderData.length > 1 ? (props) => <CustomLabel {...props} /> : false}
+              labelLine={orderData.length > 1 ? { stroke: "#cccccc", strokeWidth: 1 } : false}
             >
               {" "}
               {orderData.map((entry, index) => (
@@ -295,14 +295,14 @@ const CardComponent = ({
                 value={totalOrders}
                 position="center"
                 style={{
-                  fontSize: "32px",
+                  fontSize: orderData.length === 1 ? "24px" : "32px",
                   fontWeight: "bold",
                   fill: "#111827",
                   fontFamily: fontStyles.fontFamily,
                 }}
               />{" "}
             </Pie>{" "}
-            {orderData.map((entry, index) => (
+            {orderData.length > 1 && orderData.map((entry, index)  => (
               <Pie
                 key={`percentage-${index}`}
                 data={[entry]}

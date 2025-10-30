@@ -14,6 +14,12 @@ import {
   ListItemText,
   useTheme,
   useMediaQuery,
+  TableCell,
+  TableBody,
+  TableRow,
+  Avatar,
+  Table,
+  TableHead,
 } from "@mui/material";
 import {
   Download,
@@ -31,9 +37,119 @@ import MarketplaceChart from "./MarketplaceChart";
 import CardComponent from "../CardComponet";
 import DottedCircleLoading from "../../../Loading/DotLoading";
 import NetProfitChart from "./NetProfitChart";
+import { formatCurrency } from "../../../../utils/currencyFormatter";
 
 dayjs.extend(utc);
+function MarketplaceRow({ row, index }) {
+  const [open, setOpen] = useState(false);
+  const isFirstRow = index === 0;
+  const cellStyle = {
+    ...fontStyles,
+    color: "black",
+    fontWeight: 600,
+    fontSize: "14px",
+  };
 
+
+  return (
+    <>
+      <TableRow sx={{ ...fontStyles, borderBottom: "none" }}>
+        <TableCell padding="none" sx={{ borderBottom: "none" }}>
+          <IconButton size="small" onClick={() => setOpen(!open)}>
+            {open ? <KeyboardArrowUp /> : <KeyboardArrowDown />}
+          </IconButton>
+        </TableCell>
+        <TableCell
+          sx={{
+            fontFamily:
+              "'Nunito Sans', -apple-system, 'Segoe UI', 'Roboto', 'Helvetica Neue', 'Arial', sans-serif",
+            display: "flex",
+            alignItems: "center",
+            fontWeight: "600",
+            color: "#485E75",
+            pb: open && !isFirstRow ? "4px" : 0,
+            borderBottom: "none",
+          }}
+        >
+          {row.image && (
+            <Avatar
+              src={row.image}
+              alt={row.marketplace}
+              sx={{
+                width: 20,
+                height: 20,
+                color: "#485E75",
+                fontFamily:
+                  "'Nunito Sans', -apple-system, 'Segoe UI', 'Roboto', 'Helvetica Neue', 'Arial', sans-serif",
+                fontSize: "14px",
+                fontWeight: "800",
+                mr: 1,
+              }}
+            />
+          )}
+          {row.marketplace}
+        </TableCell>
+        <TableCell
+          sx={{
+            ...cellStyle,
+            borderBottom: "none",
+            color: row.currency_list[0]?.grossRevenue < 0 ? "red" : "black",
+          }}
+        >
+          {formatCurrency(row.currency_list[0]?.grossRevenue)}
+        </TableCell>
+        <TableCell
+          sx={{
+            ...cellStyle,
+            borderBottom: "none",
+            color: row.currency_list[0]?.expenses < 0 ? "red" : "black",
+          }}
+        >
+          {formatCurrency(row.currency_list[0]?.expenses)}
+        </TableCell>
+        <TableCell
+          sx={{
+            ...cellStyle,
+            borderBottom: "none",
+            color: row.currency_list[0]?.total_cogs < 0 ? "red" : "black",
+          }}
+        >
+          {formatCurrency(row.currency_list[0]?.total_cogs)}
+        </TableCell>
+        <TableCell
+          sx={{
+            ...cellStyle,
+            borderBottom: "none",
+            color: row.currency_list[0]?.netProfit < 0 ? "red" : "black",
+          }}
+        >
+          {formatCurrency(row.currency_list[0]?.netProfit)}
+        </TableCell>
+        <TableCell sx={{ ...cellStyle, borderBottom: "none" }}>
+          {row.currency_list[0]?.margin?.toFixed(2)}%
+        </TableCell>
+        <TableCell sx={{ ...cellStyle, borderBottom: "none" }}>
+          {row.currency_list[0]?.roi?.toFixed(2)}%
+        </TableCell>
+        <TableCell sx={{ ...cellStyle, borderBottom: "none" }}>
+          {row.currency_list[0]?.refunds}
+        </TableCell>
+        <TableCell sx={{ ...cellStyle, borderBottom: "none" }}>
+          {row.currency_list[0]?.unitsSold}
+        </TableCell>
+      </TableRow>
+      <TableRow>
+        <TableCell style={{ paddingBottom: 0, paddingTop: 0 }} colSpan={10}>
+          <Collapse in={open} timeout="auto" unmountOnExit>
+            <Box sx={{ margin: 1 }}>
+              {/* Add more details here if needed */}
+            </Box>
+          </Collapse>
+        </TableCell>
+      </TableRow>
+    </>
+  );
+}
 const fontStyles = {
   fontSize: "16px",
   color: "#485E75",
@@ -449,7 +565,7 @@ export default function AllMarketplace({
         </Grid>
 
         {/* Marketplace Breakdown Section - Now with Chart */}
-        {/* <Box
+        <Box
           display="flex"
           alignItems="center"
           mb={2}
@@ -469,7 +585,7 @@ export default function AllMarketplace({
             variant="h6"
             sx={{
               ...fontStyles,
-              fontSize: { xs: "12px", sm: "14px" },
+              fontSize: "14px",
               fontWeight: 600,
               color: "rgb(10, 111, 232)",
               "&:hover": { color: "rgb(2, 83, 182)" },
@@ -485,7 +601,6 @@ export default function AllMarketplace({
               border: "1px solid #e0e0e0",
               borderRadius: "8px",
               overflow: "hidden",
-              p: 3,
             }}
           >
             {loading ? (
@@ -494,7 +609,7 @@ export default function AllMarketplace({
                   display: "flex",
                   justifyContent: "center",
                   alignItems: "center",
-                  minHeight: { xs: 200, sm: 300 },
+                  minHeight: 300,
                   width: "100%",
                   height: "100%",
                 }}
@@ -504,10 +619,79 @@ export default function AllMarketplace({
                 </Box>
               </Box>
             ) : (
-              <MarketplaceChart marketplaceList={rows} />
+              <Table size="small">
+                <TableHead
+                  sx={{
+                    backgroundColor: "#f3f4f6",
+                    "& .MuiTableCell-root": {
+                      borderTop: "none",
+                      borderBottom: "none",
+                    },
+                  }}
+                >
+                  <TableRow>
+                    <TableCell padding="none"></TableCell>
+                    <TableCell
+                      sx={{
+                        ...fontStyles,
+                        fontSize: "12px",
+                        color: "#485E75",
+                        borderTop: "none",
+                      }}
+                    >
+                      Marketplace
+                    </TableCell>
+                    <TableCell
+                      sx={{ ...fontStyles, fontSize: "12px", color: "#485E75" }}
+                    >
+                      Gross Revenue
+                    </TableCell>
+                    <TableCell
+                      sx={{ ...fontStyles, fontSize: "12px", color: "#485E75" }}
+                    >
+                      Expenses
+                    </TableCell>
+                    <TableCell
+                      sx={{ ...fontStyles, fontSize: "12px", color: "#485E75" }}
+                    >
+                      COGS
+                    </TableCell>
+                    <TableCell
+                      sx={{ ...fontStyles, fontSize: "12px", color: "#485E75" }}
+                    >
+                      Net Profit
+                    </TableCell>
+                    <TableCell
+                      sx={{ ...fontStyles, fontSize: "12px", color: "#485E75" }}
+                    >
+                      Margin
+                    </TableCell>
+                    <TableCell
+                      sx={{ ...fontStyles, fontSize: "12px", color: "#485E75" }}
+                    >
+                      ROI
+                    </TableCell>
+                    <TableCell
+                      sx={{ ...fontStyles, fontSize: "12px", color: "#485E75" }}
+                    >
+                      Refunds
+                    </TableCell>
+                    <TableCell
+                      sx={{ ...fontStyles, fontSize: "12px", color: "#485E75" }}
+                    >
+                      Units Sold
+                    </TableCell>
+                  </TableRow>
+                </TableHead>
+                <TableBody>
+                  {rows.map((row, index) => (
+                    <MarketplaceRow key={index} row={row} index={index} />
+                  ))}
+                </TableBody>
+              </Table>
             )}
           </Box>
-        </Collapse> */}
+          </Collapse>
       </Paper>
     </Box>
   );
