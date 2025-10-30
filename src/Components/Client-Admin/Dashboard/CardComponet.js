@@ -77,7 +77,7 @@ const CardComponent = ({
           .filter(([name]) => name !== "total_order_count")
           .map(([name, data]) => ({
             name,
-            value: data.count || 0,
+            value: data.count || data.value||0,
             percentage: parseFloat(data.percentage || 0),
             color: MARKETPLACE_COLORS[name] || getDefaultColor(name),
             orderValue: data.order_value || 0,
