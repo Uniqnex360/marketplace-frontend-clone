@@ -1089,55 +1089,38 @@ function ClientDashboardpage() {
         <Box sx={{ width: "130px", ml: 2 }}>
           <LocalizationProvider dateAdapter={AdapterDayjs}>
             <DatePicker
-  label="Start Date"
-  value={startDate}
-  onChange={handleStartDateChangeOptimized}
-  format="DD/MM/YYYY"
-  disableFuture
-  maxDate={endDate || dayjs()}
-  slotProps={{
-    textField: {
-      size: "small",
-      sx: datePickerSx,
-      // Add these for consistency
-      InputLabelProps: {
-        sx: {
-          transform: 'translate(14px, 12px) scale(1)',
-          "&.Mui-focused, &.MuiFormLabel-filled": {
-            transform: 'translate(14px, -9px) scale(0.75)',
-          }
-        }
-      }
-    }
-  }}
-/>
+              label="Start Date"
+              value={startDate}
+              onChange={handleStartDateChangeOptimized}
+              format="DD/MM/YYYY"
+              disableFuture
+              maxDate={endDate || dayjs()}
+              slotProps={{
+                textField: {
+                  size: "small",
+                  sx: datePickerSx
+                }
+              }}
+            />
           </LocalizationProvider>
         </Box>
         <Box sx={{ width: "130px" }}>
           <LocalizationProvider dateAdapter={AdapterDayjs}>
             <DatePicker
-  label="End Date"
-  value={endDate}
-  onChange={handleEndDateChangeOptimized}
-  format="DD/MM/YYYY"
-  disableFuture
-  minDate={startDate}
-  disabled={!startDate}
-  slotProps={{
-    textField: {
-      size: "small",
-      sx: datePickerSx,
-      InputLabelProps: {
-        sx: {
-          transform: 'translate(14px, 12px) scale(1)',
-          "&.Mui-focused, &.MuiFormLabel-filled": {
-            transform: 'translate(14px, -9px) scale(0.75)',
-          }
-        }
-      }
-    }
-  }}
-/>
+              label="End Date"
+              value={endDate}
+              onChange={handleEndDateChangeOptimized}
+              format="DD/MM/YYYY"
+              disableFuture
+              minDate={startDate}
+              disabled={!startDate}
+              slotProps={{
+                textField: {
+                  size: "small",
+                  sx: datePickerSx
+                }
+              }}
+            />
           </LocalizationProvider>
         </Box>
         <Box sx={{ display: "flex", gap: 1, flexShrink: 0,position:'relative',right:0 }}>
