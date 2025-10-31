@@ -450,7 +450,6 @@ const enhancedCategories = useEnhancedCategories(categories);
           }}
         >
          <Box sx={{ 
-    marginTop: { xs: 0, md: "-7px" },
     width: { xs: "100%", md: "auto" },
     display: "flex",
     justifyContent: "flex-start"

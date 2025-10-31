@@ -437,7 +437,7 @@ const ProductTable = () => {
     display: "flex",
     justifyContent: "flex" // Center on mobile
   }}>
-    {/* <FormControl size="small" sx={{ width: { xs: "100%", md: 180 } }}>
+    <FormControl size="small" sx={{ width: { xs: "100%", md: 180 } }}>
       <Select
         value={selectedCategory?.id || "all"}
         onChange={(e) => {
@@ -473,7 +473,7 @@ const ProductTable = () => {
           ))
         )}
       </Select>
-    </FormControl> */}
+    </FormControl>
   </Box>
 
   {/* Search Field - Full width on mobile */}
@@ -501,7 +501,7 @@ const ProductTable = () => {
     }}
   >
     {/* Mobile Filter Toggle Button */}
-    <Tooltip title="Filter" arrow>
+    {/* <Tooltip title="Filter" arrow>
       <Button
         variant="text"
         color="primary"
@@ -524,7 +524,7 @@ const ProductTable = () => {
       >
         <FilterListIcon sx={{ color: "white", fontSize: "20px" }} />
       </Button>
-    </Tooltip>
+    </Tooltip> */}
 
     <Tooltip title="Import" arrow>
       <Button
@@ -728,7 +728,7 @@ const ProductTable = () => {
                       </Typography>
                     </TableCell>
                     
-                    <TableCell
+                    {/* <TableCell
                       sx={{ 
                         textAlign: "center", 
                         backgroundColor: "#f6f6f6",
@@ -738,7 +738,7 @@ const ProductTable = () => {
                       <Typography variant="subtitle2" fontWeight="bold" fontSize={{ xs: "0.75rem", md: "0.875rem" }}>
                         Channel
                       </Typography>
-                    </TableCell>
+                    </TableCell> */}
                     
                     <TableCell
                       sx={{
@@ -856,7 +856,7 @@ const ProductTable = () => {
                           </span>
                         </TableCell>
                         
-                        <TableCell
+                        {/* <TableCell
                           align="center"
                           sx={{ 
                             width: { xs: "80px", md: "100px" }, 
@@ -909,7 +909,7 @@ const ProductTable = () => {
                               </Typography>
                             )}
                           </Box>
-                        </TableCell>
+                        </TableCell> */}
 
                         <TableCell
                           sx={{ 
