@@ -437,7 +437,7 @@ const ProductTable = () => {
     display: "flex",
     justifyContent: "flex" // Center on mobile
   }}>
-    <FormControl size="small" sx={{ width: { xs: "100%", md: 180 } }}>
+    {/* <FormControl size="small" sx={{ width: { xs: "100%", md: 180 } }}>
       <Select
         value={selectedCategory?.id || "all"}
         onChange={(e) => {
@@ -473,7 +473,7 @@ const ProductTable = () => {
           ))
         )}
       </Select>
-    </FormControl>
+    </FormControl> */}
   </Box>
 
   {/* Search Field - Full width on mobile */}
@@ -821,7 +821,7 @@ const ProductTable = () => {
 
                         <TableCell
                           sx={{
-                            textAlign: "center",
+                            textAlign: "left",
                             minWidth: { xs: "80px", md: "120px" },
                             width: { xs: "80px", md: "120px" },
                             wordBreak: "break-word",
@@ -839,7 +839,7 @@ const ProductTable = () => {
                           </Link>
                         </TableCell>
 
-                        <TableCell sx={{ textAlign: "center", px: { xs: 1, md: 2 } }}>
+                        <TableCell sx={{ textAlign: "left", px: { xs: 1, md: 2 } }}>
                           <Link
                             to={`/Home/products/details/${product.productId}?page=${page}&&rowsPerPage=${rowsPerPage}`}
                             style={{ textDecoration: "none", color: "black" }}
