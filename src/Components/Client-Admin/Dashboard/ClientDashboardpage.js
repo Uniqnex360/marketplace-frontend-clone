@@ -145,14 +145,22 @@ function ClientDashboardpage() {
     return preset;
   };
   const datePickerSx = useMemo(() => ({
-    width: "100%",
-    "& .MuiInputBase-root": {
-      height: 40,
+  width: "100%",
+  "& .MuiInputBase-root": {
+    height: 40,
+  },
+  "& .MuiInputLabel-root": { 
+    fontSize: "16px",
+    // Add these for consistent positioning
+    transform: 'translate(14px, 12px) scale(1)',
+    "&.MuiInputLabel-shrink": {
+      transform: 'translate(14px, -9px) scale(0.75)',
     },
-    "& .MuiInputLabel-root": { 
-      fontSize: "16px" 
-    },
-  }), []);
+  },
+  "& .MuiInputLabel-formControl": {
+    top: '-2px', // Adjust this value as needed
+  },
+}), []);
   const setSelectedBrandImmediate=(brands)=>{
     setSelectedBrand(brands)
     setSelectedBrandFilter(brands.map(b=>b.id))
