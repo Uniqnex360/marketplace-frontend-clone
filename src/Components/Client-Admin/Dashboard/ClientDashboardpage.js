@@ -54,7 +54,6 @@ import { useMarketplace } from "../../../utils/MarketplaceProvider";
 import ProductPerformanceContainer from "../../../utils/SalesTrends";
 import { useEnhancedCategories } from "../../../utils/UseEnhancedCategories";
 import CountrySelector from "../../../utils/countrySelector";
-
 function ClientDashboardpage() {
   const [selectedCategory, setSelectedCategory] = useState({
     id: "all",
@@ -145,7 +144,6 @@ function ClientDashboardpage() {
     }
     return preset;
   };
-
   const datePickerSx = useMemo(() => ({
     width: "100%",
     "& .MuiInputBase-root": {
@@ -155,52 +153,40 @@ function ClientDashboardpage() {
       fontSize: "16px" 
     },
   }), []);
-
   const setSelectedBrandImmediate=(brands)=>{
     setSelectedBrand(brands)
     setSelectedBrandFilter(brands.map(b=>b.id))
   }
-
-  // Optimized date change handlers with useCallback
   const handleStartDateChangeOptimized = useCallback((newValue) => {
     setStartDate(newValue);
     if (endDate && newValue && newValue.isAfter(endDate)) {
       setEndDate(null);
     }
   }, [endDate]);
-
   const handleEndDateChangeOptimized = useCallback((newValue) => {
     setEndDate(newValue);
   }, []);
-
-  // Optimized date effect with startTransition
   useEffect(() => {
     if (!startDate || !endDate) return;
-    
     const timer = setTimeout(() => {
       startTransition(() => {
         const formattedStart = startDate.format('YYYY-MM-DD');
         const formattedEnd = endDate.format('YYYY-MM-DD');
-        
         setAppliedStartDate(formattedStart);
         setAppliedEndDate(formattedEnd);
         setAppliedStartDateHelium(startDate);
         setAppliedEndDateHelium(endDate);
         setAppliedPreset('');
-        
         setActiveFilters(prev => {
           const filtered = prev.filter(f => f.type !== 'date' && f.type !== 'preset');
           const dateLabel = `${startDate.format("MMM D, YYYY")} - ${endDate.format("MMM D, YYYY")}`;
           return [...filtered, { type: 'date', value: 'customDate', label: dateLabel }];
         });
-        
         setIsFiltering(true);
       });
     }, 500);
-
     return () => clearTimeout(timer);
   }, [startDate, endDate]);
-
   const continents = ["US", "UK"];
   const [value, setValue] = useState([dayjs().subtract(6, "day"), dayjs()]);
   const [selectedPreset, setSelectedPreset] = useState("Today");
@@ -298,8 +284,6 @@ function ClientDashboardpage() {
       setSelectedPreset("");
     }
   }, [startDate, endDate]);
-
-  // Debounced filter updates
   useEffect(() => {
     const timer = setTimeout(() => {
       setSelectedManufacturerFilter(selectedManufacturer);
@@ -307,10 +291,8 @@ function ClientDashboardpage() {
       setSelectedBrandFilter(brand_id);
       setIsFiltering(true);
     }, 300);
-    
     return () => clearTimeout(timer);
   }, [selectedManufacturer, mergedProducts, brand_id]);
-
   useEffect(() => {
     if (befePreset || selectedPreset) {
       setStartDate(null);
@@ -473,7 +455,6 @@ function ClientDashboardpage() {
       setIsLoading(false);
     }
   };
-
   const fetchSkuList = async (searchText = "") => {
     setIsLoading(true);
     try {
@@ -645,8 +626,6 @@ function ClientDashboardpage() {
       updateActiveFilters("manufacturer", manufacturer, manufacturer, true);
     }
   };
-  
-
   const updateMergedProducts = (asinList, skuList) => {
     const merged = [...skuList, ...asinList];
     const uniqueById = Array.from(
@@ -675,7 +654,6 @@ function ClientDashboardpage() {
   const handleEndDateChange = (newValue) => {
     setEndDate(newValue);
   };
-  
   const handleClearFilter = () => {
     setSelectedCategory({ id: "all", name: "All Channels" });
     setFilterFinal({ id: "all", name: "All Channels" });
@@ -798,7 +776,6 @@ function ClientDashboardpage() {
               return [...filtered,...brandFilters]
             })
             }}
-            
             brandList={brandList}
             inputValueBrand={inputValueBrand}
             setInputValueBrand={setInputValueBrand}
@@ -810,7 +787,6 @@ function ClientDashboardpage() {
             label="Brands"
           />
         </Box>
-
         <Box sx={{ width: "140px" }}>
           <Autocomplete
             multiple
@@ -843,7 +819,6 @@ function ClientDashboardpage() {
                 return [...filtered,...skuFilters]
               })
               updateMergedProducts(selectedAsin, newValue);
-
             }}
             renderTags={() => null}
             noOptionsText={inputValueSku ? "No options" : ""}
@@ -891,7 +866,6 @@ function ClientDashboardpage() {
             }}
           />
         </Box>
-
          <Box>
                     <Button
                       variant="outlined"
@@ -1014,7 +988,6 @@ function ClientDashboardpage() {
                       ))
                     )}
                   </Menu>
-
         <Box sx={{ width: "150px" }}>
           <Autocomplete
             multiple
@@ -1047,7 +1020,6 @@ function ClientDashboardpage() {
                 return [...filtered,...asinFilters]
               })
                updateMergedProducts(newValue, selectedSku);
-
             }}
             renderTags={() => null}
             renderOption={(props, option) => {
@@ -1093,7 +1065,6 @@ function ClientDashboardpage() {
             }}
           />
         </Box>
-
         <Box sx={{ width: "130px" }}>
           <FormControl size="small" sx={{ width: "110%" }}>
             <InputLabel>Preset</InputLabel>
@@ -1115,7 +1086,6 @@ function ClientDashboardpage() {
             </Select>
           </FormControl>
         </Box>
-
         <Box sx={{ width: "130px", ml: 2 }}>
           <LocalizationProvider dateAdapter={AdapterDayjs}>
             <DatePicker
@@ -1134,7 +1104,6 @@ function ClientDashboardpage() {
             />
           </LocalizationProvider>
         </Box>
-
         <Box sx={{ width: "130px" }}>
           <LocalizationProvider dateAdapter={AdapterDayjs}>
             <DatePicker
@@ -1154,8 +1123,7 @@ function ClientDashboardpage() {
             />
           </LocalizationProvider>
         </Box>
-
-        <Box sx={{ display: "flex", gap: 1, flexShrink: 0 }}>
+        <Box sx={{ display: "flex", gap: 1, flexShrink: 0,position:'relative',right:0 }}>
           <Tooltip title="Reset" arrow>
             <Button
               onClick={handleClearFilter}
@@ -1176,7 +1144,6 @@ function ClientDashboardpage() {
       </Box>
     </Grid>
   </Grid>
-
   {activeFilters.length > 0 && (
     <Box
       sx={{
@@ -1280,7 +1247,6 @@ function ClientDashboardpage() {
               DateEndDate={appliedEndDate}
             />
           </Grid>
-        
         <Grid item xs={12} sm={12}>
           <PeriodComparission
             country={selectedCountry}
@@ -1293,52 +1259,7 @@ function ClientDashboardpage() {
             fulfillment_channel={selectedFulfillment}
           />
         </Grid>
-        <Grid item xs={12} sm={12}>
-          <MetricCard
-            country={selectedCountry}
-            startDate={appliedStartDateHelium}
-            endDate={appliedEndDateHelium}
-            widgetData={appliedPreset}
-            marketPlaceId={
-              selectedCategory === "all" ? selectedCategory : filterFinal
-            }
-            brand_id={selectedBrandFilter}
-            product_id={mergedProductsFilter}
-            manufacturer_name={selectedManufacturerFilter}
-            fulfillment_channel={selectedFulfillment}
-            DateStartDate={appliedStartDate}
-            DateEndDate={appliedEndDate}
-          />
-        </Grid>
-        <Grid item xs={12} sm={12}>
-          <ProductPerformanceContainer
-            country={selectedCountry}
-            userId={userIds}
-            marketPlaceId={
-              selectedCategory === "all" ? selectedCategory : filterFinal
-            }
-            brand_id={selectedBrandFilter}
-            product_id={mergedProductsFilter}
-            manufacturer_name={selectedManufacturerFilter}
-            fulfillment_channel={selectedFulfillment}
-            DateStartDate={appliedStartDate}
-            DateEndDate={appliedEndDate}
-          />
-          <Grid
-            item
-            xs={12}
-            sm={12}
-            sx={{ width: "100%", borderRadius: "2px" }}
-          >
-            <Box
-              sx={{
-                padding: "16px",
-              }}
-            >
-              <InsightCategory />
-            </Box>
-          </Grid>
-         <Grid container spacing={2}>
+        <Grid container spacing={2}>
           <Grid
             item
             xs={12}
@@ -1503,6 +1424,51 @@ function ClientDashboardpage() {
             </Box>
           </Grid>
         </Grid>
+        <Grid item xs={12} sm={12}>
+          <MetricCard
+            country={selectedCountry}
+            startDate={appliedStartDateHelium}
+            endDate={appliedEndDateHelium}
+            widgetData={appliedPreset}
+            marketPlaceId={
+              selectedCategory === "all" ? selectedCategory : filterFinal
+            }
+            brand_id={selectedBrandFilter}
+            product_id={mergedProductsFilter}
+            manufacturer_name={selectedManufacturerFilter}
+            fulfillment_channel={selectedFulfillment}
+            DateStartDate={appliedStartDate}
+            DateEndDate={appliedEndDate}
+          />
+        </Grid>
+        <Grid item xs={12} sm={12}>
+          <ProductPerformanceContainer
+            country={selectedCountry}
+            userId={userIds}
+            marketPlaceId={
+              selectedCategory === "all" ? selectedCategory : filterFinal
+            }
+            brand_id={selectedBrandFilter}
+            product_id={mergedProductsFilter}
+            manufacturer_name={selectedManufacturerFilter}
+            fulfillment_channel={selectedFulfillment}
+            DateStartDate={appliedStartDate}
+            DateEndDate={appliedEndDate}
+          />
+          <Grid
+            item
+            xs={12}
+            sm={12}
+            sx={{ width: "100%", borderRadius: "2px" }}
+          >
+            <Box
+              sx={{
+                padding: "16px",
+              }}
+            >
+              <InsightCategory />
+            </Box>
+          </Grid>
           <Grid item xs={12} sm={12}>
             <MyProductList
             country={selectedCountry}

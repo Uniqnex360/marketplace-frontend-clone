@@ -748,7 +748,7 @@ const ProfitAndLoss = ({
                   + Add Note
                 </Button>
               )} */}
-              <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+              {/* <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
                 <Typography
                   variant="body2"
                   sx={{ fontSize: { xs: "12px", sm: "14px" }, lineHeight: 1 }}
@@ -760,7 +760,7 @@ const ProfitAndLoss = ({
                   onChange={() => setEvents(!events)}
                   size="small"
                 />
-              </Box>
+              </Box> */}
               <Box>
                 <IconButton
                   aria-label="download"

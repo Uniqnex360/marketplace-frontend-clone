@@ -140,7 +140,7 @@ const CardComponent = ({
     percentage,
   }) => {
     const RADIAN = Math.PI / 180;
-    const radius = outerRadius + 40;
+    const radius = outerRadius + (outerRadius * 0.3)
     const x = cx + radius * Math.cos(-midAngle * RADIAN);
     const y = cy + radius * Math.sin(-midAngle * RADIAN);
     return (
@@ -181,7 +181,7 @@ const CardComponent = ({
         textAnchor="middle"
         dominantBaseline="central"
         style={{
-          fontSize: "14px",
+          fontSize: "12px",
           fontWeight: 600,
           fontFamily: fontStyles.fontFamily,
         }}

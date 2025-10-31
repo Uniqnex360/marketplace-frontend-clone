@@ -1093,7 +1093,7 @@ const CompareChart = ({
                 width={isMobile ? "100%" : "auto"}
                 mt={isMobile ? 1 : 0}
               >
-                <Typography
+                {/* <Typography
                   variant="body2"
                   sx={{ 
                     fontSize: isMobile ? "12px" : "14px", 
@@ -1106,7 +1106,7 @@ const CompareChart = ({
                   checked={events}
                   onChange={() => setEvents(!events)}
                   size="small"
-                />
+                /> */}
                 {/* {events && (
                   <Button
                     variant="outlined"
