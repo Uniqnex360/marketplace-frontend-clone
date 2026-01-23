@@ -332,28 +332,24 @@ function ClientDashboardpage() {
     case "brand":
       const updatedBrands = selectedBrand.filter((b) => b.id !== filter.value);
       setSelectedBrand(updatedBrands);
-      // MISSING: Update the filter state immediately
       setSelectedBrandFilter(updatedBrands.map(b => b.id));
       break;
       
     case "sku":
       const updatedSkus = selectedSku.filter((s) => s.id !== filter.value);
       setSelectedSku(updatedSkus);
-      // MISSING: Update merged products immediately
       updateMergedProducts(selectedAsin, updatedSkus);
       break;
       
     case "manufacturer":
       const updatedManufacturers = selectedManufacturer.filter((m) => m !== filter.value);
       setSelectedManufacturer(updatedManufacturers);
-      // MISSING: Update the filter state immediately
       setSelectedManufacturerFilter(updatedManufacturers);
       break;
       
     case "asin":
       const updatedAsins = selectedAsin.filter((a) => a.id !== filter.value);
       setSelectedAsin(updatedAsins);
-      // MISSING: Update merged products immediately
       updateMergedProducts(updatedAsins, selectedSku);
       break;
       
@@ -361,7 +357,6 @@ function ClientDashboardpage() {
       if (filter.value === selectedCategory.id) {
         const newCategory = { id: "all", name: "All Channels" };
         setSelectedCategory(newCategory);
-        // MISSING: Update filterFinal too
         setFilterFinal(newCategory);
       }
       break;
@@ -373,9 +368,7 @@ function ClientDashboardpage() {
     case "preset":
       setSelectedPreset("Today");
       setBefePreset("Today");
-      // MISSING: Update applied preset
       setAppliedPreset("Today");
-      // MISSING: Reset dates to default
       setStartDateHelium(dayjs().subtract(7, "day"));
       setEndDateHelium(dayjs());
       setAppliedStartDateHelium(dayjs().subtract(7, "day"));
@@ -387,7 +380,6 @@ function ClientDashboardpage() {
       setEndDate(null);
       setAppliedEndDate(null);
       setAppliedStartDate(null);
-      // MISSING: Reset to default preset
       setAppliedStartDateHelium(dayjs().subtract(7, "day"));
       setAppliedEndDateHelium(dayjs());
       setSelectedPreset("Today");
@@ -399,7 +391,6 @@ function ClientDashboardpage() {
       break;
   }
   
-  // MISSING: Force component updates
   setIsFiltering(true);
 };
   const updateActiveFilters = (type, value, label, isAdd = true) => {
