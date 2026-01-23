@@ -306,6 +306,7 @@ function ClientDashboardpage() {
     }
   }, [enhancedCategories, marketplaceLoading]);
   const handleRemoveFilter = (filter) => {
+    handleClearFilter()
     updateActiveFilters(filter.type, filter.value, filter.label, false);
     switch (filter.type) {
       case "brand":
@@ -1168,6 +1169,7 @@ function ClientDashboardpage() {
           key={`${filter.type}-${filter.value}-${index}`}
           label={`${filter.type.charAt(0).toUpperCase() + filter.type.slice(1)}: ${filter.label}`}
           onDelete={() => handleRemoveFilter(filter)}
+          
           size="small"
           sx={{
             fontWeight: 500,
