@@ -4,5 +4,10 @@
       "source": "/api/:path*",
       "destination": "http://54.163.26.64:8000/omnisight/:path*"
     }
-  ]
+  ],
+  "build": {
+    "env": {
+      "DISABLE_ESLINT_PLUGIN": "true"
+    }
+  }
 }

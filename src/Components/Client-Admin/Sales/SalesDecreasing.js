@@ -3,8 +3,6 @@ import axios from 'axios';
 import dayjs from 'dayjs';
 import {
     Box,
-    Card,
-    CardContent,
     Typography,
     Table,
     TableBody,

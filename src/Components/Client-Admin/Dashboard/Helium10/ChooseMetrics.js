@@ -12,7 +12,6 @@ import IndeterminateCheckBoxIcon from "@mui/icons-material/IndeterminateCheckBox
 import CheckBoxIcon from "@mui/icons-material/CheckBox";
 import CheckBoxOutlineBlankIcon from "@mui/icons-material/CheckBoxOutlineBlank";
 import axios from "axios";
-import moment from "moment";
 const metricMap = {
   gross_revenue: "Gross Revenue",
   total_cogs: "COGS",
