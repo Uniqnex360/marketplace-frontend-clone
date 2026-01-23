@@ -1,4 +1,11 @@
-import React, { useState, useEffect, useRef, useCallback, useMemo, startTransition } from "react";
+import React, {
+  useState,
+  useEffect,
+  useRef,
+  useCallback,
+  useMemo,
+  startTransition,
+} from "react";
 import {
   Box,
   Grid,
@@ -144,25 +151,31 @@ function ClientDashboardpage() {
     }
     return preset;
   };
-  const datePickerSx = useMemo(() => ({
-    width: "100%",
-    "& .MuiInputBase-root": {
-      height: 40,
+  const datePickerSx = useMemo(
+    () => ({
+      width: "100%",
+      "& .MuiInputBase-root": {
+        height: 40,
+      },
+      "& .MuiInputLabel-root": {
+        fontSize: "16px",
+      },
+    }),
+    []
+  );
+  const setSelectedBrandImmediate = (brands) => {
+    setSelectedBrand(brands);
+    setSelectedBrandFilter(brands.map((b) => b.id));
+  };
+  const handleStartDateChangeOptimized = useCallback(
+    (newValue) => {
+      setStartDate(newValue);
+      if (endDate && newValue && newValue.isAfter(endDate)) {
+        setEndDate(null);
+      }
     },
-    "& .MuiInputLabel-root": { 
-      fontSize: "16px" 
-    },
-  }), []);
-  const setSelectedBrandImmediate=(brands)=>{
-    setSelectedBrand(brands)
-    setSelectedBrandFilter(brands.map(b=>b.id))
-  }
-  const handleStartDateChangeOptimized = useCallback((newValue) => {
-    setStartDate(newValue);
-    if (endDate && newValue && newValue.isAfter(endDate)) {
-      setEndDate(null);
-    }
-  }, [endDate]);
+    [endDate]
+  );
   const handleEndDateChangeOptimized = useCallback((newValue) => {
     setEndDate(newValue);
   }, []);
@@ -170,17 +183,24 @@ function ClientDashboardpage() {
     if (!startDate || !endDate) return;
     const timer = setTimeout(() => {
       startTransition(() => {
-        const formattedStart = startDate.format('YYYY-MM-DD');
-        const formattedEnd = endDate.format('YYYY-MM-DD');
+        const formattedStart = startDate.format("YYYY-MM-DD");
+        const formattedEnd = endDate.format("YYYY-MM-DD");
         setAppliedStartDate(formattedStart);
         setAppliedEndDate(formattedEnd);
         setAppliedStartDateHelium(startDate);
         setAppliedEndDateHelium(endDate);
-        setAppliedPreset('');
-        setActiveFilters(prev => {
-          const filtered = prev.filter(f => f.type !== 'date' && f.type !== 'preset');
-          const dateLabel = `${startDate.format("MMM D, YYYY")} - ${endDate.format("MMM D, YYYY")}`;
-          return [...filtered, { type: 'date', value: 'customDate', label: dateLabel }];
+        setAppliedPreset("");
+        setActiveFilters((prev) => {
+          const filtered = prev.filter(
+            (f) => f.type !== "date" && f.type !== "preset"
+          );
+          const dateLabel = `${startDate.format(
+            "MMM D, YYYY"
+          )} - ${endDate.format("MMM D, YYYY")}`;
+          return [
+            ...filtered,
+            { type: "date", value: "customDate", label: dateLabel },
+          ];
         });
         setIsFiltering(true);
       });
@@ -306,45 +326,82 @@ function ClientDashboardpage() {
     }
   }, [enhancedCategories, marketplaceLoading]);
   const handleRemoveFilter = (filter) => {
-    handleClearFilter()
-    updateActiveFilters(filter.type, filter.value, filter.label, false);
-    switch (filter.type) {
-      case "brand":
-        setSelectedBrand((prev) => prev.filter((b) => b.id !== filter.value));
-        break;
-      case "sku":
-        setSelectedSku((prev) => prev.filter((s) => s.id !== filter.value));
-        break;
-      case "manufacturer":
-        setSelectedManufacturer((prev) =>
-          prev.filter((m) => m.id !== filter.value)
-        );
-        break;
-      case "asin":
-        setSelectedAsin((prev) => prev.filter((a) => a.id !== filter.value));
-        break;
-      case "channel":
-        if (filter.value === selectedCategory.id) {
-          setSelectedCategory({ id: "all", name: "All Channels" });
-        }
-        break;
-      case "country":
-        setSelectedCountry("");
-        break;
-      case "preset":
-        setSelectedPreset("Today");
-        setBefePreset("Today");
-        break;
-      case "date":
-        setStartDate(null);
-        setEndDate(null);
-        setAppliedEndDate(null);
-        setAppliedStartDate(null);
-        break;
-      default:
-        break;
-    }
-  };
+  updateActiveFilters(filter.type, filter.value, filter.label, false);
+  
+  switch (filter.type) {
+    case "brand":
+      const updatedBrands = selectedBrand.filter((b) => b.id !== filter.value);
+      setSelectedBrand(updatedBrands);
+      // MISSING: Update the filter state immediately
+      setSelectedBrandFilter(updatedBrands.map(b => b.id));
+      break;
+      
+    case "sku":
+      const updatedSkus = selectedSku.filter((s) => s.id !== filter.value);
+      setSelectedSku(updatedSkus);
+      // MISSING: Update merged products immediately
+      updateMergedProducts(selectedAsin, updatedSkus);
+      break;
+      
+    case "manufacturer":
+      const updatedManufacturers = selectedManufacturer.filter((m) => m !== filter.value);
+      setSelectedManufacturer(updatedManufacturers);
+      // MISSING: Update the filter state immediately
+      setSelectedManufacturerFilter(updatedManufacturers);
+      break;
+      
+    case "asin":
+      const updatedAsins = selectedAsin.filter((a) => a.id !== filter.value);
+      setSelectedAsin(updatedAsins);
+      // MISSING: Update merged products immediately
+      updateMergedProducts(updatedAsins, selectedSku);
+      break;
+      
+    case "channel":
+      if (filter.value === selectedCategory.id) {
+        const newCategory = { id: "all", name: "All Channels" };
+        setSelectedCategory(newCategory);
+        // MISSING: Update filterFinal too
+        setFilterFinal(newCategory);
+      }
+      break;
+      
+    case "country":
+      setSelectedCountry("");
+      break;
+      
+    case "preset":
+      setSelectedPreset("Today");
+      setBefePreset("Today");
+      // MISSING: Update applied preset
+      setAppliedPreset("Today");
+      // MISSING: Reset dates to default
+      setStartDateHelium(dayjs().subtract(7, "day"));
+      setEndDateHelium(dayjs());
+      setAppliedStartDateHelium(dayjs().subtract(7, "day"));
+      setAppliedEndDateHelium(dayjs());
+      break;
+      
+    case "date":
+      setStartDate(null);
+      setEndDate(null);
+      setAppliedEndDate(null);
+      setAppliedStartDate(null);
+      // MISSING: Reset to default preset
+      setAppliedStartDateHelium(dayjs().subtract(7, "day"));
+      setAppliedEndDateHelium(dayjs());
+      setSelectedPreset("Today");
+      setBefePreset("Today");
+      setAppliedPreset("Today");
+      break;
+      
+    default:
+      break;
+  }
+  
+  // MISSING: Force component updates
+  setIsFiltering(true);
+};
   const updateActiveFilters = (type, value, label, isAdd = true) => {
     setActiveFilters((prevFilters) => {
       if (isAdd) {
@@ -535,8 +592,8 @@ function ClientDashboardpage() {
       );
     }
     setSelectedCategory(category);
-    setFilterFinal(category); 
-    setIsFiltering(true); 
+    setFilterFinal(category);
+    setIsFiltering(true);
     if (category.id !== "all") {
       updateActiveFilters("channel", category.id, category.name, true);
     }
@@ -635,8 +692,7 @@ function ClientDashboardpage() {
     productuniqueById = uniqueById.map((item) => item.id);
     setMergedProducts(productuniqueById);
   };
-  useEffect(() => {
-  }, [mergedProducts, selectedFulfillment]);
+  useEffect(() => {}, [mergedProducts, selectedFulfillment]);
   const handleCategoryChange = (event) => {
     const selectedName = event.target.value;
     const selectedCategoryObject = categories.find(
@@ -710,164 +766,175 @@ function ClientDashboardpage() {
       >
         <Grid item xs={12}>
           <Box
-  sx={{
-    width: "100%",
-    backgroundColor: "#ffff",
-    height: "auto",
-    marginLeft: "-8px",
-    marginTop: "5%",
-    position: "fixed",
-    display: "flex",
-    flexDirection: "column",
-    top: 0,
-    zIndex: 1100,
-    backgroundColor: "#fff",
-    paddingY: 1,
-  }}
->
-  <Grid container spacing={2} className="dashboard-filter">
-    <Grid
-      item
-      xs={12}
-      className="category-select-container"
-      sx={{
-        paddingBottom: "10px",
-        backgroundColor: "#fff",
-        display: "flex",
-        justifyContent: "space-between",
-        alignItems: "center",
-        px: 2,
-        gap: 2,
-      }}
-    >
-      <Box
-        sx={{
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "center",
-          gap: 1,
-          flexWrap: "nowrap",
-          flex: 1,
-        }}
-      >
-             <Box sx={{ width: "180px" }}>
-  <CountrySelector
-    selectedCountry={selectedCountry}
-    onCountryChange={(country) => {
-      setSelectedCountry(country);
-      setActiveFilters(prev => {
-        const filtered = prev.filter(f => f.type !== 'country');
-        return [...filtered, { type: 'country', value: country, label: country }];
-      });
-    }}
-  />
-</Box>
-       <Box sx={{ width: "190px" }}>
-          <BrandSelector
-            selectedBrand={selectedBrand}
-            setSelectedBrand={(brands)=>{
-              setSelectedBrand(brands)
-              setActiveFilters(prev=>{
-              const filtered=prev.filter(f=>f.type!=='brand')
-              const brandFilters=brands.map(brand=>({
-                type:"brand",
-                value:brand.id,
-                label:brand.name
-              }))
-              return [...filtered,...brandFilters]
-            })
-            }}
-            brandList={brandList}
-            inputValueBrand={inputValueBrand}
-            setInputValueBrand={setInputValueBrand}
-            brandLimit={brandLimit}
-            setBrandLimit={setBrandLimit}
-            isLoading={isLoading}
-            hasMore={hasMore}
-            toggleSelection={toggleSelection}
-            label="Brands"
-          />
-        </Box>
-        <Box sx={{ width: "140px" }}>
-          <Autocomplete
-            multiple
-            disableCloseOnSelect
-            options={[
-              ...selectedSku,
-              ...skuList.filter(
-                (s) => !selectedSku.some((ss) => ss.id === s.id)
-              ),
-            ]}
-            getOptionLabel={(option) =>
-              typeof option === "string" ? option : option.sku
-            }
-            isOptionEqualToValue={(option, value) => option.id === value.id}
-            inputValue={inputValueSku}
-            onInputChange={(e, newInputValue) => {
-              setInputValueSku(newInputValue);
-              setSkuLimit(11);
-            }}
-            value={selectedSku}
-            onChange={(event, newValue) => {
-              setSelectedSku(newValue)
-              setActiveFilters(prev=>{
-                const filtered=prev.filter(f=>f.type!=='sku')
-                const skuFilters=newValue.map(sku=>({
-                  type:'sku',
-                  value:sku.id,
-                  label:sku.sku
-                }))
-                return [...filtered,...skuFilters]
-              })
-              updateMergedProducts(selectedAsin, newValue);
-            }}
-            renderTags={() => null}
-            noOptionsText={inputValueSku ? "No options" : ""}
-            renderOption={(props, option) => {
-              const isSelected = selectedSku.some((s) => s.id === option.id);
-              return (
-                <Box
-                  component="li"
-                  {...props}
-                  onClick={() => toggleSelectionSKU(option)}
-                  sx={{
-                    backgroundColor: isSelected
-                      ? "#b6d5f3 !important"
-                      : "transparent",
-                    fontSize: 13,
-                    cursor: "pointer",
-                  }}
-                  key={option.id}
-                >
-                  {option.sku}
-                </Box>
-              );
-            }}
-            renderInput={(params) => (
-              <TextField
-                {...params}
-                label="SKU"
-                size="small"
-                placeholder="Search SKU..."
-                InputProps={{
-                  ...params.InputProps,
-                  endAdornment: <>{params.InputProps.endAdornment}</>,
-                }}
-              />
-            )}
             sx={{
-              "& .MuiInputBase-root": {
-                height: 40,
-                fontSize: 14,
-                width: 140,
-              },
-              "& input": {
-                fontSize: 13,
-              },
+              width: "100%",
+              backgroundColor: "#ffff",
+              height: "auto",
+              marginLeft: "-8px",
+              marginTop: "5%",
+              position: "fixed",
+              display: "flex",
+              flexDirection: "column",
+              top: 0,
+              zIndex: 1100,
+              backgroundColor: "#fff",
+              paddingY: 1,
             }}
-          />
-        </Box>
-         <Box>
+          >
+            <Grid container spacing={2} className="dashboard-filter">
+              <Grid
+                item
+                xs={12}
+                className="category-select-container"
+                sx={{
+                  paddingBottom: "10px",
+                  backgroundColor: "#fff",
+                  display: "flex",
+                  justifyContent: "space-between",
+                  alignItems: "center",
+                  px: 2,
+                  gap: 2,
+                }}
+              >
+                <Box
+                  sx={{
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    gap: 1,
+                    flexWrap: "nowrap",
+                    flex: 1,
+                  }}
+                >
+                  <Box sx={{ width: "180px" }}>
+                    <CountrySelector
+                      selectedCountry={selectedCountry}
+                      onCountryChange={(country) => {
+                        setSelectedCountry(country);
+                        setActiveFilters((prev) => {
+                          const filtered = prev.filter(
+                            (f) => f.type !== "country"
+                          );
+                          return [
+                            ...filtered,
+                            { type: "country", value: country, label: country },
+                          ];
+                        });
+                      }}
+                    />
+                  </Box>
+                  <Box sx={{ width: "190px" }}>
+                    <BrandSelector
+                      selectedBrand={selectedBrand}
+                      setSelectedBrand={(brands) => {
+                        setSelectedBrand(brands);
+                        setActiveFilters((prev) => {
+                          const filtered = prev.filter(
+                            (f) => f.type !== "brand"
+                          );
+                          const brandFilters = brands.map((brand) => ({
+                            type: "brand",
+                            value: brand.id,
+                            label: brand.name,
+                          }));
+                          return [...filtered, ...brandFilters];
+                        });
+                      }}
+                      brandList={brandList}
+                      inputValueBrand={inputValueBrand}
+                      setInputValueBrand={setInputValueBrand}
+                      brandLimit={brandLimit}
+                      setBrandLimit={setBrandLimit}
+                      isLoading={isLoading}
+                      hasMore={hasMore}
+                      toggleSelection={toggleSelection}
+                      label="Brands"
+                    />
+                  </Box>
+                  <Box sx={{ width: "140px" }}>
+                    <Autocomplete
+                      multiple
+                      disableCloseOnSelect
+                      options={[
+                        ...selectedSku,
+                        ...skuList.filter(
+                          (s) => !selectedSku.some((ss) => ss.id === s.id)
+                        ),
+                      ]}
+                      getOptionLabel={(option) =>
+                        typeof option === "string" ? option : option.sku
+                      }
+                      isOptionEqualToValue={(option, value) =>
+                        option.id === value.id
+                      }
+                      inputValue={inputValueSku}
+                      onInputChange={(e, newInputValue) => {
+                        setInputValueSku(newInputValue);
+                        setSkuLimit(11);
+                      }}
+                      value={selectedSku}
+                      onChange={(event, newValue) => {
+                        setSelectedSku(newValue);
+                        setActiveFilters((prev) => {
+                          const filtered = prev.filter((f) => f.type !== "sku");
+                          const skuFilters = newValue.map((sku) => ({
+                            type: "sku",
+                            value: sku.id,
+                            label: sku.sku,
+                          }));
+                          return [...filtered, ...skuFilters];
+                        });
+                        updateMergedProducts(selectedAsin, newValue);
+                      }}
+                      renderTags={() => null}
+                      noOptionsText={inputValueSku ? "No options" : ""}
+                      renderOption={(props, option) => {
+                        const isSelected = selectedSku.some(
+                          (s) => s.id === option.id
+                        );
+                        return (
+                          <Box
+                            component="li"
+                            {...props}
+                            onClick={() => toggleSelectionSKU(option)}
+                            sx={{
+                              backgroundColor: isSelected
+                                ? "#b6d5f3 !important"
+                                : "transparent",
+                              fontSize: 13,
+                              cursor: "pointer",
+                            }}
+                            key={option.id}
+                          >
+                            {option.sku}
+                          </Box>
+                        );
+                      }}
+                      renderInput={(params) => (
+                        <TextField
+                          {...params}
+                          label="SKU"
+                          size="small"
+                          placeholder="Search SKU..."
+                          InputProps={{
+                            ...params.InputProps,
+                            endAdornment: <>{params.InputProps.endAdornment}</>,
+                          }}
+                        />
+                      )}
+                      sx={{
+                        "& .MuiInputBase-root": {
+                          height: 40,
+                          fontSize: 14,
+                          width: 140,
+                        },
+                        "& input": {
+                          fontSize: 13,
+                        },
+                      }}
+                    />
+                  </Box>
+                  <Box>
                     <Button
                       variant="outlined"
                       onClick={handleMenuOpen}
@@ -989,207 +1056,222 @@ function ClientDashboardpage() {
                       ))
                     )}
                   </Menu>
-        <Box sx={{ width: "150px" }}>
-          <Autocomplete
-            multiple
-            disableCloseOnSelect
-            freeSolo
-            options={[
-              ...selectedAsin,
-              ...asinList.filter(
-                (a) => !selectedAsin.some((sa) => sa.id === a.id)
-              ),
-            ]}
-            getOptionLabel={(option) =>
-              typeof option === "string" ? option : option.Asin
-            }
-            isOptionEqualToValue={(option, value) => option.id === value.id}
-            inputValue={inputValueAsin}
-            onInputChange={(e, newInputValue) =>
-              setInputValueAsin(newInputValue)
-            }
-            value={selectedAsin}
-            onChange={(event,newValue) => {
-              setSelectedAsin(newValue)
-              setActiveFilters(prev=>{
-                const filtered=prev.filter(f=>f.type!=='asin')
-                const asinFilters=newValue.map(asin=>({
-                  type:"asin",
-                  value:asin.id,
-                  label:asin.Asin
-                }))
-                return [...filtered,...asinFilters]
-              })
-               updateMergedProducts(newValue, selectedSku);
-            }}
-            renderTags={() => null}
-            renderOption={(props, option) => {
-              const isSelected = selectedAsin.some((s) => s.id === option.id);
-              return (
-                <Box
-                  component="li"
-                  {...props}
-                  onClick={() => toggleSelectionAsin(option)}
+                  <Box sx={{ width: "150px" }}>
+                    <Autocomplete
+                      multiple
+                      disableCloseOnSelect
+                      freeSolo
+                      options={[
+                        ...selectedAsin,
+                        ...asinList.filter(
+                          (a) => !selectedAsin.some((sa) => sa.id === a.id)
+                        ),
+                      ]}
+                      getOptionLabel={(option) =>
+                        typeof option === "string" ? option : option.Asin
+                      }
+                      isOptionEqualToValue={(option, value) =>
+                        option.id === value.id
+                      }
+                      inputValue={inputValueAsin}
+                      onInputChange={(e, newInputValue) =>
+                        setInputValueAsin(newInputValue)
+                      }
+                      value={selectedAsin}
+                      onChange={(event, newValue) => {
+                        setSelectedAsin(newValue);
+                        setActiveFilters((prev) => {
+                          const filtered = prev.filter(
+                            (f) => f.type !== "asin"
+                          );
+                          const asinFilters = newValue.map((asin) => ({
+                            type: "asin",
+                            value: asin.id,
+                            label: asin.Asin,
+                          }));
+                          return [...filtered, ...asinFilters];
+                        });
+                        updateMergedProducts(newValue, selectedSku);
+                      }}
+                      renderTags={() => null}
+                      renderOption={(props, option) => {
+                        const isSelected = selectedAsin.some(
+                          (s) => s.id === option.id
+                        );
+                        return (
+                          <Box
+                            component="li"
+                            {...props}
+                            onClick={() => toggleSelectionAsin(option)}
+                            sx={{
+                              backgroundColor: isSelected
+                                ? "#b6d5f3 !important"
+                                : "transparent",
+                              fontSize: 13,
+                              cursor: "pointer",
+                            }}
+                          >
+                            {option.Asin}
+                          </Box>
+                        );
+                      }}
+                      renderInput={(params) => (
+                        <TextField
+                          {...params}
+                          label="Product ID"
+                          size="small"
+                          placeholder="Search ASIN..."
+                          InputProps={{
+                            ...params.InputProps,
+                            endAdornment: <>{params.InputProps.endAdornment}</>,
+                          }}
+                        />
+                      )}
+                      sx={{
+                        "& .MuiInputBase-root": {
+                          height: 40,
+                          fontSize: 14,
+                          width: 150,
+                        },
+                        "& input": {
+                          fontSize: 13,
+                        },
+                      }}
+                    />
+                  </Box>
+                  <Box sx={{ width: "130px" }}>
+                    <FormControl size="small" sx={{ width: "110%" }}>
+                      <InputLabel>Preset</InputLabel>
+                      <Select
+                        value={selectedPreset}
+                        label="Preset"
+                        onChange={(e) => {
+                          setSelectedPreset(e.target.value);
+                          handlePresetSelectHelium(e.target.value);
+                          setBefePreset(e.target.value);
+                          setAppliedPreset(e.target.value);
+                        }}
+                      >
+                        {presets.map((preset) => (
+                          <MenuItem key={preset} value={preset}>
+                            {getPresetDisplayLabel(preset)}
+                          </MenuItem>
+                        ))}
+                      </Select>
+                    </FormControl>
+                  </Box>
+                  <Box sx={{ width: "130px", ml: 2 }}>
+                    <LocalizationProvider dateAdapter={AdapterDayjs}>
+                      <DatePicker
+                        label="Start Date"
+                        value={startDate}
+                        onChange={handleStartDateChangeOptimized}
+                        format="DD/MM/YYYY"
+                        disableFuture
+                        maxDate={endDate || dayjs()}
+                        slotProps={{
+                          textField: {
+                            size: "small",
+                            sx: datePickerSx,
+                          },
+                        }}
+                      />
+                    </LocalizationProvider>
+                  </Box>
+                  <Box sx={{ width: "130px" }}>
+                    <LocalizationProvider dateAdapter={AdapterDayjs}>
+                      <DatePicker
+                        label="End Date"
+                        value={endDate}
+                        onChange={handleEndDateChangeOptimized}
+                        format="DD/MM/YYYY"
+                        disableFuture
+                        minDate={startDate}
+                        disabled={!startDate}
+                        slotProps={{
+                          textField: {
+                            size: "small",
+                            sx: datePickerSx,
+                          },
+                        }}
+                      />
+                    </LocalizationProvider>
+                  </Box>
+                  <Box
+                    sx={{
+                      display: "flex",
+                      gap: 1,
+                      flexShrink: 0,
+                      position: "relative",
+                      right: 0,
+                    }}
+                  >
+                    <Tooltip title="Reset" arrow>
+                      <Button
+                        onClick={handleClearFilter}
+                        variant="outlined"
+                        sx={{
+                          backgroundColor: "#000080",
+                          minWidth: "auto",
+                          padding: "8px",
+                          "&:hover": {
+                            backgroundColor: "darkblue",
+                          },
+                        }}
+                      >
+                        <Refresh sx={{ color: "white", fontSize: "19px" }} />
+                      </Button>
+                    </Tooltip>
+                  </Box>
+                </Box>
+              </Grid>
+            </Grid>
+            {activeFilters.length > 0 && (
+              <Box
+                sx={{
+                  display: "flex",
+                  width: "88%",
+                  flexWrap: "wrap",
+                  alignItems: "center",
+                  gap: 1,
+                  p: 1.5,
+                  border: "1px solid #e0e0e0",
+                  borderRadius: "8px",
+                  backgroundColor: "#f9f9f9",
+                  mx: 2,
+                  mt: 2,
+                }}
+              >
+                <Typography variant="body2" sx={{ fontWeight: "bold", mr: 1 }}>
+                  Active Filters:
+                </Typography>
+                {activeFilters.map((filter, index) => (
+                  <Chip
+                    key={`${filter.type}-${filter.value}-${index}`}
+                    label={`${
+                      filter.type.charAt(0).toUpperCase() + filter.type.slice(1)
+                    }: ${filter.label}`}
+                    onDelete={() => handleRemoveFilter(filter)}
+                    size="small"
+                    sx={{
+                      fontWeight: 500,
+                    }}
+                  />
+                ))}
+                <Button
+                  variant="text"
+                  size="small"
+                  onClick={handleClearFilter}
                   sx={{
-                    backgroundColor: isSelected
-                      ? "#b6d5f3 !important"
-                      : "transparent",
-                    fontSize: 13,
-                    cursor: "pointer",
+                    ml: "auto",
+                    textTransform: "none",
                   }}
                 >
-                  {option.Asin}
-                </Box>
-              );
-            }}
-            renderInput={(params) => (
-              <TextField
-                {...params}
-                label="Product ID"
-                size="small"
-                placeholder="Search ASIN..."
-                InputProps={{
-                  ...params.InputProps,
-                  endAdornment: <>{params.InputProps.endAdornment}</>,
-                }}
-              />
+                  Clear All
+                </Button>
+              </Box>
             )}
-            sx={{
-              "& .MuiInputBase-root": {
-                height: 40,
-                fontSize: 14,
-                width: 150,
-              },
-              "& input": {
-                fontSize: 13,
-              },
-            }}
-          />
-        </Box>
-        <Box sx={{ width: "130px" }}>
-          <FormControl size="small" sx={{ width: "110%" }}>
-            <InputLabel>Preset</InputLabel>
-            <Select
-              value={selectedPreset}
-              label="Preset"
-              onChange={(e) => {
-                setSelectedPreset(e.target.value);
-                handlePresetSelectHelium(e.target.value);
-                setBefePreset(e.target.value)
-                setAppliedPreset(e.target.value)
-              }}
-            >
-              {presets.map((preset) => (
-                <MenuItem key={preset} value={preset}>
-                  {getPresetDisplayLabel(preset)}
-                </MenuItem>
-              ))}
-            </Select>
-          </FormControl>
-        </Box>
-        <Box sx={{ width: "130px", ml: 2 }}>
-          <LocalizationProvider dateAdapter={AdapterDayjs}>
-            <DatePicker
-              label="Start Date"
-              value={startDate}
-              onChange={handleStartDateChangeOptimized}
-              format="DD/MM/YYYY"
-              disableFuture
-              maxDate={endDate || dayjs()}
-              slotProps={{
-                textField: {
-                  size: "small",
-                  sx: datePickerSx
-                }
-              }}
-            />
-          </LocalizationProvider>
-        </Box>
-        <Box sx={{ width: "130px" }}>
-          <LocalizationProvider dateAdapter={AdapterDayjs}>
-            <DatePicker
-              label="End Date"
-              value={endDate}
-              onChange={handleEndDateChangeOptimized}
-              format="DD/MM/YYYY"
-              disableFuture
-              minDate={startDate}
-              disabled={!startDate}
-              slotProps={{
-                textField: {
-                  size: "small",
-                  sx: datePickerSx
-                }
-              }}
-            />
-          </LocalizationProvider>
-        </Box>
-        <Box sx={{ display: "flex", gap: 1, flexShrink: 0,position:'relative',right:0 }}>
-          <Tooltip title="Reset" arrow>
-            <Button
-              onClick={handleClearFilter}
-              variant="outlined"
-              sx={{
-                backgroundColor: "#000080",
-                minWidth: "auto",
-                padding: "8px",
-                "&:hover": {
-                  backgroundColor: "darkblue",
-                },
-              }}
-            >
-              <Refresh sx={{ color: "white", fontSize: "19px" }} />
-            </Button>
-          </Tooltip>
-        </Box>
-      </Box>
-    </Grid>
-  </Grid>
-  {activeFilters.length > 0 && (
-    <Box
-      sx={{
-        display: "flex",
-        width:'88%',
-        flexWrap: "wrap",
-        alignItems: "center",
-        gap: 1,
-        p: 1.5,
-        border: "1px solid #e0e0e0",
-        borderRadius: "8px",
-        backgroundColor: "#f9f9f9",
-        mx: 2,
-        mt: 2,
-      }}
-    >
-      <Typography variant="body2" sx={{ fontWeight: "bold", mr: 1 }}>
-        Active Filters:
-      </Typography>
-      {activeFilters.map((filter, index) => (
-        <Chip
-          key={`${filter.type}-${filter.value}-${index}`}
-          label={`${filter.type.charAt(0).toUpperCase() + filter.type.slice(1)}: ${filter.label}`}
-          onDelete={() => handleRemoveFilter(filter)}
-          
-          size="small"
-          sx={{
-            fontWeight: 500,
-          }}
-        />
-      ))}
-      <Button
-        variant="text"
-        size="small"
-        onClick={handleClearFilter}
-        sx={{
-          ml: "auto",
-          textTransform: "none",
-        }}
-      >
-        Clear All
-      </Button>
-    </Box>
-  )}
-</Box>
+          </Box>
         </Grid>
         <Grid
           item
@@ -1200,8 +1282,7 @@ function ClientDashboardpage() {
             pl: "16px !important",
             pr: "16px !important",
           }}
-        >
-        </Grid>
+        ></Grid>
         <Grid item xs={12} sm={12} sx={{ marginTop: "0%" }}>
           <TestCard
             country={selectedCountry}
@@ -1219,36 +1300,36 @@ function ClientDashboardpage() {
             DateEndDate={appliedEndDate}
           />
         </Grid>
-         <Grid item xs={12} sm={12} sx={{ width: "99%" }}>
-            <AllMarketplace
-              country={selectedCountry}
-              widgetData={appliedPreset}
-              marketPlaceId={
-                selectedCategory === "all" ? selectedCategory : filterFinal
-              }
-              brand_id={selectedBrandFilter}
-              product_id={mergedProductsFilter}
-              manufacturer_name={selectedManufacturerFilter}
-              fulfillment_channel={selectedFulfillment}
-              DateStartDate={appliedStartDate}
-              DateEndDate={appliedEndDate}
-            />
-          </Grid>
-          <Grid item xs={12} sm={12} sx={{ width: "99%" }}>
-            <ProfitAndLoss
-              country={selectedCountry}
-              widgetData={appliedPreset}
-              marketPlaceId={
-                selectedCategory == "all" ? selectedCategory : filterFinal
-              }
-              brand_id={selectedBrandFilter}
-              fulfillment_channel={selectedFulfillment}
-              manufacturer_name={selectedManufacturerFilter}
-              product_id={mergedProductsFilter}
-              DateStartDate={appliedStartDate}
-              DateEndDate={appliedEndDate}
-            />
-          </Grid>
+        <Grid item xs={12} sm={12} sx={{ width: "99%" }}>
+          <AllMarketplace
+            country={selectedCountry}
+            widgetData={appliedPreset}
+            marketPlaceId={
+              selectedCategory === "all" ? selectedCategory : filterFinal
+            }
+            brand_id={selectedBrandFilter}
+            product_id={mergedProductsFilter}
+            manufacturer_name={selectedManufacturerFilter}
+            fulfillment_channel={selectedFulfillment}
+            DateStartDate={appliedStartDate}
+            DateEndDate={appliedEndDate}
+          />
+        </Grid>
+        <Grid item xs={12} sm={12} sx={{ width: "99%" }}>
+          <ProfitAndLoss
+            country={selectedCountry}
+            widgetData={appliedPreset}
+            marketPlaceId={
+              selectedCategory == "all" ? selectedCategory : filterFinal
+            }
+            brand_id={selectedBrandFilter}
+            fulfillment_channel={selectedFulfillment}
+            manufacturer_name={selectedManufacturerFilter}
+            product_id={mergedProductsFilter}
+            DateStartDate={appliedStartDate}
+            DateEndDate={appliedEndDate}
+          />
+        </Grid>
         <Grid item xs={12} sm={12}>
           <PeriodComparission
             country={selectedCountry}
@@ -1287,73 +1368,90 @@ function ClientDashboardpage() {
                 }}
               >
                 <Tabs
-                value={tab}
-                onChange={(e, newValue) => setTab(newValue)}
-                variant="fullWidth"
-                sx={{
-                  minHeight: 0,
-                  width: "100%",
-                  "& .MuiTabs-indicator": { display: "none" },
-                }}
-              >
-                {[
-                  {
-                    label: "Revenue",
-                    icon: <BarChartOutlined sx={{ fontSize: { xs: 16, sm: 20 } }} />,
-                  },
-                  {
-                    label: "Top Products",
-                    icon: <EmojiEventsOutlined sx={{ fontSize: { xs: 16, sm: 20 } }} />,
-                  },
-                  {
-                    label: "Total Sales",
-                    icon: <AttachMoneyOutlined sx={{ fontSize: { xs: 16, sm: 20 } }} />,
-                  },
-                  {
-                    label: "Latest Orders",
-                    icon: <ShoppingCartOutlined sx={{ fontSize: { xs: 16, sm: 20 } }} />,
-                  },
-                ].map((item, index) => (
-                  <Tab
-                    key={item.label}
-                    icon={item.icon}
-                    iconPosition="start"
-                    label={
-                      <Typography
-                        sx={{
-                          fontSize: { xs: "11px", sm: "12px", md: "14px" },
-                          fontFamily:
-                            "'Nunito Sans', -apple-system, 'Segoe UI', 'Roboto', 'Helvetica Neue', 'Arial', sans-serif",
-                          fontWeight: tab === index ? 600 : "normal",
-                          display: { xs: "none", sm: "block" },
-                        }}
-                      >
-                        {item.label}
-                      </Typography>
-                    }
-                    sx={{
-                      textTransform: "none",
-                      minHeight: { xs: 24, sm: 26 },
-                      minWidth: { xs: "auto", sm: "unset" },
-                      px: { xs: 0.5, sm: 0.8, md: 1.2 },
-                      mx: { xs: 0.2, sm: 0.3, md: 0.4 },
-                      fontSize: { xs: "11px", sm: "12px", md: "14px" },
-                      borderRadius: { xs: "12px", sm: "14px", md: "16px" },
-                      color: "#2b2f3c",
-                      backgroundColor: tab === index ? "#fff" : "transparent",
-                      "&.Mui-selected": { color: "#000" },
-                      "&:hover": {
-                        backgroundColor: tab === index ? "#fff" : "rgb(166, 183, 201)",
-                      },
-                      "&:active": { backgroundColor: "rgb(103, 132, 162)" },
-                      "& .MuiTab-iconWrapper": {
-                        marginRight: { xs: 0, sm: "6px" },
-                        marginBottom: { xs: 0, sm: "0 !important" },
-                      },
-                    }}
-                  />
-                ))}
-              </Tabs>
+                  value={tab}
+                  onChange={(e, newValue) => setTab(newValue)}
+                  variant="fullWidth"
+                  sx={{
+                    minHeight: 0,
+                    width: "100%",
+                    "& .MuiTabs-indicator": { display: "none" },
+                  }}
+                >
+                  {[
+                    {
+                      label: "Revenue",
+                      icon: (
+                        <BarChartOutlined
+                          sx={{ fontSize: { xs: 16, sm: 20 } }}
+                        />
+                      ),
+                    },
+                    {
+                      label: "Top Products",
+                      icon: (
+                        <EmojiEventsOutlined
+                          sx={{ fontSize: { xs: 16, sm: 20 } }}
+                        />
+                      ),
+                    },
+                    {
+                      label: "Total Sales",
+                      icon: (
+                        <AttachMoneyOutlined
+                          sx={{ fontSize: { xs: 16, sm: 20 } }}
+                        />
+                      ),
+                    },
+                    {
+                      label: "Latest Orders",
+                      icon: (
+                        <ShoppingCartOutlined
+                          sx={{ fontSize: { xs: 16, sm: 20 } }}
+                        />
+                      ),
+                    },
+                  ].map((item, index) => (
+                    <Tab
+                      key={item.label}
+                      icon={item.icon}
+                      iconPosition="start"
+                      label={
+                        <Typography
+                          sx={{
+                            fontSize: { xs: "11px", sm: "12px", md: "14px" },
+                            fontFamily:
+                              "'Nunito Sans', -apple-system, 'Segoe UI', 'Roboto', 'Helvetica Neue', 'Arial', sans-serif",
+                            fontWeight: tab === index ? 600 : "normal",
+                            display: { xs: "none", sm: "block" },
+                          }}
+                        >
+                          {item.label}
+                        </Typography>
+                      }
+                      sx={{
+                        textTransform: "none",
+                        minHeight: { xs: 24, sm: 26 },
+                        minWidth: { xs: "auto", sm: "unset" },
+                        px: { xs: 0.5, sm: 0.8, md: 1.2 },
+                        mx: { xs: 0.2, sm: 0.3, md: 0.4 },
+                        fontSize: { xs: "11px", sm: "12px", md: "14px" },
+                        borderRadius: { xs: "12px", sm: "14px", md: "16px" },
+                        color: "#2b2f3c",
+                        backgroundColor: tab === index ? "#fff" : "transparent",
+                        "&.Mui-selected": { color: "#000" },
+                        "&:hover": {
+                          backgroundColor:
+                            tab === index ? "#fff" : "rgb(166, 183, 201)",
+                        },
+                        "&:active": { backgroundColor: "rgb(103, 132, 162)" },
+                        "& .MuiTab-iconWrapper": {
+                          marginRight: { xs: 0, sm: "6px" },
+                          marginBottom: { xs: 0, sm: "0 !important" },
+                        },
+                      }}
+                    />
+                  ))}
+                </Tabs>
               </Box>
               <Box>
                 {tab === 0 && (
@@ -1375,7 +1473,7 @@ function ClientDashboardpage() {
                 )}
                 {tab === 1 && (
                   <TopProducts
-                  country={selectedCountry}
+                    country={selectedCountry}
                     startDate={appliedStartDateHelium}
                     endDate={appliedEndDateHelium}
                     widgetData={appliedPreset}
@@ -1410,7 +1508,7 @@ function ClientDashboardpage() {
                 )}
                 {tab === 3 && (
                   <LastOrders
-                  country={selectedCountry}
+                    country={selectedCountry}
                     marketPlaceId={
                       selectedCategory === "all"
                         ? selectedCategory
@@ -1473,7 +1571,7 @@ function ClientDashboardpage() {
           </Grid>
           <Grid item xs={12} sm={12}>
             <MyProductList
-            country={selectedCountry}
+              country={selectedCountry}
               widgetData={appliedPreset}
               marketPlaceId={
                 selectedCategory == "all" ? selectedCategory : filterFinal
