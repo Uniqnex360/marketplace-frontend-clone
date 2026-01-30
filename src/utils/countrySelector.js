@@ -30,6 +30,7 @@ const CountrySelector = ({
     { code: 'US', name: 'United States' },
     { code: 'AU', name: 'Australia' },
     { code: 'UK', name: 'United Kingdom' },
+    {code:"UAE",name:"United Arab Emirates"}
   ];
 
   // Set default to US if no country is selected
