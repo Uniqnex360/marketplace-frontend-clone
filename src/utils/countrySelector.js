@@ -41,6 +41,7 @@ const CountrySelector = ({
       size={size}
       sx={{
         minWidth,
+        width: minWidth, 
         '& .MuiOutlinedInput-root': {
           backgroundColor: 'white',
           '& fieldset': { borderColor: '#cacaca' },
@@ -53,6 +54,7 @@ const CountrySelector = ({
         value={effectiveCountry}
         onChange={(e) => onCountryChange(e.target.value)}
         inputProps={{ 'aria-label': 'country select' }}
+        
       >
         {countries.map((country) => (
           <MenuItem key={country.code} value={country.code}>

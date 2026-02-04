@@ -679,7 +679,6 @@ const stableManufacturer = JSON.stringify(manufacturer_name);
           px: { xs: 1, sm: 2 },
         }}
       >
-        {/* Date Navigation */}
         <Box
           sx={{
             ...metricBlockStyle,
