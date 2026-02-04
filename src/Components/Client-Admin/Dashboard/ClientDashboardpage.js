@@ -87,7 +87,7 @@ function ClientDashboardpage() {
   const [tab, setTab] = React.useState(0);
   const [activeFilters, setActiveFilters] = useState([]);
   const [startDateHelium, setStartDateHelium] = useState(
-    dayjs().subtract(7, "day")
+    dayjs().subtract(7, "day"),
   );
   const [endDateHelium, setEndDateHelium] = useState(dayjs());
   localStorage.removeItem("selectedCategory");
@@ -96,7 +96,7 @@ function ClientDashboardpage() {
   const [manufacturerList, setManufacturerList] = useState([]);
   const [selectedManufacturer, setSelectedManufacturer] = useState([]);
   const [selectedManufacturerFilter, setSelectedManufacturerFilter] = useState(
-    []
+    [],
   );
   const [skuList, setSkuList] = useState([]);
   const [selectedSku, setSelectedSku] = useState([]);
@@ -161,7 +161,7 @@ function ClientDashboardpage() {
         fontSize: "16px",
       },
     }),
-    []
+    [],
   );
   const setSelectedBrandImmediate = (brands) => {
     setSelectedBrand(brands);
@@ -174,7 +174,7 @@ function ClientDashboardpage() {
         setEndDate(null);
       }
     },
-    [endDate]
+    [endDate],
   );
   const handleEndDateChangeOptimized = useCallback((newValue) => {
     setEndDate(newValue);
@@ -192,10 +192,10 @@ function ClientDashboardpage() {
         setAppliedPreset("");
         setActiveFilters((prev) => {
           const filtered = prev.filter(
-            (f) => f.type !== "date" && f.type !== "preset"
+            (f) => f.type !== "date" && f.type !== "preset",
           );
           const dateLabel = `${startDate.format(
-            "MMM D, YYYY"
+            "MMM D, YYYY",
           )} - ${endDate.format("MMM D, YYYY")}`;
           return [
             ...filtered,
@@ -326,78 +326,82 @@ function ClientDashboardpage() {
     }
   }, [enhancedCategories, marketplaceLoading]);
   const handleRemoveFilter = (filter) => {
-  updateActiveFilters(filter.type, filter.value, filter.label, false);
-  
-  switch (filter.type) {
-    case "brand":
-      const updatedBrands = selectedBrand.filter((b) => b.id !== filter.value);
-      setSelectedBrand(updatedBrands);
-      setSelectedBrandFilter(updatedBrands.map(b => b.id));
-      break;
-      
-    case "sku":
-      const updatedSkus = selectedSku.filter((s) => s.id !== filter.value);
-      setSelectedSku(updatedSkus);
-      updateMergedProducts(selectedAsin, updatedSkus);
-      break;
-      
-    case "manufacturer":
-      const updatedManufacturers = selectedManufacturer.filter((m) => m !== filter.value);
-      setSelectedManufacturer(updatedManufacturers);
-      setSelectedManufacturerFilter(updatedManufacturers);
-      break;
-      
-    case "asin":
-      const updatedAsins = selectedAsin.filter((a) => a.id !== filter.value);
-      setSelectedAsin(updatedAsins);
-      updateMergedProducts(updatedAsins, selectedSku);
-      break;
-      
-    case "channel":
-      if (filter.value === selectedCategory.id) {
-        const newCategory = { id: "all", name: "All Channels" };
-        setSelectedCategory(newCategory);
-        setFilterFinal(newCategory);
-      }
-      break;
-      
-    case "country":
-      setSelectedCountry("");
-      break;
-      
-    case "preset":
-      setSelectedPreset("Today");
-      setBefePreset("Today");
-      setAppliedPreset("Today");
-      setStartDateHelium(dayjs().subtract(7, "day"));
-      setEndDateHelium(dayjs());
-      setAppliedStartDateHelium(dayjs().subtract(7, "day"));
-      setAppliedEndDateHelium(dayjs());
-      break;
-      
-    case "date":
-      setStartDate(null);
-      setEndDate(null);
-      setAppliedEndDate(null);
-      setAppliedStartDate(null);
-      setAppliedStartDateHelium(dayjs().subtract(7, "day"));
-      setAppliedEndDateHelium(dayjs());
-      setSelectedPreset("Today");
-      setBefePreset("Today");
-      setAppliedPreset("Today");
-      break;
-      
-    default:
-      break;
-  }
-  
-  setIsFiltering(true);
-};
+    updateActiveFilters(filter.type, filter.value, filter.label, false);
+
+    switch (filter.type) {
+      case "brand":
+        const updatedBrands = selectedBrand.filter(
+          (b) => b.id !== filter.value,
+        );
+        setSelectedBrand(updatedBrands);
+        setSelectedBrandFilter(updatedBrands.map((b) => b.id));
+        break;
+
+      case "sku":
+        const updatedSkus = selectedSku.filter((s) => s.id !== filter.value);
+        setSelectedSku(updatedSkus);
+        updateMergedProducts(selectedAsin, updatedSkus);
+        break;
+
+      case "manufacturer":
+        const updatedManufacturers = selectedManufacturer.filter(
+          (m) => m !== filter.value,
+        );
+        setSelectedManufacturer(updatedManufacturers);
+        setSelectedManufacturerFilter(updatedManufacturers);
+        break;
+
+      case "asin":
+        const updatedAsins = selectedAsin.filter((a) => a.id !== filter.value);
+        setSelectedAsin(updatedAsins);
+        updateMergedProducts(updatedAsins, selectedSku);
+        break;
+
+      case "channel":
+        if (filter.value === selectedCategory.id) {
+          const newCategory = { id: "all", name: "All Channels" };
+          setSelectedCategory(newCategory);
+          setFilterFinal(newCategory);
+        }
+        break;
+
+      case "country":
+        setSelectedCountry("");
+        break;
+
+      case "preset":
+        setSelectedPreset("Today");
+        setBefePreset("Today");
+        setAppliedPreset("Today");
+        setStartDateHelium(dayjs().subtract(7, "day"));
+        setEndDateHelium(dayjs());
+        setAppliedStartDateHelium(dayjs().subtract(7, "day"));
+        setAppliedEndDateHelium(dayjs());
+        break;
+
+      case "date":
+        setStartDate(null);
+        setEndDate(null);
+        setAppliedEndDate(null);
+        setAppliedStartDate(null);
+        setAppliedStartDateHelium(dayjs().subtract(7, "day"));
+        setAppliedEndDateHelium(dayjs());
+        setSelectedPreset("Today");
+        setBefePreset("Today");
+        setAppliedPreset("Today");
+        break;
+
+      default:
+        break;
+    }
+
+    setIsFiltering(true);
+  };
   const updateActiveFilters = (type, value, label, isAdd = true) => {
     setActiveFilters((prevFilters) => {
       if (isAdd) {
         const exists = prevFilters.some(
-          (filter) => filter.value === value && filter.type === type
+          (filter) => filter.value === value && filter.type === type,
         );
         if (!exists) {
           return [...prevFilters, { type, value, label }];
@@ -405,7 +409,7 @@ function ClientDashboardpage() {
         return prevFilters;
       } else {
         return prevFilters.filter(
-          (filter) => !(filter.value === value && filter.type === type)
+          (filter) => !(filter.value === value && filter.type === type),
         );
       }
     });
@@ -423,7 +427,7 @@ function ClientDashboardpage() {
           brand_id,
           sku_ids: selectedSku.map((s) => s.id),
           manufacturer_name: selectedManufacturer,
-        }
+        },
       );
       const items = response.data.data || [];
       setAsinList(items);
@@ -492,7 +496,7 @@ function ClientDashboardpage() {
             sku_ids: selectedSku.map((s) => s.id),
             limit: brandLimit,
           },
-        }
+        },
       );
       const names = response.data.data.brand_list || [];
       setBrandList(names);
@@ -517,7 +521,7 @@ function ClientDashboardpage() {
           brand_id,
           asin_ids: selectedAsin.map((a) => a.id),
           manufacturer_name: selectedManufacturer,
-        }
+        },
       );
       const names = response.data.data || [];
       setSkuList(names);
@@ -579,7 +583,7 @@ function ClientDashboardpage() {
         "channel",
         selectedCategory.id,
         selectedCategory.name,
-        false
+        false,
       );
     }
     setSelectedCategory(category);
@@ -591,7 +595,7 @@ function ClientDashboardpage() {
     handleMenuClose();
   };
   const [appliedStartDateHelium, setAppliedStartDateHelium] = useState(
-    dayjs().subtract(7, "day")
+    dayjs().subtract(7, "day"),
   );
   const [appliedEndDateHelium, setAppliedEndDateHelium] = useState(dayjs());
   const [appliedPreset, setAppliedPreset] = useState("Today");
@@ -667,7 +671,7 @@ function ClientDashboardpage() {
     const isSelected = selectedManufacturer.includes(manufacturer);
     if (isSelected) {
       setSelectedManufacturer((prev) =>
-        prev.filter((item) => item !== manufacturer)
+        prev.filter((item) => item !== manufacturer),
       );
       updateActiveFilters("manufacturer", manufacturer, manufacturer, false);
     } else {
@@ -678,7 +682,7 @@ function ClientDashboardpage() {
   const updateMergedProducts = (asinList, skuList) => {
     const merged = [...skuList, ...asinList];
     const uniqueById = Array.from(
-      new Map(merged.map((item) => [item.id, item])).values()
+      new Map(merged.map((item) => [item.id, item])).values(),
     );
     productuniqueById = uniqueById.map((item) => item.id);
     setMergedProducts(productuniqueById);
@@ -687,7 +691,7 @@ function ClientDashboardpage() {
   const handleCategoryChange = (event) => {
     const selectedName = event.target.value;
     const selectedCategoryObject = categories.find(
-      (category) => category.name === selectedName
+      (category) => category.name === selectedName,
     );
     if (selectedCategoryObject) {
       setSelectedCategory(selectedCategoryObject);
@@ -804,7 +808,7 @@ function ClientDashboardpage() {
                         setSelectedCountry(country);
                         setActiveFilters((prev) => {
                           const filtered = prev.filter(
-                            (f) => f.type !== "country"
+                            (f) => f.type !== "country",
                           );
                           return [
                             ...filtered,
@@ -821,7 +825,7 @@ function ClientDashboardpage() {
                         setSelectedBrand(brands);
                         setActiveFilters((prev) => {
                           const filtered = prev.filter(
-                            (f) => f.type !== "brand"
+                            (f) => f.type !== "brand",
                           );
                           const brandFilters = brands.map((brand) => ({
                             type: "brand",
@@ -849,7 +853,7 @@ function ClientDashboardpage() {
                       options={[
                         ...selectedSku,
                         ...skuList.filter(
-                          (s) => !selectedSku.some((ss) => ss.id === s.id)
+                          (s) => !selectedSku.some((ss) => ss.id === s.id),
                         ),
                       ]}
                       getOptionLabel={(option) =>
@@ -881,7 +885,7 @@ function ClientDashboardpage() {
                       noOptionsText={inputValueSku ? "No options" : ""}
                       renderOption={(props, option) => {
                         const isSelected = selectedSku.some(
-                          (s) => s.id === option.id
+                          (s) => s.id === option.id,
                         );
                         return (
                           <Box
@@ -1039,7 +1043,7 @@ function ClientDashboardpage() {
                                       {label}
                                     </MenuItem>
                                   );
-                                }
+                                },
                               )}
                             </Collapse>
                           )}
@@ -1055,7 +1059,7 @@ function ClientDashboardpage() {
                       options={[
                         ...selectedAsin,
                         ...asinList.filter(
-                          (a) => !selectedAsin.some((sa) => sa.id === a.id)
+                          (a) => !selectedAsin.some((sa) => sa.id === a.id),
                         ),
                       ]}
                       getOptionLabel={(option) =>
@@ -1073,7 +1077,7 @@ function ClientDashboardpage() {
                         setSelectedAsin(newValue);
                         setActiveFilters((prev) => {
                           const filtered = prev.filter(
-                            (f) => f.type !== "asin"
+                            (f) => f.type !== "asin",
                           );
                           const asinFilters = newValue.map((asin) => ({
                             type: "asin",
@@ -1087,7 +1091,7 @@ function ClientDashboardpage() {
                       renderTags={() => null}
                       renderOption={(props, option) => {
                         const isSelected = selectedAsin.some(
-                          (s) => s.id === option.id
+                          (s) => s.id === option.id,
                         );
                         return (
                           <Box
@@ -1179,12 +1183,18 @@ function ClientDashboardpage() {
                         disableFuture
                         minDate={startDate}
                         disabled={!startDate}
+                        openTo="day"
+                        views={["year", "month", "day"]}
                         slotProps={{
                           textField: {
                             size: "small",
                             sx: datePickerSx,
                           },
+                          calendarHeader: {
+                            defaultCalendarMonth: startDate,
+                          },
                         }}
+                        referenceDate={startDate || dayjs()}
                       />
                     </LocalizationProvider>
                   </Box>
