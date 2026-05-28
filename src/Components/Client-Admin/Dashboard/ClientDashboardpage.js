@@ -147,7 +147,8 @@ function ClientDashboardpage() {
   ];
   const getPresetDisplayLabel = (preset) => {
     if (preset === "Today") {
-      return "September 1";
+      // return "September 1";
+      return "Today"
     }
     return preset;
   };
