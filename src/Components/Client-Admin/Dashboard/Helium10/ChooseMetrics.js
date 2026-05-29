@@ -202,12 +202,13 @@ const ChooseMetrics = ({
       p={3}
       width="100%"
       maxWidth="500px"
-      sx={{ fontFamily: "'Nunito Sans', sans-serif" }}
+      sx={{ fontFamily: "'Nunito Sans', sans-serif", backgroundColor: "red" }}
     >
       <Box
         display="flex"
         justifyContent="space-between"
         alignItems="flex-start"
+        sx={{backgroundColor: "red"}}
       >
         <Box>
           <Typography

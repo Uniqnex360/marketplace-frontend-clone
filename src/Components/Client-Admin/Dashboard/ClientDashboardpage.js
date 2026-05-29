@@ -761,22 +761,6 @@ function ClientDashboardpage() {
         }}
       >
         <Grid item xs={12}>
-          <Box
-            sx={{
-              width: "100%",
-              backgroundColor: "#ffff",
-              height: "auto",
-              marginLeft: "-8px",
-              marginTop: "5%",
-              position: "fixed",
-              display: "flex",
-              flexDirection: "column",
-              top: 0,
-              zIndex: 1100,
-              backgroundColor: "#fff",
-              paddingY: 1,
-            }}
-          >
             <Grid container spacing={2} className="dashboard-filter">
               <Grid
                 item
@@ -792,6 +776,7 @@ function ClientDashboardpage() {
                   gap: 2,
                 }}
               >
+                {/* Filters */}
                 <Box
                   sx={{
                     display: "flex",
@@ -1273,7 +1258,6 @@ function ClientDashboardpage() {
                 </Button>
               </Box>
             )}
-          </Box>
         </Grid>
         <Grid
           item
@@ -1302,7 +1286,7 @@ function ClientDashboardpage() {
             DateEndDate={appliedEndDate}
           />
         </Grid>
-        <Grid item xs={12} sm={12} sx={{ width: "99%" }}>
+        {/* <Grid item xs={12} sm={12} sx={{ width: "99%" }}>
           <AllMarketplace
             country={selectedCountry}
             widgetData={appliedPreset}
@@ -1316,8 +1300,8 @@ function ClientDashboardpage() {
             DateStartDate={appliedStartDate}
             DateEndDate={appliedEndDate}
           />
-        </Grid>
-        <Grid item xs={12} sm={12} sx={{ width: "99%" }}>
+        </Grid> */}
+        {/* <Grid item xs={12} sm={12} sx={{ width: "99%" }}>
           <ProfitAndLoss
             country={selectedCountry}
             widgetData={appliedPreset}
@@ -1331,8 +1315,8 @@ function ClientDashboardpage() {
             DateStartDate={appliedStartDate}
             DateEndDate={appliedEndDate}
           />
-        </Grid>
-        <Grid item xs={12} sm={12}>
+        </Grid> */}
+        {/* <Grid item xs={12} sm={12}>
           <PeriodComparission
             country={selectedCountry}
             marketPlaceId={
@@ -1343,8 +1327,8 @@ function ClientDashboardpage() {
             manufacturer_name={selectedManufacturerFilter}
             fulfillment_channel={selectedFulfillment}
           />
-        </Grid>
-        <Grid container spacing={2}>
+        </Grid> */}
+        {/* <Grid container spacing={2}>
           <Grid
             item
             xs={12}
@@ -1525,8 +1509,8 @@ function ClientDashboardpage() {
               </Box>
             </Box>
           </Grid>
-        </Grid>
-        <Grid item xs={12} sm={12}>
+        </Grid> */}
+        {/* <Grid item xs={12} sm={12}>
           <MetricCard
             country={selectedCountry}
             startDate={appliedStartDateHelium}
@@ -1542,8 +1526,8 @@ function ClientDashboardpage() {
             DateStartDate={appliedStartDate}
             DateEndDate={appliedEndDate}
           />
-        </Grid>
-        <Grid item xs={12} sm={12}>
+        </Grid> */}
+        {/* <Grid item xs={12} sm={12}>
           <ProductPerformanceContainer
             country={selectedCountry}
             userId={userIds}
@@ -1586,7 +1570,7 @@ function ClientDashboardpage() {
               DateEndDate={appliedEndDate}
             />
           </Grid>
-        </Grid>
+        </Grid> */}
       </Grid>
     </Box>
   );

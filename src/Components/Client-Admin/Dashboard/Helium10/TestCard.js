@@ -137,6 +137,7 @@ const MetricItem = ({
     </Card>
   );
 };
+
 const TestCard = ({
   marketPlaceId,
   country,
@@ -226,8 +227,10 @@ const stableManufacturer = JSON.stringify(manufacturer_name);
     setDataLoading(true);
     const requestId = ++latestRequestRef.current;
     try {
+      const today = new Date();
+      const formattedDate = `${String(today.getDate()).padStart(2, "0")}/${String(today.getMonth() + 1).padStart(2, "0")}/${today.getFullYear()}`;
       const payload = {
-        target_date: "01/09/2025",
+        target_date: formattedDate,
         user_id: userId,
         country: country,
         preset: currentPreset,
