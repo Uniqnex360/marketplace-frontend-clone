@@ -159,7 +159,7 @@ const HeliumCard = () => {
     <Box
       sx={{
         border: '1px solid #e0e0e0',
-        borderRadius: 2,
+        borderRadius: 2,// 
         backgroundColor: '#fff',
         height: '60px', // 🔽 Reduced height
         width: '99%',
