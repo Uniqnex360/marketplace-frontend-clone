@@ -154,8 +154,8 @@ const TestCard = ({
   const isTablet = useMediaQuery(theme.breakpoints.between("sm", "md"));
   const isSmallScreen = useMediaQuery(theme.breakpoints.down("md"));
   const DayJStoday = dayjs().tz(TIMEZONE);
-  const formattedDate = DayJStoday.format("DD/MM/YYYY");
   const API_TODAY = dayjs("2026-05-27").tz(TIMEZONE);
+  const formattedDate = API_TODAY.format("DD/MM/YYYY");
   const stableBrandId = JSON.stringify(brand_id);
 const stableProductId = JSON.stringify(product_id);
 const stableManufacturer = JSON.stringify(manufacturer_name);
@@ -230,7 +230,7 @@ const stableManufacturer = JSON.stringify(manufacturer_name);
     const requestId = ++latestRequestRef.current;
     try {
       const payload = {
-        target_date: API_TODAY,
+        target_date: formattedDate,
         user_id: userId,
         country: country,
         preset: currentPreset,
