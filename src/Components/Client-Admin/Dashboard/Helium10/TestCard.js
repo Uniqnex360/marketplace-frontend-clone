@@ -153,7 +153,9 @@ const TestCard = ({
   const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
   const isTablet = useMediaQuery(theme.breakpoints.between("sm", "md"));
   const isSmallScreen = useMediaQuery(theme.breakpoints.down("md"));
-  const API_TODAY = dayjs("02/09/2025", "DD/MM/YYYY").tz(TIMEZONE);
+  const DayJStoday = dayjs().tz(TIMEZONE);
+  const formattedDate = DayJStoday.format("DD/MM/YYYY");
+  const API_TODAY = DayJStoday;
   const stableBrandId = JSON.stringify(brand_id);
 const stableProductId = JSON.stringify(product_id);
 const stableManufacturer = JSON.stringify(manufacturer_name);
@@ -227,8 +229,6 @@ const stableManufacturer = JSON.stringify(manufacturer_name);
     setDataLoading(true);
     const requestId = ++latestRequestRef.current;
     try {
-      const today = new Date();
-      const formattedDate = `${String(today.getDate()).padStart(2, "0")}/${String(today.getMonth() + 1).padStart(2, "0")}/${today.getFullYear()}`;
       const payload = {
         target_date: formattedDate,
         user_id: userId,
