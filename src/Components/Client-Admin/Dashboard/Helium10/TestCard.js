@@ -230,7 +230,7 @@ const stableManufacturer = JSON.stringify(manufacturer_name);
     const requestId = ++latestRequestRef.current;
     try {
       const payload = {
-        target_date: formattedDate,
+        target_date: API_TODAY,
         user_id: userId,
         country: country,
         preset: currentPreset,
