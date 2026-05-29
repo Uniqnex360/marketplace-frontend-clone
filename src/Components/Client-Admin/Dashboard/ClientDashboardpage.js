@@ -1269,7 +1269,7 @@ function ClientDashboardpage() {
             pr: "16px !important",
           }}
         ></Grid>
-        {/* <Grid item xs={12} sm={12} sx={{ marginTop: "0%" }}>
+        <Grid item xs={12} sm={12} sx={{ marginTop: "0%" }}>
           <TestCard
             country={selectedCountry}
             marketPlaceId={
@@ -1285,7 +1285,7 @@ function ClientDashboardpage() {
             DateStartDate={appliedStartDate}
             DateEndDate={appliedEndDate}
           />
-        </Grid> */}
+        </Grid>
         <Grid item xs={12} sm={12} sx={{ width: "99%" }}>
           <AllMarketplace
             country={selectedCountry}
