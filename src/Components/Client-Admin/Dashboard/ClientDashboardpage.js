@@ -5,6 +5,8 @@ import React, {
   useCallback,
   useMemo,
   startTransition,
+  Suspense,
+  lazy
 } from "react";
 import {
   Box,
@@ -46,7 +48,7 @@ import BarChartOutlined from "@mui/icons-material/BarChartOutlined";
 import EmojiEventsOutlined from "@mui/icons-material/EmojiEventsOutlined";
 import AttachMoneyOutlined from "@mui/icons-material/AttachMoneyOutlined";
 import ShoppingCartOutlined from "@mui/icons-material/ShoppingCartOutlined";
-import TestCard from "./Helium10/TestCard";
+// import TestCard from "./Helium10/TestCard";
 import MetricCard from "./CardComparission/MetricCard";
 import AllMarketplace from "./AllMarketplace/AllMarketplace";
 import ProfitAndLoss from "./ProfitAndLoss/ProfitAndLoss";
@@ -61,6 +63,7 @@ import { useMarketplace } from "../../../utils/MarketplaceProvider";
 import ProductPerformanceContainer from "../../../utils/SalesTrends";
 import { useEnhancedCategories } from "../../../utils/UseEnhancedCategories";
 import CountrySelector from "../../../utils/countrySelector";
+const TestCard = lazy(() => import("./Helium10/TestCard"));
 function ClientDashboardpage() {
   const [selectedCategory, setSelectedCategory] = useState({
     id: "all",
@@ -1270,21 +1273,21 @@ function ClientDashboardpage() {
           }}
         ></Grid>
         <Grid item xs={12} sm={12} sx={{ marginTop: "0%" }}>
-          <TestCard
-            country={selectedCountry}
-            marketPlaceId={
-              selectedCategory == "all" ? selectedCategory : filterFinal
-            }
-            startDate={appliedStartDateHelium}
-            endDate={appliedEndDateHelium}
-            widgetData={appliedPreset}
-            brand_id={selectedBrandFilter}
-            product_id={mergedProductsFilter}
-            manufacturer_name={selectedManufacturerFilter}
-            fulfillment_channel={selectedFulfillment}
-            DateStartDate={appliedStartDate}
-            DateEndDate={appliedEndDate}
-          />
+          <Suspense fallback={<div>Loading...</div>}>
+            <TestCard
+              country={selectedCountry}
+              marketPlaceId={selectedCategory == "all" ? selectedCategory : filterFinal}
+              startDate={appliedStartDateHelium}
+              endDate={appliedEndDateHelium}
+              widgetData={appliedPreset}
+              brand_id={selectedBrandFilter}
+              product_id={mergedProductsFilter}
+              manufacturer_name={selectedManufacturerFilter}
+              fulfillment_channel={selectedFulfillment}
+              DateStartDate={appliedStartDate}
+              DateEndDate={appliedEndDate}
+            />
+          </Suspense>
         </Grid>
         <Grid item xs={12} sm={12} sx={{ width: "99%" }}>
           <AllMarketplace

@@ -50,33 +50,38 @@ const MetricItem = ({
   const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
   const absValue = Math.abs(value ?? 0);
   const absChange = Math.abs(change ?? 0);
-  const displayValue = `${(value ?? 0) < 0 ? "-" : ""}${currencySymbol
-    ? `${currencySymbol}${Math.abs(value ?? 0).toLocaleString("en-US", {
-      minimumFractionDigits: 2,
-      maximumFractionDigits: 2,
-    })}`
-    : percentSymbol
-      ? `${Math.abs(value ?? 0)}%`
-      : new Intl.NumberFormat("en-US", {
-        minimumFractionDigits: 0,
-        maximumFractionDigits: 0,
-      }).format(Math.abs(value ?? 0))
+  const displayValue = `${(value ?? 0) < 0 ? "-" : ""}${
+    currencySymbol
+      ? `${currencySymbol}${Math.abs(value ?? 0).toLocaleString("en-US", {
+          minimumFractionDigits: 2,
+          maximumFractionDigits: 2,
+        })}`
+      : percentSymbol
+        ? `${Math.abs(value ?? 0)}%`
+        : new Intl.NumberFormat("en-US", {
+            minimumFractionDigits: 0,
+            maximumFractionDigits: 0,
+          }).format(Math.abs(value ?? 0))
   }`;
   const displayChange =
-  change !== undefined
-    ? `${change < 0 ? "-" : ""}${currencySymbol
-      ? `${currencySymbol}${Math.abs(change ?? 0).toLocaleString("en-US", {
-        minimumFractionDigits: 2,
-        maximumFractionDigits: 2,
-      })}`
-      : percentSymbol
-        ? `${Math.abs(change ?? 0)}%`
-        : new Intl.NumberFormat("en-US", {
-          minimumFractionDigits: 0,
-          maximumFractionDigits: 0,
-        }).format(Math.abs(change ?? 0))
-    }`
-    : "";
+    change !== undefined
+      ? `${change < 0 ? "-" : ""}${
+          currencySymbol
+            ? `${currencySymbol}${Math.abs(change ?? 0).toLocaleString(
+                "en-US",
+                {
+                  minimumFractionDigits: 2,
+                  maximumFractionDigits: 2,
+                },
+              )}`
+            : percentSymbol
+              ? `${Math.abs(change ?? 0)}%`
+              : new Intl.NumberFormat("en-US", {
+                  minimumFractionDigits: 0,
+                  maximumFractionDigits: 0,
+                }).format(Math.abs(change ?? 0))
+        }`
+      : "";
   return (
     <Card
       sx={{
@@ -157,8 +162,8 @@ const TestCard = ({
   const API_TODAY = dayjs("2026-05-27").tz(TIMEZONE);
   const formattedDate = API_TODAY.format("DD/MM/YYYY");
   const stableBrandId = JSON.stringify(brand_id);
-const stableProductId = JSON.stringify(product_id);
-const stableManufacturer = JSON.stringify(manufacturer_name);
+  const stableProductId = JSON.stringify(product_id);
+  const stableManufacturer = JSON.stringify(manufacturer_name);
   const [currentDates, setCurrentDates] = useState({
     selectedDate: API_TODAY,
     displayDate: API_TODAY,
@@ -200,7 +205,7 @@ const stableManufacturer = JSON.stringify(manufacturer_name);
     setVisibleMetrics((prev) =>
       prev.includes(metric)
         ? prev.filter((m) => m !== metric)
-        : [...prev, metric]
+        : [...prev, metric],
     );
   };
   const handleReset = () => setVisibleMetrics([]);
@@ -241,15 +246,28 @@ const stableManufacturer = JSON.stringify(manufacturer_name);
         fulfillment_channel: fulfillment_channel,
         timezone: TIMEZONE,
       };
-      if (DateStartDate && dayjs(DateStartDate).isValid()) {
+
+      // if (DateStartDate && dayjs(DateStartDate).isValid()) {
+      //   payload.start_date = dayjs(DateStartDate).format("DD/MM/YYYY");
+      // }
+      // if (DateEndDate && dayjs(DateEndDate).isValid()) {
+      //   payload.end_date = dayjs(DateEndDate).format("DD/MM/YYYY");
+      // }
+      if (
+        DateStartDate &&
+        dayjs(DateStartDate).isValid() &&
+        DateEndDate &&
+        dayjs(DateEndDate).isValid()
+      ) {
         payload.start_date = dayjs(DateStartDate).format("DD/MM/YYYY");
-      }
-      if (DateEndDate && dayjs(DateEndDate).isValid()) {
         payload.end_date = dayjs(DateEndDate).format("DD/MM/YYYY");
+      } else if (currentPreset === "Today") {
+        payload.start_date = "26/05/2026";
+        payload.end_date = "27/05/2026";
       }
       const response = await axios.post(
         `${process.env.REACT_APP_IP}get_metrics_by_date_range/`,
-        payload
+        payload,
       );
       if (requestId === latestRequestRef.current) {
         const data = response.data.data;
@@ -285,12 +303,12 @@ const stableManufacturer = JSON.stringify(manufacturer_name);
     DateStartDate,
     DateEndDate,
     displayDate,
-    selectedDate
+    selectedDate,
   ) => {
     const today = API_TODAY;
     if (DateStartDate && DateEndDate) {
       return `${dayjs(DateStartDate).format("MMMM D, YYYY")} - ${dayjs(
-        DateEndDate
+        DateEndDate,
       ).format("MMMM D, YYYY")}`;
     }
     switch (widgetData) {
@@ -304,7 +322,7 @@ const stableManufacturer = JSON.stringify(manufacturer_name);
           !displayDate.isSame(selectedDate, "day")
         ) {
           return `${displayDate.format("MMM DD")} - ${selectedDate.format(
-            "MMM DD"
+            "MMM DD",
           )}`;
         }
         return selectedDate.format(isMobile ? "MMM DD" : "ddd, MMM DD");
@@ -315,7 +333,7 @@ const stableManufacturer = JSON.stringify(manufacturer_name);
     DateStartDate,
     DateEndDate,
     displayDate,
-    selectedDate
+    selectedDate,
   ) => {
     const today = API_TODAY;
     if (DateStartDate && DateEndDate) return "Custom Date Range";
@@ -419,12 +437,12 @@ const stableManufacturer = JSON.stringify(manufacturer_name);
     });
     setCurrentPreset(widgetData);
   }, [widgetData, DateStartDate, DateEndDate]);
-  const currencySymbol=getCurrencySymbol(country)
+  const currencySymbol = getCurrencySymbol(country);
   const formatCurrency = (value) =>
-  `${currencySymbol}${(value ?? 0).toLocaleString("en-US", {
-    minimumFractionDigits: 2,
-    maximumFractionDigits: 2,
-  })}`;
+    `${currencySymbol}${(value ?? 0).toLocaleString("en-US", {
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 2,
+    })}`;
   const METRICS_CONFIG = {
     gross_revenue_without_tax: {
       title: "Gross Revenue (No Tax)",
@@ -432,8 +450,8 @@ const stableManufacturer = JSON.stringify(manufacturer_name);
         date.isSame(today, "day")
           ? `Yesterday: ${formatCurrency(prev)}`
           : `${date.subtract(1, "day").format("MMM DD")}: ${formatCurrency(
-            prev
-          )}`,
+              prev,
+            )}`,
       currencySymbol: currencySymbol,
     },
     gross_revenue_with_tax: {
@@ -442,8 +460,8 @@ const stableManufacturer = JSON.stringify(manufacturer_name);
         date.isSame(today, "day")
           ? `Yesterday: ${formatCurrency(prev)}`
           : `${date.subtract(1, "day").format("MMM DD")}: ${formatCurrency(
-            prev
-          )}`,
+              prev,
+            )}`,
       currencySymbol: currencySymbol,
     },
     total_orders: {
@@ -466,8 +484,8 @@ const stableManufacturer = JSON.stringify(manufacturer_name);
         date.isSame(today, "day")
           ? `Yesterday: ${formatCurrency(prev)}`
           : `${date.subtract(1, "day").format("MMM DD")}: ${formatCurrency(
-            prev
-          )}`,
+              prev,
+            )}`,
       currencySymbol: currencySymbol,
     },
     refund: {
@@ -483,8 +501,8 @@ const stableManufacturer = JSON.stringify(manufacturer_name);
         date.isSame(today, "day")
           ? `Yesterday: ${formatCurrency(prev)}`
           : `${date.subtract(1, "day").format("MMM DD")}: ${formatCurrency(
-            prev
-          )}`,
+              prev,
+            )}`,
       currencySymbol: currencySymbol,
     },
     net_profit: {
@@ -493,8 +511,8 @@ const stableManufacturer = JSON.stringify(manufacturer_name);
         date.isSame(today, "day")
           ? `Yesterday: ${formatCurrency(prev)}`
           : `${date.subtract(1, "day").format("MMM DD")}: ${formatCurrency(
-            prev
-          )}`,
+              prev,
+            )}`,
       currencySymbol: currencySymbol,
     },
     expenses: {
@@ -503,8 +521,8 @@ const stableManufacturer = JSON.stringify(manufacturer_name);
         date.isSame(today, "day")
           ? `Yesterday: ${formatCurrency(prev)}`
           : `${date.subtract(1, "day").format("MMM DD")}: ${formatCurrency(
-            prev
-          )}`,
+              prev,
+            )}`,
       currencySymbol: currencySymbol,
     },
     margin: {
@@ -521,8 +539,8 @@ const stableManufacturer = JSON.stringify(manufacturer_name);
         date.isSame(today, "day")
           ? `Yesterday: ${formatCurrency(prev)}`
           : `${date.subtract(1, "day").format("MMM DD")}: ${formatCurrency(
-            prev
-          )}`,
+              prev,
+            )}`,
       currencySymbol: currencySymbol,
     },
   };
@@ -620,499 +638,546 @@ const stableManufacturer = JSON.stringify(manufacturer_name);
     }));
   };
   const metricBlockStyle = {
-  display: "flex",
-  alignItems: "center",
-  justifyContent: "center",
-  borderBottom: "1px solid #e0e0e0",
-  py: { xs: 0.5, sm: 1 },
-  px: { xs: 1, sm: 2 },
-  boxSizing: "border-box",
-};
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
+    borderBottom: "1px solid #e0e0e0",
+    py: { xs: 0.5, sm: 1 },
+    px: { xs: 1, sm: 2 },
+    boxSizing: "border-box",
+  };
   return (
     <Box
-  sx={{
-    border: "1px solid #e0e0e0",
-    borderRadius: 2,
-    backgroundColor: "#fff",
-    width: { xs: "100%", sm: "99%" },
-    boxShadow: "0 2px 8px rgba(0, 0, 0, 0.05)",
-    py: 0.5,
-    mt: -5,
-  }}
->
-  {loading ? (
-    <Box
       sx={{
-        display: "flex",
-        justifyContent: "center",
-        alignItems: "center",
-        width: "100%",
+        border: "1px solid #e0e0e0",
+        borderRadius: 2,
+        backgroundColor: "#fff",
+        width: { xs: "100%", sm: "99%" },
+        boxShadow: "0 2px 8px rgba(0, 0, 0, 0.05)",
+        py: 0.5,
+        mt: -5,
       }}
     >
-      <SkeletonLoadingUI />
-    </Box>
-  ) : (
-    <>
-      <Box
-        sx={{
-          px: { xs: 1, sm: 2 },
-          py: { xs: 1, sm: 1.5 },
-          borderBottom: "1px solid #e0e0e0",
-          textAlign: "left",
-        }}
-      >
-        <Typography
-          variant="h6"
-          fontWeight="bold"
-          color="#020202ff"
-          sx={{
-            fontFamily: "'Nunito Sans', sans-serif",
-            fontSize: { xs: 16, sm: 18 },
-          }}
-        >
-          Executive Overview
-        </Typography>
-      </Box>
-      <Box
-        sx={{
-          display: "flex",
-          flexWrap: "wrap",
-          justifyContent: "center",
-          width: "100%",
-          px: { xs: 1, sm: 2 },
-        }}
-      >
+      {loading ? (
         <Box
           sx={{
-            ...metricBlockStyle,
-            borderRight: { xs: "none", sm: "1px solid #e0e0e0" },
-            borderLeft: "none",
-            flex: { xs: "1 1 100%", sm: "0 0 auto" },
-            minWidth: { xs: "100%", sm: "180px", md: "200px" },
+            display: "flex",
+            justifyContent: "center",
+            alignItems: "center",
+            width: "100%",
           }}
         >
-          <Box display="flex" alignItems="center" gap={1}>
-            <IconButton
-              size="small"
-              onClick={handlePrevious}
-              disabled={dataLoading}
-              sx={{ padding: { xs: "4px", sm: "8px" } }}
-            >
-              <ChevronLeft sx={{ fontSize: { xs: 18, sm: 24 } }} />
-            </IconButton>
-            <Tooltip
-              title={`${currentDates.displayDate.format(
-                "DD/MM/YYYY"
-              )} - ${currentDates.selectedDate.format("DD/MM/YYYY")}`}
-            >
-              <Box>
-                <Typography
-                  fontWeight="bold"
-                  sx={{
-                    color: "#485E75",
-                    fontFamily: "'Nunito Sans', sans-serif",
-                    fontSize: { xs: 12, sm: 14 },
-                    opacity: dataLoading ? 0.7 : 1,
-                  }}
-                >
-                  {getDisplayDateText(
-                    currentPreset,
-                    DateStartDate,
-                    DateEndDate,
-                    currentDates.displayDate,
-                    currentDates.selectedDate
-                  )}
-                  {dataLoading && (
-                    <span style={{ marginLeft: 8 }}>...</span>
-                  )}
-                </Typography>
-                <Box display="flex" justifyContent="center">
-                  <Typography
-                    variant="caption"
-                    color="text.secondary"
-                    sx={{
-                      display: "flex",
-                      alignItems: "center",
-                      justifyContent: "center",
-                      textAlign: "center",
-                      width: "100%",
-                      fontSize: { xs: 11, sm: 14 },
-                    }}
-                  >
-                    {getSubtitleText(
-                      currentPreset,
-                      DateStartDate,
-                      DateEndDate,
-                      currentDates.displayDate,
-                      currentDates.selectedDate
-                    )}
-                  </Typography>
-                </Box>
-              </Box>
-            </Tooltip>
-            {!currentDates.selectedDate.isSame(today, "day") && (
-              <IconButton
-                size="small"
-                onClick={handleNext}
-                disabled={dataLoading}
-                sx={{ padding: { xs: "4px", sm: "8px" } }}
-              >
-                <ChevronRight sx={{ fontSize: { xs: 18, sm: 24 } }} />
-              </IconButton>
-            )}
-          </Box>
+          <SkeletonLoadingUI />
         </Box>
-
-        {/* First Row Metrics */}
-        {/* Gross Revenue Without Tax */}
-        {visibleMetrics.includes("gross_revenue_without_tax") && (
-          <Box sx={{
-            ...metricBlockStyle,
-            flex: { xs: "1 1 calc(50% - 16px)", sm: "1 1 180px", md: "1 1 200px" },
-            minWidth: { xs: "calc(50% - 16px)", sm: "180px", md: "200px" },
-            maxWidth: { xs: "calc(50% - 16px)", sm: "180px", md: "200px" },
-          }}>
-            <MetricItem
-              title="Gross Revenue (No Tax)"
-              value={dataState.metrics.gross_revenue_without_tax}
-              change={dataState.difference.gross_revenue_without_tax}
-              isNegative={String(
-                dataState.difference.gross_revenue_without_tax
-              ).startsWith("-")}
-              tooltip={
-                currentDates.selectedDate.isSame(today, "day")
-                  ? `Yesterday: ${formatCurrency(
-                    dataState.previous.gross_revenue_without_tax
-                  )}`
-                  : `${currentDates.selectedDate
-                    .subtract(1, "day")
-                    .format("MMM DD")}: ${formatCurrency(
-                      dataState.previous.gross_revenue_without_tax
-                    )}`
-              }
-              currencySymbol={currencySymbol}
-              loading={dataLoading}
-            />
+      ) : (
+        <>
+          <Box
+            sx={{
+              px: { xs: 1, sm: 2 },
+              py: { xs: 1, sm: 1.5 },
+              borderBottom: "1px solid #e0e0e0",
+              textAlign: "left",
+            }}
+          >
+            <Typography
+              variant="h6"
+              fontWeight="bold"
+              color="#020202ff"
+              sx={{
+                fontFamily: "'Nunito Sans', sans-serif",
+                fontSize: { xs: 16, sm: 18 },
+              }}
+            >
+              Executive Overview
+            </Typography>
           </Box>
-        )}
-
-        {/* Gross Revenue With Tax */}
-        {visibleMetrics.includes("gross_revenue_with_tax") && (
-          <Box sx={{
-            ...metricBlockStyle,
-            flex: { xs: "1 1 calc(50% - 16px)", sm: "1 1 180px", md: "1 1 200px" },
-            minWidth: { xs: "calc(50% - 16px)", sm: "180px", md: "200px" },
-            maxWidth: { xs: "calc(50% - 16px)", sm: "180px", md: "200px" },
-          }}>
-            <MetricItem
-              title="Gross Revenue"
-              value={dataState.metrics.gross_revenue_with_tax}
-              change={dataState.difference.gross_revenue_with_tax}
-              isNegative={String(
-                dataState.difference.gross_revenue_with_tax
-              ).startsWith("-")}
-              tooltip={
-                currentDates.selectedDate.isSame(today, "day")
-                  ? `Yesterday: ${formatCurrency(
-                    dataState.previous.gross_revenue_with_tax
-                  )}`
-                  : `${currentDates.selectedDate
-                    .subtract(1, "day")
-                    .format("MMM DD")}: ${formatCurrency(
-                      dataState.previous.gross_revenue_with_tax
-                    )}`
-              }
-              currencySymbol={currencySymbol}
-              loading={dataLoading}
-            />
-          </Box>
-        )}
-
-        {/* Chart */}
-        {(visibleMetrics.includes("gross_revenue_without_tax") ||
-          visibleMetrics.includes("gross_revenue_with_tax")) && (
-            <Box sx={{ 
-              borderRight: { xs: "none", sm: "1px solid #e0e0e0" },
-              flex: { xs: "1 1 100%", sm: "1 1 280px", md: "1 1 300px" },
-              minWidth: { xs: "100%", sm: "280px", md: "300px" },
-              maxWidth: { xs: "100%", sm: "280px", md: "300px" },
-            }}>
-              <Box
-                ref={graphContainerRef}
-                sx={{
-                  ...metricBlockStyle,
-                  position: "relative",
-                  overflow: "visible",
-                  flexDirection: "column",
-                  opacity: dataLoading ? 0.6 : 1,
-                  height: "100%",
-                }}
-                onMouseLeave={(e) => {
-                  const rect = e.currentTarget.getBoundingClientRect();
-                  const x = e.clientX;
-                  const y = e.clientY;
-                  if (
-                    x < rect.left ||
-                    x > rect.right ||
-                    y < rect.top ||
-                    y > rect.bottom
-                  ) {
-                    setTimeout(() => setTooltipData(null), 100);
-                  }
-                }}
-              >
-                <Box
-                  sx={{
-                    width: "100%",
-                    height: { xs: 70, sm: 80 },
-                    position: "relative",
-                    overflow: "visible",
-                  }}
+          <Box
+            sx={{
+              display: "flex",
+              flexWrap: "wrap",
+              justifyContent: "center",
+              width: "100%",
+              px: { xs: 1, sm: 2 },
+            }}
+          >
+            <Box
+              sx={{
+                ...metricBlockStyle,
+                borderRight: { xs: "none", sm: "1px solid #e0e0e0" },
+                borderLeft: "none",
+                flex: { xs: "1 1 100%", sm: "0 0 auto" },
+                minWidth: { xs: "100%", sm: "180px", md: "200px" },
+              }}
+            >
+              <Box display="flex" alignItems="center" gap={1}>
+                <IconButton
+                  size="small"
+                  onClick={handlePrevious}
+                  disabled={dataLoading}
+                  sx={{ padding: { xs: "4px", sm: "8px" } }}
                 >
-                  <svg ref={svgRef} width="100%" height={isMobile ? 50 : 60}>
-                    {/* Grid lines */}
-                    {[20, 30, 40].map((y, idx) => (
-                      <line
-                        key={idx}
-                        x1="0"
-                        y1={y}
-                        x2="100%"
-                        y2={y}
-                        stroke="#eee"
-                        strokeWidth="1"
-                      />
-                    ))}
-                    {/* X-axis */}
-                    <line
-                      x1="0"
-                      y1={isMobile ? 46 : 48}
-                      x2="100%"
-                      y2={isMobile ? 46 : 48}
-                      stroke="#000"
-                      strokeWidth="1"
-                    />
-                    {!dataLoading && (
-                      <>
-                        {/* Revenue lines */}
-                        <polyline
-                          points={getGraphPoints("gross_revenue_without_tax")}
-                          style={{
-                            fill: "none",
-                            stroke: theme.palette.primary.main,
-                            strokeWidth: isMobile ? 1.5 : 2,
-                          }}
-                        />
-                        <polyline
-                          points={getGraphPoints("gross_revenue_with_tax")}
-                          style={{
-                            fill: "none",
-                            stroke: "#FF9800",
-                            strokeWidth: isMobile ? 1.5 : 2,
-                          }}
-                        />
-                        {getCirclePoints("gross_revenue_with_tax").map(
-                          (point, index) => (
-                            <circle
-                              key={`visible-with-tax-${index}`}
-                              cx={point.cx}
-                              cy={point.cy}
-                              r={isMobile ? 3 : 4}
-                              fill="#FF9800"
-                              stroke="white"
-                              strokeWidth="1.5"
-                              style={{
-                                pointerEvents: "none",
-                                transition: "r 0.2s ease",
-                              }}
-                            />
-                          )
-                        )}
-                        {/* Invisible larger circles for easier hovering - gross_revenue_with_tax */}
-                        {getCirclePoints("gross_revenue_with_tax").map(
-                          (point, index) => (
-                            <circle
-                              key={`hover-with-tax-${index}`}
-                              cx={point.cx}
-                              cy={point.cy}
-                              r={isMobile ? 8 : 10}
-                              fill="transparent"
-                              stroke="transparent"
-                              style={{
-                                pointerEvents: "all",
-                                cursor: "pointer",
-                              }}
-                              onMouseEnter={(e) => {
-                                e.stopPropagation();
-                                setTooltipData({ ...point, index });
-                              }}
-                              onMouseLeave={(e) => {
-                                e.stopPropagation();
-                                setTimeout(() => setTooltipData(null), 50);
-                              }}
-                            />
-                          )
-                        )}
-                        {/* Highlight circle when hovering */}
-                        {tooltipData && (
-                          <>
-                            <circle
-                              cx={tooltipData.cx}
-                              cy={tooltipData.cy}
-                              r={isMobile ? 6 : 8}
-                              fill="white"
-                              stroke={
-                                tooltipData.gross_revenue_with_tax
-                                  ? "#FF9800"
-                                  : theme.palette.primary.main
-                              }
-                              strokeWidth="2"
-                              style={{ pointerEvents: "none" }}
-                            />
-                            <circle
-                              cx={tooltipData.cx}
-                              cy={tooltipData.cy}
-                              r={isMobile ? 3 : 4}
-                              fill={
-                                tooltipData.gross_revenue_with_tax
-                                  ? "#FF9800"
-                                  : theme.palette.primary.main
-                              }
-                              style={{ pointerEvents: "none" }}
-                            />
-                          </>
-                        )}
-                      </>
-                    )}
-                  </svg>
-                  {/* Graph X-axis Dates */}
-                  {!dataLoading && (
-                    <Box
-                      sx={{
-                        position: "absolute",
-                        top: isMobile ? 42 : 52,
-                        left: 0,
-                        right: 0,
-                        display: "flex",
-                        justifyContent: "space-between",
-                        fontSize: { xs: 9, sm: 11 },
-                        color: "#555",
-                        px: 1,
-                        marginTop: "3px",
-                      }}
-                    >
-                      <span>{dataState.bindGraph[0]?.date}</span>
-                      <span>
-                        {
-                          dataState.bindGraph[dataState.bindGraph.length - 1]
-                            ?.date
-                        }
-                      </span>
-                    </Box>
-                  )}
-                  {dataLoading && (
-                    <Box
-                      sx={{
-                        position: "absolute",
-                        top: "50%",
-                        left: "50%",
-                        transform: "translate(-50%, -50%)",
-                        fontSize: { xs: 10, sm: 12 },
-                        color: "#666",
-                      }}
-                    >
-                      Loading...
-                    </Box>
-                  )}
-                </Box>
-                {/* Tooltip */}
-                {tooltipData && !dataLoading && (
-                  <Box
-                    sx={{
-                      position: "fixed",
-                      left: Math.max(
-                        10,
-                        Math.min(
-                          window.innerWidth - 160,
-                          svgOffset.left + tooltipData.cx - 80
-                        )
-                      ),
-                      top: Math.max(10, svgOffset.top + tooltipData.cy - 70),
-                      backgroundColor: "white",
-                      border: "1px solid #d0d7de",
-                      borderRadius: 2,
-                      padding: { xs: "6px 10px", sm: "8px 12px" },
-                      fontSize: { xs: 11, sm: 12 },
-                      pointerEvents: "none",
-                      zIndex: 1000,
-                      boxShadow: "0 8px 24px rgba(0,0,0,0.15)",
-                      whiteSpace: "nowrap",
-                      maxWidth: 200,
-                    }}
-                  >
+                  <ChevronLeft sx={{ fontSize: { xs: 18, sm: 24 } }} />
+                </IconButton>
+                <Tooltip
+                  title={`${currentDates.displayDate.format(
+                    "DD/MM/YYYY",
+                  )} - ${currentDates.selectedDate.format("DD/MM/YYYY")}`}
+                >
+                  <Box>
                     <Typography
                       fontWeight="bold"
-                      sx={{ fontSize: { xs: 12, sm: 14 } }}
-                      color="#485E75"
+                      sx={{
+                        color: "#485E75",
+                        fontFamily: "'Nunito Sans', sans-serif",
+                        fontSize: { xs: 12, sm: 14 },
+                        opacity: dataLoading ? 0.7 : 1,
+                      }}
                     >
-                      {dayjs(tooltipData.fullDate).format("MMM DD, YYYY")}
+                      {getDisplayDateText(
+                        currentPreset,
+                        DateStartDate,
+                        DateEndDate,
+                        currentDates.displayDate,
+                        currentDates.selectedDate,
+                      )}
+                      {dataLoading && (
+                        <span style={{ marginLeft: 8 }}>...</span>
+                      )}
                     </Typography>
-                    <Typography
-                      sx={{ fontSize: { xs: 12, sm: 14 } }}
-                      color="#FF9800"
-                      fontWeight="bold"
-                    >
-                      Gross Revenue:{" "}
-                      {formatCurrency(tooltipData.gross_revenue_with_tax)}
-                    </Typography>
+                    <Box display="flex" justifyContent="center">
+                      <Typography
+                        variant="caption"
+                        color="text.secondary"
+                        sx={{
+                          display: "flex",
+                          alignItems: "center",
+                          justifyContent: "center",
+                          textAlign: "center",
+                          width: "100%",
+                          fontSize: { xs: 11, sm: 14 },
+                        }}
+                      >
+                        {getSubtitleText(
+                          currentPreset,
+                          DateStartDate,
+                          DateEndDate,
+                          currentDates.displayDate,
+                          currentDates.selectedDate,
+                        )}
+                      </Typography>
+                    </Box>
                   </Box>
+                </Tooltip>
+                {!currentDates.selectedDate.isSame(today, "day") && (
+                  <IconButton
+                    size="small"
+                    onClick={handleNext}
+                    disabled={dataLoading}
+                    sx={{ padding: { xs: "4px", sm: "8px" } }}
+                  >
+                    <ChevronRight sx={{ fontSize: { xs: 18, sm: 24 } }} />
+                  </IconButton>
                 )}
               </Box>
             </Box>
-          )}
 
-        {/* Second Row Metrics - All other metrics */}
-        {[
-          "total_orders",
-          "total_units",
-          "total_tax",
-          "refund", 
-          "total_cogs",
-          "net_profit",
-          "expenses",
-          "margin",
-          "business_value",
-        ]
-          .filter(id => visibleMetrics.includes(id))
-          .map((id, idx) => {
-            const item = METRICS_CONFIG[id];
-            return (
-              <Box key={idx} sx={{
-                ...metricBlockStyle,
-                flex: { xs: "1 1 calc(50% - 16px)", sm: "1 1 180px", md: "1 1 200px" },
-                minWidth: { xs: "calc(50% - 16px)", sm: "180px", md: "200px" },
-                maxWidth: { xs: "calc(50% - 16px)", sm: "180px", md: "200px" },
-              }}>
+            {/* First Row Metrics */}
+            {/* Gross Revenue Without Tax */}
+            {visibleMetrics.includes("gross_revenue_without_tax") && (
+              <Box
+                sx={{
+                  ...metricBlockStyle,
+                  flex: {
+                    xs: "1 1 calc(50% - 16px)",
+                    sm: "1 1 180px",
+                    md: "1 1 200px",
+                  },
+                  minWidth: {
+                    xs: "calc(50% - 16px)",
+                    sm: "180px",
+                    md: "200px",
+                  },
+                  maxWidth: {
+                    xs: "calc(50% - 16px)",
+                    sm: "180px",
+                    md: "200px",
+                  },
+                }}
+              >
                 <MetricItem
-                  title={item.title}
-                  value={dataState.metrics[id]}
-                  change={dataState.difference[id]}
-                  isNegative={String(dataState.difference[id]).startsWith("-")}
-                  tooltip={item.tooltip(
-                    currentDates.selectedDate,
-                    today,
-                    dataState.previous[id]
-                  )}
-                  currencySymbol={item.currencySymbol}
-                  percentSymbol={item.percentSymbol}
+                  title="Gross Revenue (No Tax)"
+                  value={dataState.metrics.gross_revenue_without_tax}
+                  change={dataState.difference.gross_revenue_without_tax}
+                  isNegative={String(
+                    dataState.difference.gross_revenue_without_tax,
+                  ).startsWith("-")}
+                  tooltip={
+                    currentDates.selectedDate.isSame(today, "day")
+                      ? `Yesterday: ${formatCurrency(
+                          dataState.previous.gross_revenue_without_tax,
+                        )}`
+                      : `${currentDates.selectedDate
+                          .subtract(1, "day")
+                          .format("MMM DD")}: ${formatCurrency(
+                          dataState.previous.gross_revenue_without_tax,
+                        )}`
+                  }
+                  currencySymbol={currencySymbol}
                   loading={dataLoading}
                 />
               </Box>
-            );
-          })}
-      </Box>
-    </>
-  )}
-</Box>
+            )}
+
+            {/* Gross Revenue With Tax */}
+            {visibleMetrics.includes("gross_revenue_with_tax") && (
+              <Box
+                sx={{
+                  ...metricBlockStyle,
+                  flex: {
+                    xs: "1 1 calc(50% - 16px)",
+                    sm: "1 1 180px",
+                    md: "1 1 200px",
+                  },
+                  minWidth: {
+                    xs: "calc(50% - 16px)",
+                    sm: "180px",
+                    md: "200px",
+                  },
+                  maxWidth: {
+                    xs: "calc(50% - 16px)",
+                    sm: "180px",
+                    md: "200px",
+                  },
+                }}
+              >
+                <MetricItem
+                  title="Gross Revenue"
+                  value={dataState.metrics.gross_revenue_with_tax}
+                  change={dataState.difference.gross_revenue_with_tax}
+                  isNegative={String(
+                    dataState.difference.gross_revenue_with_tax,
+                  ).startsWith("-")}
+                  tooltip={
+                    currentDates.selectedDate.isSame(today, "day")
+                      ? `Yesterday: ${formatCurrency(
+                          dataState.previous.gross_revenue_with_tax,
+                        )}`
+                      : `${currentDates.selectedDate
+                          .subtract(1, "day")
+                          .format("MMM DD")}: ${formatCurrency(
+                          dataState.previous.gross_revenue_with_tax,
+                        )}`
+                  }
+                  currencySymbol={currencySymbol}
+                  loading={dataLoading}
+                />
+              </Box>
+            )}
+
+            {/* Chart */}
+            {(visibleMetrics.includes("gross_revenue_without_tax") ||
+              visibleMetrics.includes("gross_revenue_with_tax")) && (
+              <Box
+                sx={{
+                  borderRight: { xs: "none", sm: "1px solid #e0e0e0" },
+                  flex: { xs: "1 1 100%", sm: "1 1 280px", md: "1 1 300px" },
+                  minWidth: { xs: "100%", sm: "280px", md: "300px" },
+                  maxWidth: { xs: "100%", sm: "280px", md: "300px" },
+                }}
+              >
+                <Box
+                  ref={graphContainerRef}
+                  sx={{
+                    ...metricBlockStyle,
+                    position: "relative",
+                    overflow: "visible",
+                    flexDirection: "column",
+                    opacity: dataLoading ? 0.6 : 1,
+                    height: "100%",
+                  }}
+                  onMouseLeave={(e) => {
+                    const rect = e.currentTarget.getBoundingClientRect();
+                    const x = e.clientX;
+                    const y = e.clientY;
+                    if (
+                      x < rect.left ||
+                      x > rect.right ||
+                      y < rect.top ||
+                      y > rect.bottom
+                    ) {
+                      setTimeout(() => setTooltipData(null), 100);
+                    }
+                  }}
+                >
+                  <Box
+                    sx={{
+                      width: "100%",
+                      height: { xs: 70, sm: 80 },
+                      position: "relative",
+                      overflow: "visible",
+                    }}
+                  >
+                    <svg ref={svgRef} width="100%" height={isMobile ? 50 : 60}>
+                      {/* Grid lines */}
+                      {[20, 30, 40].map((y, idx) => (
+                        <line
+                          key={idx}
+                          x1="0"
+                          y1={y}
+                          x2="100%"
+                          y2={y}
+                          stroke="#eee"
+                          strokeWidth="1"
+                        />
+                      ))}
+                      {/* X-axis */}
+                      <line
+                        x1="0"
+                        y1={isMobile ? 46 : 48}
+                        x2="100%"
+                        y2={isMobile ? 46 : 48}
+                        stroke="#000"
+                        strokeWidth="1"
+                      />
+                      {!dataLoading && (
+                        <>
+                          {/* Revenue lines */}
+                          <polyline
+                            points={getGraphPoints("gross_revenue_without_tax")}
+                            style={{
+                              fill: "none",
+                              stroke: theme.palette.primary.main,
+                              strokeWidth: isMobile ? 1.5 : 2,
+                            }}
+                          />
+                          <polyline
+                            points={getGraphPoints("gross_revenue_with_tax")}
+                            style={{
+                              fill: "none",
+                              stroke: "#FF9800",
+                              strokeWidth: isMobile ? 1.5 : 2,
+                            }}
+                          />
+                          {getCirclePoints("gross_revenue_with_tax").map(
+                            (point, index) => (
+                              <circle
+                                key={`visible-with-tax-${index}`}
+                                cx={point.cx}
+                                cy={point.cy}
+                                r={isMobile ? 3 : 4}
+                                fill="#FF9800"
+                                stroke="white"
+                                strokeWidth="1.5"
+                                style={{
+                                  pointerEvents: "none",
+                                  transition: "r 0.2s ease",
+                                }}
+                              />
+                            ),
+                          )}
+                          {/* Invisible larger circles for easier hovering - gross_revenue_with_tax */}
+                          {getCirclePoints("gross_revenue_with_tax").map(
+                            (point, index) => (
+                              <circle
+                                key={`hover-with-tax-${index}`}
+                                cx={point.cx}
+                                cy={point.cy}
+                                r={isMobile ? 8 : 10}
+                                fill="transparent"
+                                stroke="transparent"
+                                style={{
+                                  pointerEvents: "all",
+                                  cursor: "pointer",
+                                }}
+                                onMouseEnter={(e) => {
+                                  e.stopPropagation();
+                                  setTooltipData({ ...point, index });
+                                }}
+                                onMouseLeave={(e) => {
+                                  e.stopPropagation();
+                                  setTimeout(() => setTooltipData(null), 50);
+                                }}
+                              />
+                            ),
+                          )}
+                          {/* Highlight circle when hovering */}
+                          {tooltipData && (
+                            <>
+                              <circle
+                                cx={tooltipData.cx}
+                                cy={tooltipData.cy}
+                                r={isMobile ? 6 : 8}
+                                fill="white"
+                                stroke={
+                                  tooltipData.gross_revenue_with_tax
+                                    ? "#FF9800"
+                                    : theme.palette.primary.main
+                                }
+                                strokeWidth="2"
+                                style={{ pointerEvents: "none" }}
+                              />
+                              <circle
+                                cx={tooltipData.cx}
+                                cy={tooltipData.cy}
+                                r={isMobile ? 3 : 4}
+                                fill={
+                                  tooltipData.gross_revenue_with_tax
+                                    ? "#FF9800"
+                                    : theme.palette.primary.main
+                                }
+                                style={{ pointerEvents: "none" }}
+                              />
+                            </>
+                          )}
+                        </>
+                      )}
+                    </svg>
+                    {/* Graph X-axis Dates */}
+                    {!dataLoading && (
+                      <Box
+                        sx={{
+                          position: "absolute",
+                          top: isMobile ? 42 : 52,
+                          left: 0,
+                          right: 0,
+                          display: "flex",
+                          justifyContent: "space-between",
+                          fontSize: { xs: 9, sm: 11 },
+                          color: "#555",
+                          px: 1,
+                          marginTop: "3px",
+                        }}
+                      >
+                        <span>{dataState.bindGraph[0]?.date}</span>
+                        <span>
+                          {
+                            dataState.bindGraph[dataState.bindGraph.length - 1]
+                              ?.date
+                          }
+                        </span>
+                      </Box>
+                    )}
+                    {dataLoading && (
+                      <Box
+                        sx={{
+                          position: "absolute",
+                          top: "50%",
+                          left: "50%",
+                          transform: "translate(-50%, -50%)",
+                          fontSize: { xs: 10, sm: 12 },
+                          color: "#666",
+                        }}
+                      >
+                        Loading...
+                      </Box>
+                    )}
+                  </Box>
+                  {/* Tooltip */}
+                  {tooltipData && !dataLoading && (
+                    <Box
+                      sx={{
+                        position: "fixed",
+                        left: Math.max(
+                          10,
+                          Math.min(
+                            window.innerWidth - 160,
+                            svgOffset.left + tooltipData.cx - 80,
+                          ),
+                        ),
+                        top: Math.max(10, svgOffset.top + tooltipData.cy - 70),
+                        backgroundColor: "white",
+                        border: "1px solid #d0d7de",
+                        borderRadius: 2,
+                        padding: { xs: "6px 10px", sm: "8px 12px" },
+                        fontSize: { xs: 11, sm: 12 },
+                        pointerEvents: "none",
+                        zIndex: 1000,
+                        boxShadow: "0 8px 24px rgba(0,0,0,0.15)",
+                        whiteSpace: "nowrap",
+                        maxWidth: 200,
+                      }}
+                    >
+                      <Typography
+                        fontWeight="bold"
+                        sx={{ fontSize: { xs: 12, sm: 14 } }}
+                        color="#485E75"
+                      >
+                        {dayjs(tooltipData.fullDate).format("MMM DD, YYYY")}
+                      </Typography>
+                      <Typography
+                        sx={{ fontSize: { xs: 12, sm: 14 } }}
+                        color="#FF9800"
+                        fontWeight="bold"
+                      >
+                        Gross Revenue:{" "}
+                        {formatCurrency(tooltipData.gross_revenue_with_tax)}
+                      </Typography>
+                    </Box>
+                  )}
+                </Box>
+              </Box>
+            )}
+
+            {/* Second Row Metrics - All other metrics */}
+            {[
+              "total_orders",
+              "total_units",
+              "total_tax",
+              "refund",
+              "total_cogs",
+              "net_profit",
+              "expenses",
+              "margin",
+              "business_value",
+            ]
+              .filter((id) => visibleMetrics.includes(id))
+              .map((id, idx) => {
+                const item = METRICS_CONFIG[id];
+                return (
+                  <Box
+                    key={idx}
+                    sx={{
+                      ...metricBlockStyle,
+                      flex: {
+                        xs: "1 1 calc(50% - 16px)",
+                        sm: "1 1 180px",
+                        md: "1 1 200px",
+                      },
+                      minWidth: {
+                        xs: "calc(50% - 16px)",
+                        sm: "180px",
+                        md: "200px",
+                      },
+                      maxWidth: {
+                        xs: "calc(50% - 16px)",
+                        sm: "180px",
+                        md: "200px",
+                      },
+                    }}
+                  >
+                    <MetricItem
+                      title={item.title}
+                      value={dataState.metrics[id]}
+                      change={dataState.difference[id]}
+                      isNegative={String(dataState.difference[id]).startsWith(
+                        "-",
+                      )}
+                      tooltip={item.tooltip(
+                        currentDates.selectedDate,
+                        today,
+                        dataState.previous[id],
+                      )}
+                      currencySymbol={item.currencySymbol}
+                      percentSymbol={item.percentSymbol}
+                      loading={dataLoading}
+                    />
+                  </Box>
+                );
+              })}
+          </Box>
+        </>
+      )}
+    </Box>
   );
 };
 export default TestCard;

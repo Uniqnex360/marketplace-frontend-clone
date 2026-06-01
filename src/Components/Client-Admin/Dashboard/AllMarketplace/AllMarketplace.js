@@ -265,13 +265,16 @@ export default function AllMarketplace({
           country: country,
           user_id: userId,
           preset: widgetData,
+
           marketplace_id: marketPlaceId.id,
           brand_id: brand_id,
           product_id: product_id,
           manufacturer_name: manufacturer_name,
           fulfillment_channel: fulfillment_channel,
-          start_date: DateStartDate,
-          end_date: DateEndDate,
+          // start_date: DateStartDate,
+          // end_date: DateEndDate,
+         start_date: widgetData === "Today" ? "2026-05-26" : DateStartDate,
+         end_date: widgetData === "Today" ? "2026-05-27" : DateEndDate,
           timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
         }
       );
@@ -322,7 +325,7 @@ export default function AllMarketplace({
   const allMarketplaceData = marketplaceData?.custom?.all_marketplace || {};
 
   return (
-    <Box>
+    <Box sx={{backgroundColor: "red"}}>
       <Paper
         elevation={3}
         sx={{
