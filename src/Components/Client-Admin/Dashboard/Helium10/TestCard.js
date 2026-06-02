@@ -262,11 +262,11 @@ const TestCard = ({
         payload.start_date = dayjs(DateStartDate).format("DD/MM/YYYY");
         payload.end_date = dayjs(DateEndDate).format("DD/MM/YYYY");
       } else if (currentPreset === "Today") {
-        payload.start_date = "26/05/2026";
+        payload.start_date = "01/03/2026";
         payload.end_date = "27/05/2026";
       }
       const response = await axios.post(
-        `${process.env.REACT_APP_IP}get_metrics_by_date_range/`,
+        `${process.env.REACT_APP_IP_V2}clickhouse/get_metrics_by_date_range_clickhouse/`,
         payload,
       );
       if (requestId === latestRequestRef.current) {

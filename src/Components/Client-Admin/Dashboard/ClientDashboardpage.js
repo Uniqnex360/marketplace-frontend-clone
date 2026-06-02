@@ -5,8 +5,6 @@ import React, {
   useCallback,
   useMemo,
   startTransition,
-  Suspense,
-  lazy
 } from "react";
 import {
   Box,
@@ -63,7 +61,7 @@ import { useMarketplace } from "../../../utils/MarketplaceProvider";
 import ProductPerformanceContainer from "../../../utils/SalesTrends";
 import { useEnhancedCategories } from "../../../utils/UseEnhancedCategories";
 import CountrySelector from "../../../utils/countrySelector";
-const TestCard = lazy(() => import("./Helium10/TestCard"));
+import TestCard from "./Helium10/TestCard";
 function ClientDashboardpage() {
   const [selectedCategory, setSelectedCategory] = useState({
     id: "all",
@@ -1273,7 +1271,6 @@ function ClientDashboardpage() {
           }}
         ></Grid>
         <Grid item xs={12} sm={12} sx={{ marginTop: "0%" }}>
-          <Suspense fallback={<div>Loading...</div>}>
             <TestCard
               country={selectedCountry}
               marketPlaceId={selectedCategory == "all" ? selectedCategory : filterFinal}
@@ -1287,7 +1284,6 @@ function ClientDashboardpage() {
               DateStartDate={appliedStartDate}
               DateEndDate={appliedEndDate}
             />
-          </Suspense>
         </Grid>
         <Grid item xs={12} sm={12} sx={{ width: "99%" }}>
           <AllMarketplace
