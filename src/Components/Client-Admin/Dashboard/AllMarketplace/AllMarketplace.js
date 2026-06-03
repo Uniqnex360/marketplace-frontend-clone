@@ -260,7 +260,7 @@ export default function AllMarketplace({
       const userData = JSON.parse(localStorage.getItem("user") || "{}");
       const userId = userData?.id || "";
       const response = await axios.post(
-        `${process.env.REACT_APP_IP}allMarketplaceData/`,
+        `${process.env.REACT_APP_IP_V2}clickhouse/all_market_place_data_clickhouse/`,
         {
           country: country,
           user_id: userId,
@@ -278,7 +278,7 @@ export default function AllMarketplace({
           timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
         }
       );
-      setMarketplaceData(response.data);
+      setMarketplaceData(response.data?.data);
     } catch (error) {
       console.error("Failed to fetch marketplace data:", error);
     } finally {
