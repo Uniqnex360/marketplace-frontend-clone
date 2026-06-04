@@ -89,7 +89,7 @@ const ProductPerformanceContainer = ({
           products={performanceData.top_3_products || []}
         />
       </Box>
-      <Box sx={{ paddingBottom: "10px", width: "99%" }}>
+      {/* <Box sx={{ paddingBottom: "10px", width: "99%" }}>
         <SalesDecreasing
           country={country}
           marketPlaceId={marketPlaceId}
@@ -101,7 +101,7 @@ const ProductPerformanceContainer = ({
           DateEndDate={DateEndDate}
           products={performanceData.least_3_products || []}
         />
-      </Box>
+      </Box> */}
     </>
   );
 };

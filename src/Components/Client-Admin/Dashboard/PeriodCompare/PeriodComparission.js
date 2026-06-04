@@ -180,7 +180,7 @@ function PeriodComparission({
     }
   };
   let lastParamsRef = useRef("");
-  const API_TODAY = dayjs("02/09/2025", "DD/MM/YYYY")
+  const API_TODAY = dayjs("31/05/2026", "DD/MM/YYYY")
     .tz("US/Pacific")
     .format("MMM D, YYYY");
   useEffect(() => {

@@ -1327,7 +1327,7 @@ function ClientDashboardpage() {
             fulfillment_channel={selectedFulfillment}
           />
         </Grid>
-        <Grid container spacing={2}>
+        {/* <Grid container spacing={2}>
           <Grid
             item
             xs={12}
@@ -1508,7 +1508,7 @@ function ClientDashboardpage() {
               </Box>
             </Box>
           </Grid>
-        </Grid>
+        </Grid> */}
         <Grid item xs={12} sm={12}>
           <MetricCard
             country={selectedCountry}
