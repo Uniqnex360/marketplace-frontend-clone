@@ -742,7 +742,7 @@ const SalesDecreasing = ({
         }
       );
 
-      const raw = response.data?.least_3_products || [];
+      const raw = response.data || [];
 
       // ✅ FIX 2: normalize BEFORE setting state
       setProducts(normalize(raw));
@@ -788,7 +788,7 @@ const SalesDecreasing = ({
   return (
     <Box sx={{ borderRadius: 3, border: '1px solid #E0E0E0' }}>
       <Typography sx={{ p: 2, fontWeight: 700 }}>
-        Sales Trends: Decreasing ({dayBeforeYesterday} - {yesterday})
+        Sales Trends: Decreasing
       </Typography>
 
       <TableContainer>
@@ -809,9 +809,9 @@ const SalesDecreasing = ({
             {products?.length > 0 ? (
               products.map((item, index) => (
                 <TableRow key={index}>
-                  <TableCell>{item.product_name}</TableCell>
-                  <TableCell>{item.grossRevenue}</TableCell>
-                  <TableCell>{item.netProfit}</TableCell>
+                  <TableCell>$ {item.product_name}</TableCell>
+                  <TableCell>$ {item.grossRevenue}</TableCell>
+                  <TableCell>$ {item.netProfit}</TableCell>
                   <TableCell>{item.unitsSold}</TableCell>
                 </TableRow>
               ))

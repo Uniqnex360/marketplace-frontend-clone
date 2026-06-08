@@ -28,7 +28,7 @@ const ProductPerformanceContainer = ({
         {
           country: country,
           user_id: userId,
-          target_date: "01/09/2025",
+          // target_date: "01/09/2025",
           marketplace_id: marketPlaceId.id,
           brand_id,
           product_id,
@@ -89,7 +89,7 @@ const ProductPerformanceContainer = ({
           products={performanceData.top_3_products || []}
         />
       </Box>
-      {/* <Box sx={{ paddingBottom: "10px", width: "99%" }}>
+      <Box sx={{ paddingBottom: "10px", width: "99%" }}>
         <SalesDecreasing
           country={country}
           marketPlaceId={marketPlaceId}
@@ -101,7 +101,7 @@ const ProductPerformanceContainer = ({
           DateEndDate={DateEndDate}
           products={performanceData.least_3_products || []}
         />
-      </Box> */}
+      </Box>
     </>
   );
 };

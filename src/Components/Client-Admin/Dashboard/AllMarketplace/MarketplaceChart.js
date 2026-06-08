@@ -9,7 +9,7 @@ const fontStyles = {
 
 export default function MarketplaceChart({ marketplaceList }) {
   const chartData = marketplaceList.map(item => ({
-    marketplace: item.marketplace,
+    marketplace: item.marketplace_name,
     margin: item.currency_list[0]?.margin || 0,
     grossRevenue: item.currency_list[0]?.grossRevenue || 0,
     netProfit: item.currency_list[0]?.netProfit || 0,

@@ -159,7 +159,8 @@ const TestCard = ({
   const isTablet = useMediaQuery(theme.breakpoints.between("sm", "md"));
   const isSmallScreen = useMediaQuery(theme.breakpoints.down("md"));
   const DayJStoday = dayjs().tz(TIMEZONE);
-  const API_TODAY = dayjs("2026-05-27").tz(TIMEZONE);
+  // const API_TODAY = dayjs("2026-05-27").tz(TIMEZONE);
+  const API_TODAY = DayJStoday;
   const formattedDate = API_TODAY.format("DD/MM/YYYY");
   const stableBrandId = JSON.stringify(brand_id);
   const stableProductId = JSON.stringify(product_id);
@@ -261,10 +262,11 @@ const TestCard = ({
       ) {
         payload.start_date = dayjs(DateStartDate).format("DD/MM/YYYY");
         payload.end_date = dayjs(DateEndDate).format("DD/MM/YYYY");
-      } else if (currentPreset === "Today") {
-        payload.start_date = "01/03/2026";
-        payload.end_date = "27/05/2026";
       }
+      // } else if (currentPreset === "Today") {
+      //   // payload.start_date = "01/03/2026";
+      //   // payload.end_date = "27/05/2026";
+      // }
       const response = await axios.post(
         `${process.env.REACT_APP_IP_V2}clickhouse/get_metrics_by_date_range_clickhouse/`,
         payload,

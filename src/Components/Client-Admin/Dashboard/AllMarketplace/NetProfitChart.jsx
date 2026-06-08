@@ -20,7 +20,7 @@ export default function NetProfitChart({ marketplaceList, country }) {
     const chartData = marketplaceList
         .filter((item) => item.currency_list && item.currency_list.length > 0)
         .map((item) => ({
-            name: item.marketplace,
+            name: item.marketplace_name,
             netProfit: item.currency_list[0]?.netProfit || 0,
         }))
         .filter((item) => item.netProfit > 0);
