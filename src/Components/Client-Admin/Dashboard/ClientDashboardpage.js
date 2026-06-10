@@ -149,7 +149,7 @@ function ClientDashboardpage() {
   const getPresetDisplayLabel = (preset) => {
     if (preset === "Today") {
       // return "September 1";
-      return "Today"
+      return "Today";
     }
     return preset;
   };
@@ -762,503 +762,497 @@ function ClientDashboardpage() {
         }}
       >
         <Grid item xs={12}>
-            <Grid container spacing={2} className="dashboard-filter">
-              <Grid
-                item
-                xs={12}
-                className="category-select-container"
-                sx={{
-                  paddingBottom: "10px",
-                  backgroundColor: "#fff",
-                  display: "flex",
-                  justifyContent: "space-between",
-                  alignItems: "center",
-                  px: 2,
-                  gap: 2,
-                }}
-              >
-                {/* Filters */}
-                <Box
-                  sx={{
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "center",
-                    gap: 1,
-                    flexWrap: "nowrap",
-                    flex: 1,
-                  }}
-                >
-                  <Box sx={{ width: "180px" }}>
-                    <CountrySelector
-                      selectedCountry={selectedCountry}
-                      onCountryChange={(country) => {
-                        setSelectedCountry(country);
-                        setActiveFilters((prev) => {
-                          const filtered = prev.filter(
-                            (f) => f.type !== "country",
-                          );
-                          return [
-                            ...filtered,
-                            { type: "country", value: country, label: country },
-                          ];
-                        });
-                      }}
-                    />
-                  </Box>
-                  <Box sx={{ width: "190px" }}>
-                    <BrandSelector
-                      selectedBrand={selectedBrand}
-                      setSelectedBrand={(brands) => {
-                        setSelectedBrand(brands);
-                        setActiveFilters((prev) => {
-                          const filtered = prev.filter(
-                            (f) => f.type !== "brand",
-                          );
-                          const brandFilters = brands.map((brand) => ({
-                            type: "brand",
-                            value: brand.id,
-                            label: brand.name,
-                          }));
-                          return [...filtered, ...brandFilters];
-                        });
-                      }}
-                      brandList={brandList}
-                      inputValueBrand={inputValueBrand}
-                      setInputValueBrand={setInputValueBrand}
-                      brandLimit={brandLimit}
-                      setBrandLimit={setBrandLimit}
-                      isLoading={isLoading}
-                      hasMore={hasMore}
-                      toggleSelection={toggleSelection}
-                      label="Brands"
-                    />
-                  </Box>
-                  <Box sx={{ width: "140px" }}>
-                    <Autocomplete
-                      multiple
-                      disableCloseOnSelect
-                      options={[
-                        ...selectedSku,
-                        ...skuList.filter(
-                          (s) => !selectedSku.some((ss) => ss.id === s.id),
-                        ),
-                      ]}
-                      getOptionLabel={(option) =>
-                        typeof option === "string" ? option : option.sku
-                      }
-                      isOptionEqualToValue={(option, value) =>
-                        option.id === value.id
-                      }
-                      inputValue={inputValueSku}
-                      onInputChange={(e, newInputValue) => {
-                        setInputValueSku(newInputValue);
-                        setSkuLimit(11);
-                      }}
-                      value={selectedSku}
-                      onChange={(event, newValue) => {
-                        setSelectedSku(newValue);
-                        setActiveFilters((prev) => {
-                          const filtered = prev.filter((f) => f.type !== "sku");
-                          const skuFilters = newValue.map((sku) => ({
-                            type: "sku",
-                            value: sku.id,
-                            label: sku.sku,
-                          }));
-                          return [...filtered, ...skuFilters];
-                        });
-                        updateMergedProducts(selectedAsin, newValue);
-                      }}
-                      renderTags={() => null}
-                      noOptionsText={inputValueSku ? "No options" : ""}
-                      renderOption={(props, option) => {
-                        const isSelected = selectedSku.some(
-                          (s) => s.id === option.id,
-                        );
-                        return (
-                          <Box
-                            component="li"
-                            {...props}
-                            onClick={() => toggleSelectionSKU(option)}
-                            sx={{
-                              backgroundColor: isSelected
-                                ? "#b6d5f3 !important"
-                                : "transparent",
-                              fontSize: 13,
-                              cursor: "pointer",
-                            }}
-                            key={option.id}
-                          >
-                            {option.sku}
-                          </Box>
-                        );
-                      }}
-                      renderInput={(params) => (
-                        <TextField
-                          {...params}
-                          label="SKU"
-                          size="small"
-                          placeholder="Search SKU..."
-                          InputProps={{
-                            ...params.InputProps,
-                            endAdornment: <>{params.InputProps.endAdornment}</>,
-                          }}
-                        />
-                      )}
-                      sx={{
-                        "& .MuiInputBase-root": {
-                          height: 40,
-                          fontSize: 14,
-                          width: 140,
-                        },
-                        "& input": {
-                          fontSize: 13,
-                        },
-                      }}
-                    />
-                  </Box>
-                  <Box>
-                    <Button
-                      variant="outlined"
-                      onClick={handleMenuOpen}
-                      sx={{
-                        width: 160,
-                        height: 40,
-                        justifyContent: "space-between",
-                        padding: "9px 8px 6px 8px",
-                        color: "rgba(0, 0, 0, 0.6)",
-                        fontSize: "16px",
-                        borderColor: "#cacaca",
-                        textTransform: "none",
-                      }}
-                    >
-                      {selectedCategory
-                        ? selectedCategory.fulfillment
-                          ? `${selectedCategory.name} - ${selectedCategory.fulfillment}`
-                          : selectedCategory.name
-                        : "Select Channel"}
-                      <ArrowDropDownIcon />
-                    </Button>
-                  </Box>
-                  <Menu
-                    anchorEl={anchorEl}
-                    open={Boolean(anchorEl)}
-                    onClose={handleMenuClose}
-                    PaperProps={{
-                      sx: { maxHeight: 400, width: 143, fontSize: "15px" },
-                    }}
-                  >
-                    {isLoading ? (
-                      <MenuItem disabled>
-                        <CircularProgress size={24} sx={{ margin: "0 auto" }} />
-                      </MenuItem>
-                    ) : (
-                      enhancedCategories.map((category) => (
-                        <div key={category.id}>
-                          <MenuItem
-                            onClick={() => handleCategorySelect(category)}
-                            sx={{
-                              pl: 2,
-                              color: "black",
-                              display: "flex",
-                              justifyContent: "space-between",
-                            }}
-                          >
-                            <div
-                              style={{
-                                display: "flex",
-                                alignItems: "center",
-                              }}
-                            >
-                              <ListItemIcon>
-                                {category.icon ||
-                                  (category.imageUrl ? (
-                                    <img
-                                      src={category.imageUrl}
-                                      alt={category.name}
-                                      style={{
-                                        width: 17,
-                                        height: 14,
-                                        marginRight: 5,
-                                      }}
-                                    />
-                                  ) : (
-                                    <ImageIcon
-                                      sx={{ width: 17, height: 14, mr: 0.5 }}
-                                    />
-                                  ))}
-                              </ListItemIcon>
-                              <ListItemText primary={category.name} />
-                            </div>
-                            {category.fulfillment_channel && (
-                              <IconButton
-                                onClick={(e) => {
-                                  e.stopPropagation();
-                                  toggleExpandCategory(category.id);
-                                }}
-                                size="small"
-                                sx={{ ml: 1 }}
-                              >
-                                {expandedCategories[category.id] ? (
-                                  <ExpandLessIcon fontSize="small" />
-                                ) : (
-                                  <ExpandMoreIcon fontSize="small" />
-                                )}
-                              </IconButton>
-                            )}
-                          </MenuItem>
-                          {category.fulfillment_channel && (
-                            <Collapse
-                              in={expandedCategories[category.id]}
-                              timeout="auto"
-                              unmountOnExit
-                            >
-                              {category.fulfillment_channel.map(
-                                (channelObj) => {
-                                  const [label, value] =
-                                    Object.entries(channelObj)[0];
-                                  return (
-                                    <MenuItem
-                                      key={label}
-                                      onClick={() =>
-                                        handleFulfillmentSelect(category, {
-                                          label,
-                                          value,
-                                        })
-                                      }
-                                      sx={{ pl: 6 }}
-                                    >
-                                      {label}
-                                    </MenuItem>
-                                  );
-                                },
-                              )}
-                            </Collapse>
-                          )}
-                        </div>
-                      ))
-                    )}
-                  </Menu>
-                  <Box sx={{ width: "150px" }}>
-                    <Autocomplete
-                      multiple
-                      disableCloseOnSelect
-                      freeSolo
-                      options={[
-                        ...selectedAsin,
-                        ...asinList.filter(
-                          (a) => !selectedAsin.some((sa) => sa.id === a.id),
-                        ),
-                      ]}
-                      getOptionLabel={(option) =>
-                        typeof option === "string" ? option : option.Asin
-                      }
-                      isOptionEqualToValue={(option, value) =>
-                        option.id === value.id
-                      }
-                      inputValue={inputValueAsin}
-                      onInputChange={(e, newInputValue) =>
-                        setInputValueAsin(newInputValue)
-                      }
-                      value={selectedAsin}
-                      onChange={(event, newValue) => {
-                        setSelectedAsin(newValue);
-                        setActiveFilters((prev) => {
-                          const filtered = prev.filter(
-                            (f) => f.type !== "asin",
-                          );
-                          const asinFilters = newValue.map((asin) => ({
-                            type: "asin",
-                            value: asin.id,
-                            label: asin.Asin,
-                          }));
-                          return [...filtered, ...asinFilters];
-                        });
-                        updateMergedProducts(newValue, selectedSku);
-                      }}
-                      renderTags={() => null}
-                      renderOption={(props, option) => {
-                        const isSelected = selectedAsin.some(
-                          (s) => s.id === option.id,
-                        );
-                        return (
-                          <Box
-                            component="li"
-                            {...props}
-                            onClick={() => toggleSelectionAsin(option)}
-                            sx={{
-                              backgroundColor: isSelected
-                                ? "#b6d5f3 !important"
-                                : "transparent",
-                              fontSize: 13,
-                              cursor: "pointer",
-                            }}
-                          >
-                            {option.Asin}
-                          </Box>
-                        );
-                      }}
-                      renderInput={(params) => (
-                        <TextField
-                          {...params}
-                          label="Product ID"
-                          size="small"
-                          placeholder="Search ASIN..."
-                          InputProps={{
-                            ...params.InputProps,
-                            endAdornment: <>{params.InputProps.endAdornment}</>,
-                          }}
-                        />
-                      )}
-                      sx={{
-                        "& .MuiInputBase-root": {
-                          height: 40,
-                          fontSize: 14,
-                          width: 150,
-                        },
-                        "& input": {
-                          fontSize: 13,
-                        },
-                      }}
-                    />
-                  </Box>
-                  <Box sx={{ width: "130px" }}>
-                    <FormControl size="small" sx={{ width: "110%" }}>
-                      <InputLabel>Preset</InputLabel>
-                      <Select
-                        value={selectedPreset}
-                        label="Preset"
-                        onChange={(e) => {
-                          setSelectedPreset(e.target.value);
-                          handlePresetSelectHelium(e.target.value);
-                          setBefePreset(e.target.value);
-                          setAppliedPreset(e.target.value);
-                        }}
-                      >
-                        {presets.map((preset) => (
-                          <MenuItem key={preset} value={preset}>
-                            {getPresetDisplayLabel(preset)}
-                          </MenuItem>
-                        ))}
-                      </Select>
-                    </FormControl>
-                  </Box>
-                  <Box sx={{ width: "130px", ml: 2 }}>
-                    <LocalizationProvider dateAdapter={AdapterDayjs}>
-                      <DatePicker
-                        label="Start Date"
-                        value={startDate}
-                        onChange={handleStartDateChangeOptimized}
-                        format="DD/MM/YYYY"
-                        disableFuture
-                        maxDate={endDate || dayjs()}
-                        slotProps={{
-                          textField: {
-                            size: "small",
-                            sx: datePickerSx,
-                          },
-                        }}
-                      />
-                    </LocalizationProvider>
-                  </Box>
-                  <Box sx={{ width: "130px" }}>
-                    <LocalizationProvider dateAdapter={AdapterDayjs}>
-                      <DatePicker
-                        label="End Date"
-                        value={endDate}
-                        onChange={handleEndDateChangeOptimized}
-                        format="DD/MM/YYYY"
-                        disableFuture
-                        minDate={startDate}
-                        disabled={!startDate}
-                        openTo="day"
-                        views={["year", "month", "day"]}
-                        slotProps={{
-                          textField: {
-                            size: "small",
-                            sx: datePickerSx,
-                          },
-                          calendarHeader: {
-                            defaultCalendarMonth: startDate,
-                          },
-                        }}
-                        referenceDate={startDate || dayjs()}
-                      />
-                    </LocalizationProvider>
-                  </Box>
-                  <Box
-                    sx={{
-                      display: "flex",
-                      gap: 1,
-                      flexShrink: 0,
-                      position: "relative",
-                      right: 0,
-                    }}
-                  >
-                    <Tooltip title="Reset" arrow>
-                      <Button
-                        onClick={handleClearFilter}
-                        variant="outlined"
-                        sx={{
-                          backgroundColor: "#000080",
-                          minWidth: "auto",
-                          padding: "8px",
-                          "&:hover": {
-                            backgroundColor: "darkblue",
-                          },
-                        }}
-                      >
-                        <Refresh sx={{ color: "white", fontSize: "19px" }} />
-                      </Button>
-                    </Tooltip>
-                  </Box>
-                </Box>
-              </Grid>
-            </Grid>
-            {activeFilters.length > 0 && (
+          <Grid container spacing={2} className="dashboard-filter">
+            <Grid
+              item
+              xs={12}
+              className="category-select-container"
+              sx={{
+                paddingBottom: "10px",
+                backgroundColor: "#fff",
+                display: "flex",
+                justifyContent: "space-between",
+                alignItems: "center",
+                px: 2,
+                gap: 2,
+              }}
+            >
+              {/* Filters */}
               <Box
                 sx={{
                   display: "flex",
-                  width: "88%",
-                  flexWrap: "wrap",
                   alignItems: "center",
+                  justifyContent: "center",
                   gap: 1,
-                  p: 1.5,
-                  border: "1px solid #e0e0e0",
-                  borderRadius: "8px",
-                  backgroundColor: "#f9f9f9",
-                  mx: 2,
-                  mt: 2,
+                  flexWrap: "nowrap",
+                  flex: 1,
                 }}
               >
-                <Typography variant="body2" sx={{ fontWeight: "bold", mr: 1 }}>
-                  Active Filters:
-                </Typography>
-                {activeFilters.map((filter, index) => (
-                  <Chip
-                    key={`${filter.type}-${filter.value}-${index}`}
-                    label={`${
-                      filter.type.charAt(0).toUpperCase() + filter.type.slice(1)
-                    }: ${filter.label}`}
-                    onDelete={() => handleRemoveFilter(filter)}
-                    size="small"
-                    sx={{
-                      fontWeight: 500,
+                <Box sx={{ width: "180px" }}>
+                  <CountrySelector
+                    selectedCountry={selectedCountry}
+                    onCountryChange={(country) => {
+                      setSelectedCountry(country);
+                      setActiveFilters((prev) => {
+                        const filtered = prev.filter(
+                          (f) => f.type !== "country",
+                        );
+                        return [
+                          ...filtered,
+                          { type: "country", value: country, label: country },
+                        ];
+                      });
                     }}
                   />
-                ))}
-                <Button
-                  variant="text"
-                  size="small"
-                  onClick={handleClearFilter}
-                  sx={{
-                    ml: "auto",
-                    textTransform: "none",
+                </Box>
+                <Box sx={{ width: "190px" }}>
+                  <BrandSelector
+                    selectedBrand={selectedBrand}
+                    setSelectedBrand={(brands) => {
+                      setSelectedBrand(brands);
+                      setActiveFilters((prev) => {
+                        const filtered = prev.filter((f) => f.type !== "brand");
+                        const brandFilters = brands.map((brand) => ({
+                          type: "brand",
+                          value: brand.id,
+                          label: brand.name,
+                        }));
+                        return [...filtered, ...brandFilters];
+                      });
+                    }}
+                    brandList={brandList}
+                    inputValueBrand={inputValueBrand}
+                    setInputValueBrand={setInputValueBrand}
+                    brandLimit={brandLimit}
+                    setBrandLimit={setBrandLimit}
+                    isLoading={isLoading}
+                    hasMore={hasMore}
+                    toggleSelection={toggleSelection}
+                    label="Brands"
+                  />
+                </Box>
+                <Box sx={{ width: "140px" }}>
+                  <Autocomplete
+                    multiple
+                    disableCloseOnSelect
+                    options={[
+                      ...selectedSku,
+                      ...skuList.filter(
+                        (s) => !selectedSku.some((ss) => ss.id === s.id),
+                      ),
+                    ]}
+                    getOptionLabel={(option) =>
+                      typeof option === "string" ? option : option.sku
+                    }
+                    isOptionEqualToValue={(option, value) =>
+                      option.id === value.id
+                    }
+                    inputValue={inputValueSku}
+                    onInputChange={(e, newInputValue) => {
+                      setInputValueSku(newInputValue);
+                      setSkuLimit(11);
+                    }}
+                    value={selectedSku}
+                    onChange={(event, newValue) => {
+                      setSelectedSku(newValue);
+                      setActiveFilters((prev) => {
+                        const filtered = prev.filter((f) => f.type !== "sku");
+                        const skuFilters = newValue.map((sku) => ({
+                          type: "sku",
+                          value: sku.id,
+                          label: sku.sku,
+                        }));
+                        return [...filtered, ...skuFilters];
+                      });
+                      updateMergedProducts(selectedAsin, newValue);
+                    }}
+                    renderTags={() => null}
+                    noOptionsText={inputValueSku ? "No options" : ""}
+                    renderOption={(props, option) => {
+                      const isSelected = selectedSku.some(
+                        (s) => s.id === option.id,
+                      );
+                      return (
+                        <Box
+                          component="li"
+                          {...props}
+                          onClick={() => toggleSelectionSKU(option)}
+                          sx={{
+                            backgroundColor: isSelected
+                              ? "#b6d5f3 !important"
+                              : "transparent",
+                            fontSize: 13,
+                            cursor: "pointer",
+                          }}
+                          key={option.id}
+                        >
+                          {option.sku}
+                        </Box>
+                      );
+                    }}
+                    renderInput={(params) => (
+                      <TextField
+                        {...params}
+                        label="SKU"
+                        size="small"
+                        placeholder="Search SKU..."
+                        InputProps={{
+                          ...params.InputProps,
+                          endAdornment: <>{params.InputProps.endAdornment}</>,
+                        }}
+                      />
+                    )}
+                    sx={{
+                      "& .MuiInputBase-root": {
+                        height: 40,
+                        fontSize: 14,
+                        width: 140,
+                      },
+                      "& input": {
+                        fontSize: 13,
+                      },
+                    }}
+                  />
+                </Box>
+                <Box>
+                  <Button
+                    variant="outlined"
+                    onClick={handleMenuOpen}
+                    sx={{
+                      width: 160,
+                      height: 40,
+                      justifyContent: "space-between",
+                      padding: "9px 8px 6px 8px",
+                      color: "rgba(0, 0, 0, 0.6)",
+                      fontSize: "16px",
+                      borderColor: "#cacaca",
+                      textTransform: "none",
+                    }}
+                  >
+                    {selectedCategory
+                      ? selectedCategory.fulfillment
+                        ? `${selectedCategory.name} - ${selectedCategory.fulfillment}`
+                        : selectedCategory.name
+                      : "Select Channel"}
+                    <ArrowDropDownIcon />
+                  </Button>
+                </Box>
+                <Menu
+                  anchorEl={anchorEl}
+                  open={Boolean(anchorEl)}
+                  onClose={handleMenuClose}
+                  PaperProps={{
+                    sx: { maxHeight: 400, width: 143, fontSize: "15px" },
                   }}
                 >
-                  Clear All
-                </Button>
+                  {isLoading ? (
+                    <MenuItem disabled>
+                      <CircularProgress size={24} sx={{ margin: "0 auto" }} />
+                    </MenuItem>
+                  ) : (
+                    enhancedCategories.map((category) => (
+                      <div key={category.id}>
+                        <MenuItem
+                          onClick={() => handleCategorySelect(category)}
+                          sx={{
+                            pl: 2,
+                            color: "black",
+                            display: "flex",
+                            justifyContent: "space-between",
+                          }}
+                        >
+                          <div
+                            style={{
+                              display: "flex",
+                              alignItems: "center",
+                            }}
+                          >
+                            <ListItemIcon>
+                              {category.icon ||
+                                (category.imageUrl ? (
+                                  <img
+                                    src={category.imageUrl}
+                                    alt={category.name}
+                                    style={{
+                                      width: 17,
+                                      height: 14,
+                                      marginRight: 5,
+                                    }}
+                                  />
+                                ) : (
+                                  <ImageIcon
+                                    sx={{ width: 17, height: 14, mr: 0.5 }}
+                                  />
+                                ))}
+                            </ListItemIcon>
+                            <ListItemText primary={category.name} />
+                          </div>
+                          {category.fulfillment_channel && (
+                            <IconButton
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                toggleExpandCategory(category.id);
+                              }}
+                              size="small"
+                              sx={{ ml: 1 }}
+                            >
+                              {expandedCategories[category.id] ? (
+                                <ExpandLessIcon fontSize="small" />
+                              ) : (
+                                <ExpandMoreIcon fontSize="small" />
+                              )}
+                            </IconButton>
+                          )}
+                        </MenuItem>
+                        {category.fulfillment_channel && (
+                          <Collapse
+                            in={expandedCategories[category.id]}
+                            timeout="auto"
+                            unmountOnExit
+                          >
+                            {category.fulfillment_channel.map((channelObj) => {
+                              const [label, value] =
+                                Object.entries(channelObj)[0];
+                              return (
+                                <MenuItem
+                                  key={label}
+                                  onClick={() =>
+                                    handleFulfillmentSelect(category, {
+                                      label,
+                                      value,
+                                    })
+                                  }
+                                  sx={{ pl: 6 }}
+                                >
+                                  {label}
+                                </MenuItem>
+                              );
+                            })}
+                          </Collapse>
+                        )}
+                      </div>
+                    ))
+                  )}
+                </Menu>
+                <Box sx={{ width: "150px" }}>
+                  <Autocomplete
+                    multiple
+                    disableCloseOnSelect
+                    freeSolo
+                    options={[
+                      ...selectedAsin,
+                      ...asinList.filter(
+                        (a) => !selectedAsin.some((sa) => sa.id === a.id),
+                      ),
+                    ]}
+                    getOptionLabel={(option) =>
+                      typeof option === "string" ? option : option.Asin
+                    }
+                    isOptionEqualToValue={(option, value) =>
+                      option.id === value.id
+                    }
+                    inputValue={inputValueAsin}
+                    onInputChange={(e, newInputValue) =>
+                      setInputValueAsin(newInputValue)
+                    }
+                    value={selectedAsin}
+                    onChange={(event, newValue) => {
+                      setSelectedAsin(newValue);
+                      setActiveFilters((prev) => {
+                        const filtered = prev.filter((f) => f.type !== "asin");
+                        const asinFilters = newValue.map((asin) => ({
+                          type: "asin",
+                          value: asin.id,
+                          label: asin.Asin,
+                        }));
+                        return [...filtered, ...asinFilters];
+                      });
+                      updateMergedProducts(newValue, selectedSku);
+                    }}
+                    renderTags={() => null}
+                    renderOption={(props, option) => {
+                      const isSelected = selectedAsin.some(
+                        (s) => s.id === option.id,
+                      );
+                      return (
+                        <Box
+                          component="li"
+                          {...props}
+                          onClick={() => toggleSelectionAsin(option)}
+                          sx={{
+                            backgroundColor: isSelected
+                              ? "#b6d5f3 !important"
+                              : "transparent",
+                            fontSize: 13,
+                            cursor: "pointer",
+                          }}
+                        >
+                          {option.Asin}
+                        </Box>
+                      );
+                    }}
+                    renderInput={(params) => (
+                      <TextField
+                        {...params}
+                        label="Product ID"
+                        size="small"
+                        placeholder="Search ASIN..."
+                        InputProps={{
+                          ...params.InputProps,
+                          endAdornment: <>{params.InputProps.endAdornment}</>,
+                        }}
+                      />
+                    )}
+                    sx={{
+                      "& .MuiInputBase-root": {
+                        height: 40,
+                        fontSize: 14,
+                        width: 150,
+                      },
+                      "& input": {
+                        fontSize: 13,
+                      },
+                    }}
+                  />
+                </Box>
+                <Box sx={{ width: "130px" }}>
+                  <FormControl size="small" sx={{ width: "110%" }}>
+                    <InputLabel>Preset</InputLabel>
+                    <Select
+                      value={selectedPreset}
+                      label="Preset"
+                      onChange={(e) => {
+                        setSelectedPreset(e.target.value);
+                        handlePresetSelectHelium(e.target.value);
+                        setBefePreset(e.target.value);
+                        setAppliedPreset(e.target.value);
+                      }}
+                    >
+                      {presets.map((preset) => (
+                        <MenuItem key={preset} value={preset}>
+                          {getPresetDisplayLabel(preset)}
+                        </MenuItem>
+                      ))}
+                    </Select>
+                  </FormControl>
+                </Box>
+                <Box sx={{ width: "130px", ml: 2 }}>
+                  <LocalizationProvider dateAdapter={AdapterDayjs}>
+                    <DatePicker
+                      label="Start Date"
+                      value={startDate}
+                      onChange={handleStartDateChangeOptimized}
+                      format="DD/MM/YYYY"
+                      disableFuture
+                      maxDate={endDate || dayjs()}
+                      slotProps={{
+                        textField: {
+                          size: "small",
+                          sx: datePickerSx,
+                        },
+                      }}
+                    />
+                  </LocalizationProvider>
+                </Box>
+                <Box sx={{ width: "130px" }}>
+                  <LocalizationProvider dateAdapter={AdapterDayjs}>
+                    <DatePicker
+                      label="End Date"
+                      value={endDate}
+                      onChange={handleEndDateChangeOptimized}
+                      format="DD/MM/YYYY"
+                      disableFuture
+                      minDate={startDate}
+                      disabled={!startDate}
+                      openTo="day"
+                      views={["year", "month", "day"]}
+                      slotProps={{
+                        textField: {
+                          size: "small",
+                          sx: datePickerSx,
+                        },
+                        calendarHeader: {
+                          defaultCalendarMonth: startDate,
+                        },
+                      }}
+                      referenceDate={startDate || dayjs()}
+                    />
+                  </LocalizationProvider>
+                </Box>
+                <Box
+                  sx={{
+                    display: "flex",
+                    gap: 1,
+                    flexShrink: 0,
+                    position: "relative",
+                    right: 0,
+                  }}
+                >
+                  <Tooltip title="Reset" arrow>
+                    <Button
+                      onClick={handleClearFilter}
+                      variant="outlined"
+                      sx={{
+                        backgroundColor: "#000080",
+                        minWidth: "auto",
+                        padding: "8px",
+                        "&:hover": {
+                          backgroundColor: "darkblue",
+                        },
+                      }}
+                    >
+                      <Refresh sx={{ color: "white", fontSize: "19px" }} />
+                    </Button>
+                  </Tooltip>
+                </Box>
               </Box>
-            )}
+            </Grid>
+          </Grid>
+          {activeFilters.length > 0 && (
+            <Box
+              sx={{
+                display: "flex",
+                width: "88%",
+                flexWrap: "wrap",
+                alignItems: "center",
+                gap: 1,
+                p: 1.5,
+                border: "1px solid #e0e0e0",
+                borderRadius: "8px",
+                backgroundColor: "#f9f9f9",
+                mx: 2,
+                mt: 2,
+              }}
+            >
+              <Typography variant="body2" sx={{ fontWeight: "bold", mr: 1 }}>
+                Active Filters:
+              </Typography>
+              {activeFilters.map((filter, index) => (
+                <Chip
+                  key={`${filter.type}-${filter.value}-${index}`}
+                  label={`${
+                    filter.type.charAt(0).toUpperCase() + filter.type.slice(1)
+                  }: ${filter.label}`}
+                  onDelete={() => handleRemoveFilter(filter)}
+                  size="small"
+                  sx={{
+                    fontWeight: 500,
+                  }}
+                />
+              ))}
+              <Button
+                variant="text"
+                size="small"
+                onClick={handleClearFilter}
+                sx={{
+                  ml: "auto",
+                  textTransform: "none",
+                }}
+              >
+                Clear All
+              </Button>
+            </Box>
+          )}
         </Grid>
         <Grid
           item
@@ -1271,62 +1265,33 @@ function ClientDashboardpage() {
           }}
         ></Grid>
         <Grid item xs={12} sm={12} sx={{ marginTop: "0%" }}>
-            <TestCard
-              country={selectedCountry}
-              marketPlaceId={selectedCategory == "all" ? selectedCategory : filterFinal}
-              startDate={appliedStartDateHelium}
-              endDate={appliedEndDateHelium}
-              widgetData={appliedPreset}
-              brand_id={selectedBrandFilter}
-              product_id={mergedProductsFilter}
-              manufacturer_name={selectedManufacturerFilter}
-              fulfillment_channel={selectedFulfillment}
-              DateStartDate={appliedStartDate}
-              DateEndDate={appliedEndDate}
-            />
-        </Grid>
-        <Grid item xs={12} sm={12} sx={{ width: "99%" }}>
-          <AllMarketplace
+          <TestCard
             country={selectedCountry}
-            widgetData={appliedPreset}
-            marketPlaceId={
-              selectedCategory === "all" ? selectedCategory : filterFinal
-            }
-            brand_id={selectedBrandFilter}
-            product_id={mergedProductsFilter}
-            manufacturer_name={selectedManufacturerFilter}
-            fulfillment_channel={selectedFulfillment}
-            DateStartDate={appliedStartDate}
-            DateEndDate={appliedEndDate}
-          />
-        </Grid>
-        <Grid item xs={12} sm={12} sx={{ width: "99%" }}>
-          <ProfitAndLoss
-            country={selectedCountry}
-            widgetData={appliedPreset}
             marketPlaceId={
               selectedCategory == "all" ? selectedCategory : filterFinal
             }
+            startDate={appliedStartDateHelium}
+            endDate={appliedEndDateHelium}
+            widgetData={appliedPreset}
             brand_id={selectedBrandFilter}
-            fulfillment_channel={selectedFulfillment}
-            manufacturer_name={selectedManufacturerFilter}
             product_id={mergedProductsFilter}
+            manufacturer_name={selectedManufacturerFilter}
+            fulfillment_channel={selectedFulfillment}
             DateStartDate={appliedStartDate}
             DateEndDate={appliedEndDate}
           />
         </Grid>
-        <Grid item xs={12} sm={12}>
-          <PeriodComparission
-            country={selectedCountry}
-            marketPlaceId={
-              selectedCategory === "all" ? selectedCategory : filterFinal
-            }
-            brand_id={selectedBrandFilter}
-            product_id={mergedProductsFilter}
-            manufacturer_name={selectedManufacturerFilter}
-            fulfillment_channel={selectedFulfillment}
-          />
+
+        <Grid item xs={12} sm={12} sx={{ width: "100%", borderRadius: "2px" }}>
+          <Box
+            sx={{
+              padding: "16px",
+            }}
+          >
+            <InsightCategory />
+          </Box>
         </Grid>
+        {/* update revuneue table */}
         <Grid container spacing={2}>
           <Grid
             item
@@ -1509,6 +1474,22 @@ function ClientDashboardpage() {
             </Box>
           </Grid>
         </Grid>
+
+        {/* period comparision */}
+        <Grid item xs={12} sm={12}>
+          <PeriodComparission
+            country={selectedCountry}
+            marketPlaceId={
+              selectedCategory === "all" ? selectedCategory : filterFinal
+            }
+            brand_id={selectedBrandFilter}
+            product_id={mergedProductsFilter}
+            manufacturer_name={selectedManufacturerFilter}
+            fulfillment_channel={selectedFulfillment}
+          />
+        </Grid>
+
+        {/* today, yesterday, custom */}
         <Grid item xs={12} sm={12}>
           <MetricCard
             country={selectedCountry}
@@ -1526,6 +1507,8 @@ function ClientDashboardpage() {
             DateEndDate={appliedEndDate}
           />
         </Grid>
+
+        {/* sales decresing incresing */}
         <Grid item xs={12} sm={12}>
           <ProductPerformanceContainer
             country={selectedCountry}
@@ -1540,20 +1523,44 @@ function ClientDashboardpage() {
             DateStartDate={appliedStartDate}
             DateEndDate={appliedEndDate}
           />
-          <Grid
-            item
-            xs={12}
-            sm={12}
-            sx={{ width: "100%", borderRadius: "2px" }}
-          >
-            <Box
-              sx={{
-                padding: "16px",
-              }}
-            >
-              <InsightCategory />
-            </Box>
-          </Grid>
+        </Grid>
+
+        <Grid item xs={12} sm={12} sx={{ width: "99%" }}>
+          <AllMarketplace
+            country={selectedCountry}
+            widgetData={appliedPreset}
+            marketPlaceId={
+              selectedCategory === "all" ? selectedCategory : filterFinal
+            }
+            brand_id={selectedBrandFilter}
+            product_id={mergedProductsFilter}
+            manufacturer_name={selectedManufacturerFilter}
+            fulfillment_channel={selectedFulfillment}
+            DateStartDate={appliedStartDate}
+            DateEndDate={appliedEndDate}
+          />
+        </Grid>
+        <Grid item xs={12} sm={12} sx={{ width: "99%" }}>
+          <ProfitAndLoss
+            country={selectedCountry}
+            widgetData={appliedPreset}
+            marketPlaceId={
+              selectedCategory == "all" ? selectedCategory : filterFinal
+            }
+            brand_id={selectedBrandFilter}
+            fulfillment_channel={selectedFulfillment}
+            manufacturer_name={selectedManufacturerFilter}
+            product_id={mergedProductsFilter}
+            DateStartDate={appliedStartDate}
+            DateEndDate={appliedEndDate}
+          />
+        </Grid>
+        
+
+        
+
+        
+
           <Grid item xs={12} sm={12}>
             <MyProductList
               country={selectedCountry}
@@ -1569,7 +1576,6 @@ function ClientDashboardpage() {
               DateEndDate={appliedEndDate}
             />
           </Grid>
-        </Grid>
       </Grid>
     </Box>
   );
