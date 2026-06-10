@@ -158,6 +158,7 @@ const TestCard = ({
   const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
   const isTablet = useMediaQuery(theme.breakpoints.between("sm", "md"));
   const isSmallScreen = useMediaQuery(theme.breakpoints.down("md"));
+  const TIMEZONE = "Asia/Kolkata";
   const DayJStoday = dayjs().tz(TIMEZONE);
   // const API_TODAY = dayjs("2026-05-27").tz(TIMEZONE);
   const API_TODAY = DayJStoday;

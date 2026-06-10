@@ -1522,6 +1522,7 @@ function ClientDashboardpage() {
             fulfillment_channel={selectedFulfillment}
             DateStartDate={appliedStartDate}
             DateEndDate={appliedEndDate}
+            widgetData={appliedPreset}
           />
         </Grid>
 

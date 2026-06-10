@@ -623,6 +623,7 @@ const SalesDecreasing = ({
   fulfillment_channel,
   DateStartDate,
   DateEndDate,
+  widgetDate,
 }) => {
 
   // ✅ FIX 1: state must exist
@@ -739,6 +740,7 @@ const SalesDecreasing = ({
           start_date: DateStartDate,
           end_date: DateEndDate,
           timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
+          preset: widgetDate,
         }
       );
 

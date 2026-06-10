@@ -44,6 +44,7 @@ const SalesIncreasing = ({
   DateStartDate,
   DateEndDate,
   products: initialProducts = [],
+  widgetDate,
 }) => {
 
   // ❌ FIX: prevent duplicate state name clash
@@ -171,6 +172,7 @@ const SalesIncreasing = ({
           start_date: DateStartDate,
           end_date: DateEndDate,
           timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
+          preset: widgetDate,
         }
       );
 
@@ -256,7 +258,7 @@ const SalesIncreasing = ({
             Sales Trends: Increasing
           </Typography>
           <Typography variant="body2">
-            {dayBeforeYesterday} - {yesterday}
+            {/* {dayBeforeYesterday} - {yesterday} */}
           </Typography>
         </Box>
 

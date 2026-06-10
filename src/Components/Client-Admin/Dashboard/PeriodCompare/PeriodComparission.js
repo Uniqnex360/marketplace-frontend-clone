@@ -142,12 +142,18 @@ function PeriodComparission({
         .filter((key) => periods[key]?.label)
         .map((key) => {
           const item = periods[key];
-          const currentDateFrom = dayjs
-            .utc(item.period.current.from)
-            .format("MMM D");
-          const currentDateTo = dayjs
-            .utc(item.period.current.to)
-            .format("MMM D, YYYY");
+          // const currentDateFrom = dayjs
+          //   .utc(item.period.current.from)
+          //   .format("MMM D");
+          // const currentDateTo = dayjs
+          //   .utc(item.period.current.to)
+          //   .format("MMM D, YYYY");
+          const currentDateFrom = dayjs(item.period.current[0])
+          .tz("Asia/Kolkata")
+          .format("MMM D");
+          const currentDateTo = dayjs(item.period.current[1])
+          .tz("Asia/Kolkata")
+          .format("MMM D, YYYY");
           return {
             period: item.label || "",
             dateRange: `${currentDateFrom} - ${currentDateTo}`,
@@ -180,9 +186,13 @@ function PeriodComparission({
     }
   };
   let lastParamsRef = useRef("");
-  const API_TODAY = dayjs("31/05/2026", "DD/MM/YYYY")
-    .tz("US/Pacific")
-    .format("MMM D, YYYY");
+  
+  // const API_TODAY = dayjs("31/05/2026", "DD/MM/YYYY")
+  //   .tz("US/Pacific")
+  //   .format("MMM D, YYYY");
+  const API_TODAY = dayjs()
+  .tz("Asia/Kolkata")
+  .format("MMM D, YYYY");
   useEffect(() => {
     const currentParams = JSON.stringify({
       marketplace_id: marketPlaceId?.id,

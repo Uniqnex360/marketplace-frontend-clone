@@ -14,6 +14,7 @@ const ProductPerformanceContainer = ({
   DateStartDate,
   DateEndDate,
   country,
+  widgetData,
 }) => {
   const [performanceData, setPerformanceData] = useState({});
   const [loading, setLoading] = useState(true);
@@ -21,6 +22,7 @@ const ProductPerformanceContainer = ({
   const stableProductId = JSON.stringify(product_id);
   const stableManufacturer = JSON.stringify(manufacturer_name);
   const fetchProductPerformance = async () => {
+    console.log("preset decr", widgetData)
     try {
       setLoading(true);
       const response = await axios.post(
@@ -58,6 +60,7 @@ const ProductPerformanceContainer = ({
     DateStartDate,
     DateEndDate,
     country,
+    widgetData,
   ]);
   if (loading) {
     return (
@@ -87,6 +90,7 @@ const ProductPerformanceContainer = ({
           DateStartDate={DateStartDate}
           DateEndDate={DateEndDate}
           products={performanceData.top_3_products || []}
+          widgetDate={widgetData}
         />
       </Box>
       <Box sx={{ paddingBottom: "10px", width: "99%" }}>
@@ -100,6 +104,7 @@ const ProductPerformanceContainer = ({
           DateStartDate={DateStartDate}
           DateEndDate={DateEndDate}
           products={performanceData.least_3_products || []}
+          widgetDate={widgetData}
         />
       </Box>
     </>
