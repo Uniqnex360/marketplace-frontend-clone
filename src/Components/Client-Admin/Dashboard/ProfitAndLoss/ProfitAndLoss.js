@@ -178,7 +178,7 @@ const ProfitAndLoss = ({
           summaryOther?.previous?.giftwrapPrice
         )?.toFixed(2)}`,
         `Total Tax,<span class="math-inline">\{summaryOther?\.current?\.totalTax?\.toFixed\(2\)\},</span>{summaryOther?.previous?.totalTax?.toFixed(2)},${(
-          summaryOther?.current?.totalTax - summaryOther?.previous?.totalTax
+          summaryOther?.current?.tax_price - summaryOther?.previous?.tax_price
         )?.toFixed(2)}`,
         `Shipping,<span class="math-inline">\{summaryOther?\.current?\.shipping?\.toFixed\(2\)\},</span>{summaryOther?.previous?.shipping?.toFixed(2)},${(
           summaryOther?.current?.shipping_cost -
@@ -559,9 +559,9 @@ const ProfitAndLoss = ({
     {
       label: "Total Tax",
       
-      value:formatCurrency(summaryOther?.current?.totalTax,country),
+      value:formatCurrency(summaryOther?.current?.tax_price,country),
       delta: (
-        summaryOther?.current?.totalTax - summaryOther?.previous?.totalTax
+        summaryOther?.current?.tax_price - summaryOther?.previous?.tax_price
       )?.toFixed(2),
     },
     {
@@ -578,7 +578,7 @@ const ProfitAndLoss = ({
     {
       label: "Gross Revenue",
       
-      value: formatCurrency(summaryOther?.current?.gross,country),
+      value: formatCurrency(summaryOther?.current?.grossRevenue, country),
       delta: summary?.grossRevenue?.delta?.toFixed(2),
     },
     // { label: "Reimbursements", value: `$${summaryOther?.current?.reimbursements?.toFixed(2) ?? '0.00'}`, delta: (summaryOther?.current?.reimbursements - summaryOther?.previous?.reimbursements)?.toFixed(2) },
@@ -613,7 +613,7 @@ const ProfitAndLoss = ({
     {
       label: "Total Tax (Cost)",
       
-      value: formatCurrency(summaryOther?.current?.totalTax,country),
+      value: formatCurrency(summaryOther?.current?.tax_price,country),
       delta: (
         summaryOther?.current?.totalCosts -
         summaryOther?.previous?.totalTaxWithheld
