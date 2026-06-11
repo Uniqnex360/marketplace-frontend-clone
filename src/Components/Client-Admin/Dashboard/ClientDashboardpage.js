@@ -1282,15 +1282,22 @@ function ClientDashboardpage() {
           />
         </Grid>
 
-        <Grid item xs={12} sm={12} sx={{ width: "100%", borderRadius: "2px" }}>
-          <Box
-            sx={{
-              padding: "16px",
-            }}
-          >
-            <InsightCategory />
-          </Box>
+        <Grid item xs={12} sm={12} sx={{ width: "99%" }}>
+          <AllMarketplace
+            country={selectedCountry}
+            widgetData={appliedPreset}
+            marketPlaceId={
+              selectedCategory === "all" ? selectedCategory : filterFinal
+            }
+            brand_id={selectedBrandFilter}
+            product_id={mergedProductsFilter}
+            manufacturer_name={selectedManufacturerFilter}
+            fulfillment_channel={selectedFulfillment}
+            DateStartDate={appliedStartDate}
+            DateEndDate={appliedEndDate}
+          />
         </Grid>
+        
         {/* update revuneue table */}
         <Grid container spacing={2}>
           <Grid
@@ -1526,20 +1533,14 @@ function ClientDashboardpage() {
           />
         </Grid>
 
-        <Grid item xs={12} sm={12} sx={{ width: "99%" }}>
-          <AllMarketplace
-            country={selectedCountry}
-            widgetData={appliedPreset}
-            marketPlaceId={
-              selectedCategory === "all" ? selectedCategory : filterFinal
-            }
-            brand_id={selectedBrandFilter}
-            product_id={mergedProductsFilter}
-            manufacturer_name={selectedManufacturerFilter}
-            fulfillment_channel={selectedFulfillment}
-            DateStartDate={appliedStartDate}
-            DateEndDate={appliedEndDate}
-          />
+        <Grid item xs={12} sm={12} sx={{ width: "100%", borderRadius: "2px" }}>
+          <Box
+            sx={{
+              padding: "16px",
+            }}
+          >
+            <InsightCategory />
+          </Box>
         </Grid>
         <Grid item xs={12} sm={12} sx={{ width: "99%" }}>
           <ProfitAndLoss
