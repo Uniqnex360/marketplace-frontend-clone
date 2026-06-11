@@ -206,11 +206,11 @@ const enhancedCategories = useEnhancedCategories(categories);
         payload.order_status = selectedStatus;
       }
       const response = await axios.post(
-        `${process.env.REACT_APP_IP}fetchAllorders/`,
+        `${process.env.REACT_APP_IP_V2}clickhouse/fetchAllorders_clickhouse/`,
         payload
       );
 
-      const responseData = response.data || {};
+      const responseData = response.data?.data || {};
       setOrders(Array.isArray(responseData.orders) ? responseData.orders : []);
       setLogoMarket(
         Array.isArray(responseData.marketplace_list)
