@@ -813,7 +813,7 @@ const SalesDecreasing = ({
                 <TableRow key={index}>
                   <TableCell>$ {item.product_name}</TableCell>
                   <TableCell>$ {item.grossRevenue}</TableCell>
-                  <TableCell>$ {item.netProfit}</TableCell>
+                  <TableCell> $ {Number(item?.netProfit ?? 0).toFixed(2)} </TableCell>
                   <TableCell>{item.unitsSold}</TableCell>
                 </TableRow>
               ))
