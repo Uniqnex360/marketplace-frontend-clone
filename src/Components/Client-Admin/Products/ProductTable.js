@@ -192,7 +192,7 @@ const ProductTable = () => {
       const skip = (page - 1) * validRowsPerPage;
 
       const response = await axios.post(
-        `${process.env.REACT_APP_IP}getProductList/`,
+        `${process.env.REACT_APP_IP_V2}clickhouse/getProductList_clickhouse/`,
         {
           country: selectedCountry,
           user_id: userIds,
