@@ -41,14 +41,16 @@ const formatterLong = new Intl.DateTimeFormat("en-US", {
   year: "numeric",
   month: "long",
   day: "numeric",
-  timeZone: "UTC",
+  timezone: "Asia/Kolkata"
+  // timeZone: "UTC",
 });
 
 const formatterShort = new Intl.DateTimeFormat("en-US", {
   year: "2-digit",
   month: "2-digit",
   day: "2-digit",
-  timeZone: "UTC",
+  timezone: "Asia/Kolkata"
+  // timeZone: "UTC",
 });
 
 
@@ -997,7 +999,8 @@ const MetricCard = ({
           fulfillment_channel: fulfillment_channel,
           start_date: DateStartDate,
           end_date: DateEndDate,
-          timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
+          // timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
+          timezone: "Asia/Kolkata"
         }
       );
 
