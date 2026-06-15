@@ -654,8 +654,10 @@ const MyProductList = ({
       sx={{
         borderRadius: 1,
         border: "1px solid #ccc",
-        width: isMobile ? "100%" : "98%",
-        padding: isSmallMobile ? "2px" : "4px",
+        // width: isMobile ? "100%" : "98%",
+        width: "100%",
+        paddingLeft: "2px",
+        // paddingLeft: isSmallMobile ? "2px" : "4px",
         overflowX: "auto",
         minHeight: "400px",
       }}

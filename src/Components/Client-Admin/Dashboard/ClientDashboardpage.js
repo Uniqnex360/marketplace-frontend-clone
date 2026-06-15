@@ -1258,12 +1258,14 @@ function ClientDashboardpage() {
           item
           xs={12}
           sx={{
-            marginTop: "10%",
+            marginTop: "5%",
             pt: "0 !important",
             pl: "16px !important",
             pr: "16px !important",
           }}
         ></Grid>
+
+        {/* Executive overview */}
         <Grid item xs={12} sm={12} sx={{ marginTop: "0%" }}>
           <TestCard
             country={selectedCountry}
@@ -1281,8 +1283,9 @@ function ClientDashboardpage() {
             DateEndDate={appliedEndDate}
           />
         </Grid>
-
-        <Grid item xs={12} sm={12} sx={{ width: "99%" }}>
+        
+        {/* all market plaes */}
+        <Grid item xs={12} sm={12} sx={{marginBottom: "2%", paddingRight: "16px" }}>
           <AllMarketplace
             country={selectedCountry}
             widgetData={appliedPreset}
@@ -1496,7 +1499,7 @@ function ClientDashboardpage() {
           />
         </Grid>
 
-        {/* today, yesterday, custom */}
+        {/* performance summary */}
         <Grid item xs={12} sm={12}>
           <MetricCard
             country={selectedCountry}
@@ -1532,16 +1535,20 @@ function ClientDashboardpage() {
             widgetData={appliedPreset}
           />
         </Grid>
-
+        
+        {/* Insights cardd */}
         <Grid item xs={12} sm={12} sx={{ width: "100%", borderRadius: "2px" }}>
           <Box
             sx={{
-              padding: "16px",
+              // padding: "16px",
+              paddingRight: "16px",
             }}
           >
             <InsightCategory />
           </Box>
         </Grid>
+
+        {/* P & L */}
         <Grid item xs={12} sm={12} sx={{ width: "99%" }}>
           <ProfitAndLoss
             country={selectedCountry}
@@ -1558,26 +1565,23 @@ function ClientDashboardpage() {
           />
         </Grid>
         
+        {/* product list */}
+        <Grid item xs={12} sm={12} sx={{width: "99%"}}>
+          <MyProductList
+            country={selectedCountry}
+            widgetData={appliedPreset}
+            marketPlaceId={
+              selectedCategory == "all" ? selectedCategory : filterFinal
+            }
+            brand_id={selectedBrandFilter}
+            product_id={mergedProductsFilter}
+            manufacturer_name={selectedManufacturerFilter}
+            fulfillment_channel={selectedFulfillment}
+            DateStartDate={appliedStartDate}
+            DateEndDate={appliedEndDate}
+          />
+        </Grid>
 
-        
-
-        
-
-          <Grid item xs={12} sm={12}>
-            <MyProductList
-              country={selectedCountry}
-              widgetData={appliedPreset}
-              marketPlaceId={
-                selectedCategory == "all" ? selectedCategory : filterFinal
-              }
-              brand_id={selectedBrandFilter}
-              product_id={mergedProductsFilter}
-              manufacturer_name={selectedManufacturerFilter}
-              fulfillment_channel={selectedFulfillment}
-              DateStartDate={appliedStartDate}
-              DateEndDate={appliedEndDate}
-            />
-          </Grid>
       </Grid>
     </Box>
   );

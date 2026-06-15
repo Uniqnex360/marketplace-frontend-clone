@@ -440,9 +440,12 @@ const CompareChart = ({
     if (!chartData || Object.keys(chartData).length === 0) {
       return [];
     }
-    return Object.values(chartData).map((item) => ({
-      time: dayjs(item.current_date).format("h A"),
-      date: item.current_date,
+    return Object.entries(chartData).map(([dateKey, item]) => ({
+      // time: dayjs(item.current_date).format("h A"),
+      // date: item.current_date,
+      // compareDate: item.compare_date,
+      time: dayjs(dateKey).format("h A"),
+      date: dateKey,
       compareDate: item.compare_date,
       grossRevenue: item.gross_revenue_with_tax ?? 0,
       netProfit: item.net_profit ?? 0,

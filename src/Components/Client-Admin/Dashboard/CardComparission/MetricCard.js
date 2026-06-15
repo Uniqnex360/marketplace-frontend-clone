@@ -314,11 +314,20 @@ const PerformanceCard = ({
   };
 
   return (
-    <Box sx={{ width: "100%", marginTop: { xs: "5px", sm: "10px" } }}>
+    <Box sx={{ 
+      width: "100%", 
+      marginTop: { xs: "5px", sm: "10px" },
+    }}>
       <Card
-        sx={{ border: "1px solid #e0e0e0", fontSize: "14px", width: "100%" }}
+        sx={{ border: "1px solid #e0e0e0", fontSize: "14px", width: "100%", 
+          paddingLeft: "0px"
+         }}
       >
-        <CardContent sx={{ p: { xs: 1.5, sm: 2 }, '&:last-child': { pb: { xs: 1.5, sm: 2 } } }}>
+        <CardContent sx={{ 
+          paddingRight: { xs: 1.5, sm: 2 },
+          // p: { xs: 1.5, sm: 2 }, 
+          // '&:last-child': { pb: { xs: 1.5, sm: 2 } }, 
+          }}>
           <Box
             sx={{
               display: "flex",
@@ -1148,7 +1157,9 @@ const MetricCard = ({
   const processedData = metricsData ? transformData(metricsData,country) : [];
 
   return (
-    <Container maxWidth="xl" sx={{ px: { xs: 1, sm: 2 } }}>
+    <Container maxWidth="xl" sx={{ 
+      px: { xs: 1, sm: 2 },  
+      }}>
       {loading ? (
         <Box
           sx={{
@@ -1165,7 +1176,8 @@ const MetricCard = ({
         <>
           <Box
             sx={{
-              px: { xs: 0, sm: 2 },
+              paddingRight: { xs: 0, sm: 2 },
+              // px: { xs: 0, sm: 2 },
               py: 2,
               textAlign: "left",
             }}
@@ -1182,9 +1194,12 @@ const MetricCard = ({
               Performance Summary
             </Typography>
           </Box>
-          <Grid container spacing={{ xs: 1.5, sm: 2 }}>
+          <Grid container 
+          spacing={{ xs: 1.5, sm: 2 }}
+          >
             {processedData.map((cardData, idx) => (
-              <Grid item xs={12} sm={6} md={6} xl={3} key={idx}>
+              <Grid item xs={12} sm={6} md={6} xl={3} key={idx} 
+              >
                 <PerformanceCard {...cardData} country={country}/>
               </Grid>
             ))}
