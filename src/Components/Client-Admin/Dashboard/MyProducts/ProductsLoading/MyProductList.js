@@ -446,16 +446,16 @@ const MyProductList = ({
   
   useEffect(() => {
     const currentParams = JSON.stringify({
-      marketPlaceId,
-      widgetData,
+      // marketPlaceId,
+      // widgetData,
       rowsPerPage,
       searchQuery,
       brand_id,
       product_id,
       manufacturer_name,
-      fulfillment_channel,
-      DateStartDate,
-      DateEndDate,
+      // fulfillment_channel,
+      // DateStartDate,
+      // DateEndDate,
       tab,
       activeColumnCategoryTab,
       sortValues,
@@ -469,16 +469,16 @@ const MyProductList = ({
       fetchMyProducts(1); 
     }
   }, [
-    marketPlaceId,
-    widgetData,
+    // marketPlaceId,
+    // widgetData,
     rowsPerPage,
     searchQuery,
     brand_id,
     JSON.stringify(product_id),
     manufacturer_name,
-    fulfillment_channel,
-    DateStartDate,
-    DateEndDate,
+    // fulfillment_channel,
+    // DateStartDate,
+    // DateEndDate,
     tab,
     activeColumnCategoryTab,
     sortValues,
