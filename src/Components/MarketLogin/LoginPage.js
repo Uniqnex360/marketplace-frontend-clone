@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import {
   TextField,
   Button,
@@ -28,6 +28,15 @@ const LoginPage = () => {
   const [showRegisterPage, setShowRegisterPage] = useState(false);
   const navigate = useNavigate();
 
+  // login to ensure user id from localhost
+  useEffect(() => {
+    const userId = localStorage.getItem("user_id");
+
+    if (userId) {
+      navigate("/Home/");
+    }
+  }, [navigate]);
+
   const validateForm = () => {
     let isValid = true;
     setEmailError("");
@@ -40,7 +49,7 @@ const LoginPage = () => {
       const emailRegex = /^[a-zA-Z0-9._-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,6}$/;
       if (!emailRegex.test(email)) {
         setEmailError("Please enter a valid email");
-        isValid =false;
+        isValid = false;
       }
     }
 
@@ -58,13 +67,13 @@ const LoginPage = () => {
     if (!validateForm()) return;
 
     const baseUrl = process.env.REACT_APP_IP;
-    console.log('BASEURL', baseUrl);
+    console.log("BASEURL", baseUrl);
 
     setLoading(true);
     try {
       const response = await axios.post(
         `${process.env.REACT_APP_IP}loginUser/`,
-        { email, password }
+        { email, password },
       );
 
       if (response.data && response.data.data) {
@@ -73,7 +82,22 @@ const LoginPage = () => {
         if (!userData.valid) {
           toast.error("Invalid credentials!");
         } else {
+          // localStorage.setItem("user", JSON.stringify(userData));
+          // toast.success("Login successful!");
+
+          // switch (userData.role_name) {
+          //   case "Manager":
+          //     navigate("/Home/");
+          //     break;
+          //   default:
+          //     navigate("/");
+          //     break;
+          // }
           localStorage.setItem("user", JSON.stringify(userData));
+
+          // Save user id separately
+          localStorage.setItem("user_id", userData.id);
+
           toast.success("Login successful!");
 
           switch (userData.role_name) {
@@ -140,7 +164,11 @@ const LoginPage = () => {
             fontSize: { xs: "0.9rem", sm: "1rem" },
           }}
         >
-          Our marketplace platform empowers vendors to manage products across multiple channels from one central hub. Leverage effortless product listing, real-time inventory sync, and centralized order management. Gain valuable insights with sales and profit reports, enabling smarter decisions and accurate sales forecasting.
+          Our marketplace platform empowers vendors to manage products across
+          multiple channels from one central hub. Leverage effortless product
+          listing, real-time inventory sync, and centralized order management.
+          Gain valuable insights with sales and profit reports, enabling smarter
+          decisions and accurate sales forecasting.
         </Typography>
       </Box>
 
@@ -242,11 +270,11 @@ const LoginPage = () => {
               fullWidth
               disabled={loading}
               sx={{
-                backgroundColor: '#000080',
-                color: '#fff',
-                position: 'relative',
-                '&:hover': {
-                  backgroundColor: '#000066',
+                backgroundColor: "#000080",
+                color: "#fff",
+                position: "relative",
+                "&:hover": {
+                  backgroundColor: "#000066",
                 },
                 py: 1.5,
                 fontSize: { xs: "0.9rem", sm: "1rem" },
