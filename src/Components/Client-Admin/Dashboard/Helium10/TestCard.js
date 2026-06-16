@@ -619,27 +619,80 @@ const TestCard = ({
       setCurrentPreset("Today");
     }
   };
-  const getGraphPoints = (metric = "gross_revenue_without_tax") => {
-    const maxValue = Math.max(...dataState.bindGraph.map((d) => d[metric]), 1);
-    const width = isMobile ? 200 : 280;
-    return dataState.bindGraph
-      .map((item, index) => {
-        const x = (index / (dataState.bindGraph.length - 1)) * width + 10;
-        const y = 50 - (item[metric] / maxValue) * 30;
-        return `${x},${y}`;
-      })
-      .join(" ");
-  };
-  const getCirclePoints = (metric = "gross_revenue_without_tax") => {
-    const maxValue = Math.max(...dataState.bindGraph.map((d) => d[metric]), 1);
-    const width = isMobile ? 200 : 280;
-    return dataState.bindGraph.map((item, index) => ({
+  // const getGraphPoints = (metric = "gross_revenue_without_tax") => {
+  //   const maxValue = Math.max(...dataState.bindGraph.map((d) => d[metric]), 1);
+  //   const width = isMobile ? 200 : 280;
+  //   return dataState.bindGraph
+  //     .map((item, index) => {
+  //       const x = (index / (dataState.bindGraph.length - 1)) * width + 10;
+  //       const y = 50 - (item[metric] / maxValue) * 30;
+  //       return `${x},${y}`;
+  //     })
+  //     .join(" ");
+  // };
+  // const getCirclePoints = (metric = "gross_revenue_without_tax") => {
+  //   const maxValue = Math.max(...dataState.bindGraph.map((d) => d[metric]), 1);
+  //   const width = isMobile ? 200 : 280;
+  //   return dataState.bindGraph.map((item, index) => ({
+  //     ...item,
+  //     cx: (index / (dataState.bindGraph.length - 1)) * width + 10,
+  //     cy: 50 - (item[metric] / maxValue) * 30,
+  //     value: item[metric],
+  //   }));
+  // };
+  
+  const getGraphPoints = (
+  metric = "gross_revenue_without_tax"
+) => {
+  const maxValue = Math.max(
+    ...dataState.bindGraph.map((d) => d[metric]),
+    1
+  );
+
+  const width = isMobile ? 200 : 280;
+  const padding = 15;
+
+  return dataState.bindGraph
+    .map((item, index) => {
+      const x =
+        padding +
+        (index * (width - padding * 2)) /
+          (dataState.bindGraph.length - 1);
+
+      const y =
+        50 - (item[metric] / maxValue) * 30;
+
+      return `${x},${y}`;
+    })
+    .join(" ");
+};
+
+const getCirclePoints = (
+  metric = "gross_revenue_without_tax"
+) => {
+  const maxValue = Math.max(
+    ...dataState.bindGraph.map((d) => d[metric]),
+    1
+  );
+
+  const width = isMobile ? 200 : 280;
+  const padding = 15;
+
+  return dataState.bindGraph.map(
+    (item, index) => ({
       ...item,
-      cx: (index / (dataState.bindGraph.length - 1)) * width + 10,
-      cy: 50 - (item[metric] / maxValue) * 30,
+      cx:
+        padding +
+        (index * (width - padding * 2)) /
+          (dataState.bindGraph.length - 1),
+
+      cy:
+        50 - (item[metric] / maxValue) * 30,
+
       value: item[metric],
-    }));
-  };
+    })
+  );
+};
   const metricBlockStyle = {
     display: "flex",
     alignItems: "center",
