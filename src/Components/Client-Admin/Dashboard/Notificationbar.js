@@ -55,9 +55,9 @@ function Notificationbar() {
   const handleProfileClose = () => setAnchorEl(null);
 
   const handleLogout = () => {
-    navigate("/");
     localStorage.removeItem("token");
     localStorage.removeItem("user");
+    navigate("/");
   };
 
   const handleMobileMenu = (event) => setMobileMenuAnchor(event.currentTarget);

@@ -30,10 +30,11 @@ const LoginPage = () => {
 
   // login to ensure user id from localhost
   useEffect(() => {
+    const user = localStorage.getItem("user");
     const userId = localStorage.getItem("user_id");
 
-    if (userId) {
-      navigate("/Home/");
+    if (user && userId) {
+      navigate("/Home/", { replace: true });
     }
   }, [navigate]);
 
