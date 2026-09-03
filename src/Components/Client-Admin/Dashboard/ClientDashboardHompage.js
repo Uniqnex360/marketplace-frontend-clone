@@ -1,5 +1,5 @@
 import React from "react";
-import { Box } from "@mui/material";
+import { Box, useTheme, useMediaQuery } from "@mui/material";
 import { Routes, Route, Outlet } from "react-router-dom";
 import ClientSidebar from "../ClinetSidebar";
 import ClientDashboardpage from "./ClientDashboardpage";
@@ -16,41 +16,50 @@ import UserDetail from "../UserFeild/UserDetial";
 import MyProductDetial from '../Dashboard/MyProducts/ProductsLoading/MyProductDetial';
 import SalesProductDetailPage from "../Sales/SalesProductDetialPage/SalesProductDetail";
 
-const drawerWidth = 100;
-
 const ClientDashboardHomepage = () => {
-  return (
-    <Box sx={{ display: "flex", minHeight: "100vh" }}>
-      {/* Sidebar Without Drawer */}
-      <Box sx={{ width: drawerWidth, flexShrink: 0 }}>
-        <ClientSidebar />
-      </Box>
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down('md'));
 
-      {/* Main Content with Scrollable Area */}
-      <Box sx={{ flexGrow: 1, p: 3, overflowY: "auto" }}>
-        <Notificationbar /> {/* Notificationbar is outside the Routes */}
+  return (
+    <Box sx={{ 
+      display: "flex", 
+      minHeight: "100vh",
+      flexDirection: isMobile ? "column" : "row",
+    }}>
+      
+      {/* Desktop Sidebar */}
+      {!isMobile && <ClientSidebar />}
+
+      {/* Main Content */}
+      <Box sx={{ 
+        flex: 1,
+        p: { xs: 2, sm: 3 },
+        overflow: "auto",
+        mb: isMobile ? '70px' : 0,
+        minHeight: isMobile ? "calc(100vh - 70px)" : "100vh",
+      }}>
+        <Notificationbar />
         
         <Routes>
-          
           <Route path="/" element={<ClientDashboardpage />} />
           <Route path="products" element={<ProductTable />} />
           <Route path="products/details/:id" element={<ProductDetials />} />
           <Route path="orders" element={<OrderList />} />
           <Route path="users" element={<UserList />} />
-          <Route path="users/userdetails/:id" element ={<UserDetail/>} />
-           <Route path="orders/customList/:id" element={<CustomOrderList />} />
+          <Route path="users/userdetails/:id" element={<UserDetail/>} />
+          <Route path="orders/customList/:id" element={<CustomOrderList />} />
           <Route path="orders/details/:id" element={<OrdersDetail />} />
           <Route path="contact" element={<InventoryList />} />
           <Route path="settings" element={<MainSettings />} />
-          
-      <Route path="/product-detail/:id" element={<MyProductDetial />} />
-      
-      <Route path="/sales-detail/:id" element={<SalesProductDetailPage />} />
-      
-    </Routes>
+          <Route path="/product-detail/:id" element={<MyProductDetial />} />
+          <Route path="/sales-detail/:id" element={<SalesProductDetailPage />} />
+        </Routes>
 
-        <Outlet /> {/* Ensures nested routes render properly */}
+        <Outlet />
       </Box>
+
+      {/* Mobile Sidebar */}
+      {isMobile && <ClientSidebar />}
     </Box>
   );
 };

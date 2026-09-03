@@ -1,4 +1,6 @@
 # MarketLink
+<a href="https://deepwiki.com/HariUniqnex/marketplace-frontend-clone-doc"><img src="https://deepwiki.com/badge.svg" alt="Ask DeepWiki"></a>
+
 
 **Description:**
 
@@ -25,5 +27,10 @@ MarketLink is a comprehensive data integration platform designed to unify sales 
 *   Python
 *   Django
 *   Mongodb
+
+## Documentation
+
+Full frontend documentation is available in the repository under `docs/PROJECT_DOCUMENTATION.md`.
+
 
 

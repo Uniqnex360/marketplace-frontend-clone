@@ -1057,7 +1057,7 @@ value, widgetData, marketPlaceId, selectedEndDate,selectedValue, selectedStartDa
 
         <Switch checked={events} onChange={() => setEvents(!events)} size="small" />
 
-        {events && (
+        {/* {events && (
             <Button
                 variant="outlined"
                 size="small"
@@ -1072,7 +1072,7 @@ value, widgetData, marketPlaceId, selectedEndDate,selectedValue, selectedStartDa
             >
                 + Add Note
             </Button>
-        )}
+        )} */}
     </Box>
 
     <NoteModel open={openNote} onClose={() => setOpenNote(false)} />

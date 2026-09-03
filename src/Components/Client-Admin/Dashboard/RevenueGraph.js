@@ -1060,13 +1060,13 @@ setBindGraph(mergedGraphData);
          
             {/* Add Note and Events */}
             <Box display="flex" justifyContent="flex-end" alignItems="center" gap={2}>
-  <Typography variant="body2" sx={{ fontSize: '14px', lineHeight: 1 }}>
+  {/* <Typography variant="body2" sx={{ fontSize: '14px', lineHeight: 1 }}>
     Events
-  </Typography>
+  </Typography> */}
 
   <Switch checked={events} onChange={() => setEvents(!events)} size="small" />
 
-  {events && (
+  {/* {events && (
     <Button
   variant="outlined"
   size="small"
@@ -1082,7 +1082,7 @@ setBindGraph(mergedGraphData);
   + Add Note
 </Button>
 
-  )}
+  )} */}
 </Box>
 
 <NoteModal open={openNote} onClose={() => setOpenNote(false)} />

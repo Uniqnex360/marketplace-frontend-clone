@@ -1,11 +1,8 @@
-{
-  "name": "marketlink",
-  "version": "0.1.0",
-  "private": true,
+# Dependencies
+
+## Production Dependencies
   "dependencies": {
     "@date-io/dayjs": "^3.2.0",
-    "@emotion/react": "^11.14.0",
-    "@emotion/styled": "^11.14.1",
     "@fortawesome/free-solid-svg-icons": "^6.7.2",
     "@fortawesome/react-fontawesome": "^0.2.2",
     "@mui/icons-material": "^6.4.6",
@@ -21,13 +18,13 @@
     "highcharts": "^12.2.0",
     "highcharts-react-official": "^3.2.2",
     "html2canvas": "^1.4.1",
-    "jspdf": "^4.1.0",
+    "jspdf": "^3.0.1",
     "moment": "^2.30.1",
-    "react": "^18.3.1",
+    "react": "^19.0.0",
     "react-activation": "^0.13.4",
     "react-circular-progressbar": "^2.2.0",
     "react-datepicker": "^8.3.0",
-    "react-dom": "^18.3.1",
+    "react-dom": "^19.0.0",
     "react-router-dom": "^7.2.0",
     "react-scripts": "5.0.1",
     "react-toastify": "^11.0.5",
@@ -55,13 +52,3 @@
       "not dead",
       "not op_mini all"
     ],
-    "development": [
-      "last 1 chrome version",
-      "last 1 firefox version",
-      "last 1 safari version"
-    ]
-  },
-  "devDependencies": {
-    "eslint-config-react-app": "^7.0.1"
-  }
-}

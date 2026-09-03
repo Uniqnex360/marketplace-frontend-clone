@@ -1,4 +1,11 @@
-import React, { useState, useEffect, useRef, useCallback } from "react";
+import React, {
+  useState,
+  useEffect,
+  useRef,
+  useCallback,
+  useMemo,
+  startTransition,
+} from "react";
 import {
   Box,
   Grid,
@@ -21,10 +28,7 @@ import {
   Chip,
 } from "@mui/material";
 import axios from "axios";
-import ShoppingCartIcon from "@mui/icons-material/ShoppingCart";
-import AppsIcon from "@mui/icons-material/Apps";
 import ImageIcon from "@mui/icons-material/Image";
-import debounce from "lodash/debounce";
 import { toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import FilterAltIcon from "@mui/icons-material/FilterAlt";
@@ -42,10 +46,8 @@ import BarChartOutlined from "@mui/icons-material/BarChartOutlined";
 import EmojiEventsOutlined from "@mui/icons-material/EmojiEventsOutlined";
 import AttachMoneyOutlined from "@mui/icons-material/AttachMoneyOutlined";
 import ShoppingCartOutlined from "@mui/icons-material/ShoppingCartOutlined";
-import TestCard from "./Helium10/TestCard";
+// import TestCard from "./Helium10/TestCard";
 import MetricCard from "./CardComparission/MetricCard";
-import SalesIncreasing from "../Sales/SalesIncreasing";
-import SalesDecreasing from "../Sales/SalesDecreasing";
 import AllMarketplace from "./AllMarketplace/AllMarketplace";
 import ProfitAndLoss from "./ProfitAndLoss/ProfitAndLoss";
 import MyProductList from "./MyProducts/ProductsLoading/MyProductList";
@@ -57,14 +59,21 @@ import BrandSelector from "../../../utils/BrandSelector";
 import { fetchMarketplaceList } from "../../../utils/marketplace";
 import { useMarketplace } from "../../../utils/MarketplaceProvider";
 import ProductPerformanceContainer from "../../../utils/SalesTrends";
+import { useEnhancedCategories } from "../../../utils/UseEnhancedCategories";
+import CountrySelector from "../../../utils/countrySelector";
+import TestCard from "./Helium10/TestCard";
 
 function ClientDashboardpage() {
   const [selectedCategory, setSelectedCategory] = useState({
     id: "all",
     name: "All Channels",
   });
-  // const [categories, setCategories] = useState([]);
-  const { categories, loading: marketplaceLoading, error } = useMarketplace();
+  const {
+    categories,
+    loading: marketplaceLoading,
+    selectedCountry,
+    setSelectedCountry,
+  } = useMarketplace();
   const [isLoading, setIsLoading] = useState(true);
   const [startDate, setStartDate] = useState(null);
   const [endDate, setEndDate] = useState(null);
@@ -80,7 +89,7 @@ function ClientDashboardpage() {
   const [tab, setTab] = React.useState(0);
   const [activeFilters, setActiveFilters] = useState([]);
   const [startDateHelium, setStartDateHelium] = useState(
-    dayjs().subtract(7, "day")
+    dayjs().subtract(7, "day"),
   );
   const [endDateHelium, setEndDateHelium] = useState(dayjs());
   localStorage.removeItem("selectedCategory");
@@ -89,7 +98,7 @@ function ClientDashboardpage() {
   const [manufacturerList, setManufacturerList] = useState([]);
   const [selectedManufacturer, setSelectedManufacturer] = useState([]);
   const [selectedManufacturerFilter, setSelectedManufacturerFilter] = useState(
-    []
+    [],
   );
   const [skuList, setSkuList] = useState([]);
   const [selectedSku, setSelectedSku] = useState([]);
@@ -138,12 +147,79 @@ function ClientDashboardpage() {
     "This Year",
     "Last Year",
   ];
-  console.log("activefilters", activeFilters);
+  const getPresetDisplayLabel = (preset) => {
+    if (preset === "Today") {
+      // return "September 1";
+      return "Today";
+    }
+    return preset;
+  };
+  const datePickerSx = useMemo(
+    () => ({
+      width: "100%",
+      "& .MuiInputBase-root": {
+        height: 40,
+      },
+      "& .MuiInputLabel-root": {
+        fontSize: "16px",
+      },
+    }),
+    [],
+  );
+  const setSelectedBrandImmediate = (brands) => {
+    setSelectedBrand(brands);
+    setSelectedBrandFilter(brands.map((b) => b.id));
+  };
+  const handleStartDateChangeOptimized = useCallback(
+    (newValue) => {
+      setStartDate(newValue);
+      if (endDate && newValue && newValue.isAfter(endDate)) {
+        setEndDate(null);
+      }
+    },
+    [endDate],
+  );
+  const handleEndDateChangeOptimized = useCallback((newValue) => {
+    setEndDate(newValue);
+  }, []);
+  useEffect(() => {
+    if (!startDate || !endDate) return;
+    const timer = setTimeout(() => {
+      startTransition(() => {
+        const formattedStart = startDate.format("YYYY-MM-DD");
+        const formattedEnd = endDate.format("YYYY-MM-DD");
+        setAppliedStartDate(formattedStart);
+        setAppliedEndDate(formattedEnd);
+        setAppliedStartDateHelium(startDate);
+        setAppliedEndDateHelium(endDate);
+        setAppliedPreset("");
+        setActiveFilters((prev) => {
+          const filtered = prev.filter(
+            (f) => f.type !== "date" && f.type !== "preset",
+          );
+          const dateLabel = `${startDate.format(
+            "MMM D, YYYY",
+          )} - ${endDate.format("MMM D, YYYY")}`;
+          return [
+            ...filtered,
+            { type: "date", value: "customDate", label: dateLabel },
+          ];
+        });
+        setIsFiltering(true);
+      });
+    }, 500);
+    return () => clearTimeout(timer);
+  }, [startDate, endDate]);
+  const continents = ["US", "UK"];
   const [value, setValue] = useState([dayjs().subtract(6, "day"), dayjs()]);
   const [selectedPreset, setSelectedPreset] = useState("Today");
   const [hasMore, setHasMore] = React.useState(true);
   const handleChange = (newValue) => {
     setValue(newValue);
+  };
+  const handleCountySelect = (country) => {
+    setSelectedCountry(country);
+    updateActiveFilters("country", country, country, true);
   };
   const handlePresetSelectHelium = (preset) => {
     setSelectedPreset(preset);
@@ -232,118 +308,103 @@ function ClientDashboardpage() {
     }
   }, [startDate, endDate]);
   useEffect(() => {
+    const timer = setTimeout(() => {
+      setSelectedManufacturerFilter(selectedManufacturer);
+      setMergedProductsFilter(mergedProducts);
+      setSelectedBrandFilter(brand_id);
+      setIsFiltering(true);
+    }, 300);
+    return () => clearTimeout(timer);
+  }, [selectedManufacturer, mergedProducts, brand_id]);
+  useEffect(() => {
     if (befePreset || selectedPreset) {
       setStartDate(null);
       setEndDate(null);
     }
   }, [befePreset, selectedPreset]);
-  // useEffect(() => {
-  //   fetchMarketplaceListAPI();
-  // }, [userIds]);
-
-  // const fetchMarketplaceListAPI = async () => {
-  //   try {
-  //     const categoryData=await fetchMarketplaceList(userIds,'ClientDashboard')
-
-  //     // const response = await axios.get(
-  //     //   `${process.env.REACT_APP_IP}getMarketplaceList/?user_id=${userIds}`
-  //     // );
-  //     // const categoryData = response.data.data.map((item) => ({
-  //     //   id: item.id,
-  //     //   name: item.name,
-  //     //   imageUrl: item.image_url,
-  //     //   fulfillment_channel: item.fulfillment_channel,
-  //     // }));
-  //     setCategories([
-  //       {
-  //         id: "all",
-  //         name: "All Channels",
-  //         icon: (
-  //           <AppsIcon
-  //             fontSize="small"
-  //             sx={{ height: "13px", textTransform: "capitalize" }}
-  //           />
-  //         ),
-  //       },
-  //       {
-  //         id: "custom",
-  //         name: "Custom",
-  //         icon: <ShoppingCartIcon fontSize="small" sx={{ height: "13px" }} />,
-  //       },
-  //       ...categoryData,
-  //     ]);
-  //     setSelectedCategory({ id: "all", name: "All Channels" });
-  //   } catch (error) {
-  //     console.error("Error fetching marketplace list:", error);
-  //   } finally {
-  //     setIsLoading(false);
-  //   }
-  // };
-  const enhancedCategories = React.useMemo(() => {
-  return [
-    {
-      id: "all",
-      name: "All Channels",
-      icon: <AppsIcon fontSize="small" sx={{ height: "13px" }} />,
-    },
-    {
-      id: "custom",
-      name: "Custom",
-      icon: <ShoppingCartIcon fontSize="small" sx={{ height: "13px" }} />,
-    },
-    ...categories,
-  ];
-}, [categories]);
-
-  useEffect(()=>{
-    if(!marketplaceLoading && enhancedCategories.length>0)
-    {
-      setSelectedCategory({ id: "all", name: "All Channels" })
+  const enhancedCategories = useEnhancedCategories(categories);
+  useEffect(() => {
+    if (!marketplaceLoading && enhancedCategories.length > 0) {
+      setSelectedCategory({ id: "all", name: "All Channels" });
     }
-  },[enhancedCategories,marketplaceLoading])
- 
-
+  }, [enhancedCategories, marketplaceLoading]);
   const handleRemoveFilter = (filter) => {
     updateActiveFilters(filter.type, filter.value, filter.label, false);
+
     switch (filter.type) {
       case "brand":
-        setSelectedBrand((prev) => prev.filter((b) => b.id !== filter.value));
-        break;
-      case "sku":
-        setSelectedSku((prev) => prev.filter((s) => s.id !== filter.value));
-        break;
-      case "manufacturer":
-        setSelectedManufacturer((prev) =>
-          prev.filter((m) => m.id !== filter.value)
+        const updatedBrands = selectedBrand.filter(
+          (b) => b.id !== filter.value,
         );
+        setSelectedBrand(updatedBrands);
+        setSelectedBrandFilter(updatedBrands.map((b) => b.id));
         break;
+
+      case "sku":
+        const updatedSkus = selectedSku.filter((s) => s.id !== filter.value);
+        setSelectedSku(updatedSkus);
+        updateMergedProducts(selectedAsin, updatedSkus);
+        break;
+
+      case "manufacturer":
+        const updatedManufacturers = selectedManufacturer.filter(
+          (m) => m !== filter.value,
+        );
+        setSelectedManufacturer(updatedManufacturers);
+        setSelectedManufacturerFilter(updatedManufacturers);
+        break;
+
       case "asin":
-        setSelectedAsin((prev) => prev.filter((a) => a.id !== filter.value));
+        const updatedAsins = selectedAsin.filter((a) => a.id !== filter.value);
+        setSelectedAsin(updatedAsins);
+        updateMergedProducts(updatedAsins, selectedSku);
         break;
+
       case "channel":
         if (filter.value === selectedCategory.id) {
-          setSelectedCategory({ id: "all", name: "All Channels" });
+          const newCategory = { id: "all", name: "All Channels" };
+          setSelectedCategory(newCategory);
+          setFilterFinal(newCategory);
         }
         break;
+
+      case "country":
+        setSelectedCountry("");
+        break;
+
       case "preset":
         setSelectedPreset("Today");
         setBefePreset("Today");
+        setAppliedPreset("Today");
+        setStartDateHelium(dayjs().subtract(7, "day"));
+        setEndDateHelium(dayjs());
+        setAppliedStartDateHelium(dayjs().subtract(7, "day"));
+        setAppliedEndDateHelium(dayjs());
         break;
+
       case "date":
         setStartDate(null);
         setEndDate(null);
         setAppliedEndDate(null);
         setAppliedStartDate(null);
+        setAppliedStartDateHelium(dayjs().subtract(7, "day"));
+        setAppliedEndDateHelium(dayjs());
+        setSelectedPreset("Today");
+        setBefePreset("Today");
+        setAppliedPreset("Today");
         break;
+
       default:
         break;
     }
+
+    setIsFiltering(true);
   };
   const updateActiveFilters = (type, value, label, isAdd = true) => {
     setActiveFilters((prevFilters) => {
       if (isAdd) {
         const exists = prevFilters.some(
-          (filter) => filter.value === value && filter.type === type
+          (filter) => filter.value === value && filter.type === type,
         );
         if (!exists) {
           return [...prevFilters, { type, value, label }];
@@ -351,7 +412,7 @@ function ClientDashboardpage() {
         return prevFilters;
       } else {
         return prevFilters.filter(
-          (filter) => !(filter.value === value && filter.type === type)
+          (filter) => !(filter.value === value && filter.type === type),
         );
       }
     });
@@ -362,13 +423,14 @@ function ClientDashboardpage() {
       const response = await axios.post(
         `${process.env.REACT_APP_IP}getproductIdlist/`,
         {
+          country: selectedCountry,
           marketplace_id: selectedCategory?.id,
           search_query: search,
           user_id: userIds,
           brand_id,
-          sku_ids: selectedSku.map(s => s.id),
+          sku_ids: selectedSku.map((s) => s.id),
           manufacturer_name: selectedManufacturer,
-        }
+        },
       );
       const items = response.data.data || [];
       setAsinList(items);
@@ -384,7 +446,7 @@ function ClientDashboardpage() {
       category_id: selectedCategory?.id,
       brand: selectedBrand,
       manufacturer: selectedManufacturer,
-      sku:selectedSku
+      sku: selectedSku,
     });
     let debounceTimer;
     if (trimmedInput !== lastInputRef.current) {
@@ -400,66 +462,28 @@ function ClientDashboardpage() {
       lastFilterParamsRef.current = currentFilterParams;
       fetchAsinList("");
     }
-    // fetchAsinList('')
     return () => clearTimeout(debounceTimer);
-  }, [selectedCategory, selectedBrand, selectedManufacturer, inputValueAsin,selectedSku,selectedAsin]);
-  // const fetchManufacturerList = async (searchText) => {
-  //   setIsLoading(true);
-  //   try {
-  //     const response = await axios.get(
-  //       `${process.env.REACT_APP_IP}obtainManufactureNames/`,
-  //       {
-  //         params: {
-  //           marketplace_id: selectedCategory?.id,
-  //           user_id: userIds,
-  //           search_query: searchText,
-  //         },
-  //       }
-  //     );
-  //     const names = response.data.manufacturer_name_list || [];
-  //     setManufacturerList(names);
-  //   } catch (error) {
-  //     console.error("Error fetching manufacturer list:", error);
-  //   } finally {
-  //     setIsLoading(false);
-  //   }
-  // };
-  // useEffect(() => {
-  //   const delayDebounceFn = setTimeout(() => {
-  //     if (inputValueManufactuer.trim() === "") {
-  //       fetchManufacturerList("");
-  //     } else {
-  //       fetchManufacturerList(inputValueManufactuer);
-  //     }
-  //   }, 300);
-  //   return () => clearTimeout(delayDebounceFn);
-  // }, [inputValueManufactuer]);
-useEffect(() => {
-  // run brand call if category/sku/asin/brandlimit changes OR input search changes
-  const delayDebounceFn = setTimeout(() => {
-    fetchBrandList(inputValueBrand.trim() || "");
-  }, 300);
-
-  return () => clearTimeout(delayDebounceFn);
-}, [brandLimit, selectedCategory?.id, userIds, selectedAsin, selectedSku, inputValueBrand]);
-  // const debouncedFetchBrandList = useCallback(
-  //   debounce((search) => {
-  //     setBrandLimit(11);
-  //     fetchBrandList(search);
-  //   }, 300),
-  //   []
-  // );
-  // useEffect(() => {
-  //   const delayDebounceFn = setTimeout(() => {
-  //     if (inputValueBrand.trim() === "") {
-  //       fetchBrandList("");
-  //     } else {
-  //       debouncedFetchBrandList(inputValueBrand);
-  //     }
-  //   }, 300);
-  //   return () => clearTimeout(delayDebounceFn);
-  // }, [inputValueBrand, debouncedFetchBrandList]);
-
+  }, [
+    selectedCategory,
+    selectedBrand,
+    selectedManufacturer,
+    inputValueAsin,
+    selectedSku,
+    selectedAsin,
+  ]);
+  useEffect(() => {
+    const delayDebounceFn = setTimeout(() => {
+      fetchBrandList(inputValueBrand.trim() || "");
+    }, 300);
+    return () => clearTimeout(delayDebounceFn);
+  }, [
+    brandLimit,
+    selectedCategory?.id,
+    userIds,
+    selectedAsin,
+    selectedSku,
+    inputValueBrand,
+  ]);
   const fetchBrandList = async (search = "") => {
     setIsLoading(true);
     try {
@@ -467,14 +491,15 @@ useEffect(() => {
         `${process.env.REACT_APP_IP}getBrandListforfilter/`,
         {
           params: {
+            country: selectedCountry,
             marketplace_id: selectedCategory?.id,
             search_query: search,
             user_id: userIds,
-            asin_ids: selectedAsin.map(a => a.id),
-            sku_ids: selectedSku.map(s => s.id),
+            asin_ids: selectedAsin.map((a) => a.id),
+            sku_ids: selectedSku.map((s) => s.id),
             limit: brandLimit,
           },
-        }
+        },
       );
       const names = response.data.data.brand_list || [];
       setBrandList(names);
@@ -486,49 +511,20 @@ useEffect(() => {
       setIsLoading(false);
     }
   };
-  // useEffect(() => {
-  //   const currentCategoryId = selectedCategory?.id;
-  //   if (currentCategoryId && currentCategoryId !== lastCategoryIdRef.current) {
-  //     lastCategoryIdRef.current = currentCategoryId;
-  //     fetchBrandList("");
-  //   }
-  // }, [selectedCategory]);
-
-  useEffect(() => {
-    updateActiveFilters("date", "customDate", "", false);
-    if (startDate && endDate) {
-      const startLabel = dayjs(startDate).format("MMM D,YYYY");
-      const endLabel = dayjs(endDate).format("MMM D, YYYY");
-      const dateLabel = `${startLabel} - ${endLabel}`;
-      updateActiveFilters("date", "customDate", dateLabel, true);
-      updateActiveFilters("preset", selectedPreset, selectedPreset, false);
-    }
-  }, [startDate, endDate]);
-  // useEffect(() => {
-  //   if (inputValueBrand.trim()) {
-  //     setIsTyping(true);
-  //     const delay = setTimeout(() => {
-  //       fetchBrandList(inputValueBrand.trim());
-  //     }, 300);
-  //     return () => clearTimeout(delay);
-  //   } else {
-  //     setIsTyping(false);
-  //   }
-  // }, [inputValueBrand]);
-
   const fetchSkuList = async (searchText = "") => {
     setIsLoading(true);
     try {
       const response = await axios.post(
         `${process.env.REACT_APP_IP}getSKUlist/`,
         {
+          country: selectedCountry,
           marketplace_id: selectedCategory?.id,
           search_query: searchText,
           user_id: userIds,
           brand_id,
-          asin_ids:selectedAsin.map(a=>a.id),
+          asin_ids: selectedAsin.map((a) => a.id),
           manufacturer_name: selectedManufacturer,
-        }
+        },
       );
       const names = response.data.data || [];
       setSkuList(names);
@@ -544,26 +540,32 @@ useEffect(() => {
       brand: selectedBrand,
       manufacturer: selectedManufacturer,
       sku: selectedSku,
-      asin:selectedAsin
+      asin: selectedAsin,
     });
     if (
-      (selectedCategory?.id || selectedBrand || selectedManufacturer||selectedAsin) &&
+      (selectedCategory?.id ||
+        selectedBrand ||
+        selectedManufacturer ||
+        selectedAsin) &&
       currentParams !== lastParamsRef.current
     ) {
       lastParamsRef.current = currentParams;
       fetchSkuList("");
     }
-    // fetchSkuList('')
-  }, [selectedCategory, selectedBrand, selectedManufacturer,userIds,selectedAsin]);
-
+  }, [
+    selectedCategory,
+    selectedBrand,
+    selectedManufacturer,
+    userIds,
+    selectedAsin,
+  ]);
   useEffect(() => {
-    if(!inputValueSku.trim())return 
+    if (!inputValueSku.trim()) return;
     const delayDebounce = setTimeout(() => {
-      fetchSkuList(inputValueSku)
+      fetchSkuList(inputValueSku);
     }, 300);
     return () => clearTimeout(delayDebounce);
   }, [inputValueSku]);
-  
   const handleMenuOpen = (event) => {
     setAnchorEl(event.currentTarget);
   };
@@ -577,27 +579,26 @@ useEffect(() => {
       [categoryId]: !prev[categoryId],
     }));
   };
-
   const handleCategorySelect = (category) => {
     if (category.id === selectedCategory.id) return;
-
     if (selectedCategory.id !== "all") {
       updateActiveFilters(
         "channel",
         selectedCategory.id,
         selectedCategory.name,
-        false
+        false,
       );
     }
     setSelectedCategory(category);
-
+    setFilterFinal(category);
+    setIsFiltering(true);
     if (category.id !== "all") {
       updateActiveFilters("channel", category.id, category.name, true);
     }
     handleMenuClose();
   };
   const [appliedStartDateHelium, setAppliedStartDateHelium] = useState(
-    dayjs().subtract(7, "day")
+    dayjs().subtract(7, "day"),
   );
   const [appliedEndDateHelium, setAppliedEndDateHelium] = useState(dayjs());
   const [appliedPreset, setAppliedPreset] = useState("Today");
@@ -605,6 +606,8 @@ useEffect(() => {
     const { label, value } = fulfillment;
     setselectFulfillment(value);
     setSelectedCategory({ ...category, fulfillment: label });
+    setFilterFinal({ ...category, fulfillment: label });
+    setIsFiltering(true);
     handleMenuClose();
   };
   const toggleSelection = (option) => {
@@ -671,7 +674,7 @@ useEffect(() => {
     const isSelected = selectedManufacturer.includes(manufacturer);
     if (isSelected) {
       setSelectedManufacturer((prev) =>
-        prev.filter((item) => item !== manufacturer)
+        prev.filter((item) => item !== manufacturer),
       );
       updateActiveFilters("manufacturer", manufacturer, manufacturer, false);
     } else {
@@ -682,19 +685,16 @@ useEffect(() => {
   const updateMergedProducts = (asinList, skuList) => {
     const merged = [...skuList, ...asinList];
     const uniqueById = Array.from(
-      new Map(merged.map((item) => [item.id, item])).values()
+      new Map(merged.map((item) => [item.id, item])).values(),
     );
     productuniqueById = uniqueById.map((item) => item.id);
     setMergedProducts(productuniqueById);
   };
-  useEffect(() => {
-    console.log(mergedProducts, "mergedProducts");
-    console.log(selectedFulfillment, "selectedFulfillment");
-  }, [mergedProducts, selectedFulfillment]);
+  useEffect(() => {}, [mergedProducts, selectedFulfillment]);
   const handleCategoryChange = (event) => {
     const selectedName = event.target.value;
     const selectedCategoryObject = categories.find(
-      (category) => category.name === selectedName
+      (category) => category.name === selectedName,
     );
     if (selectedCategoryObject) {
       setSelectedCategory(selectedCategoryObject);
@@ -708,73 +708,6 @@ useEffect(() => {
   };
   const handleEndDateChange = (newValue) => {
     setEndDate(newValue);
-  };
-  const handleApplyFilter = () => {
-    setBefePreset(selectedPreset);
-    setAppliedStartDateHelium(startDateHelium);
-    setAppliedEndDateHelium(endDateHelium);
-    setAppliedPreset(selectedPreset);
-    console.log("index", befePreset);
-    if (selectedCategory) {
-      setSelectedManufacturerFilter(selectedManufacturer);
-      setMergedProductsFilter(mergedProducts);
-      setSelectedBrandFilter(brand_id);
-      if (!startDate || !endDate) {
-        setFilter(selectedCategory);
-        setFilterFinal(selectedCategory);
-        setIsFiltering(true);
-        toast.success("Filter applied successfully!", {
-          position: "top-right",
-          autoClose: 3000,
-          hideProgressBar: false,
-          closeOnClick: true,
-          pauseOnHover: true,
-          draggable: true,
-          progress: undefined,
-          theme: "colored",
-        });
-        return;
-      }
-    }
-    if (startDate && endDate) {
-      console.log("Raw:", startDate, endDate);
-      const start = new Date(startDate);
-      const end = new Date(endDate);
-      const formattedStartDate = start.toLocaleDateString("en-CA");
-      const formattedEndDate = end.toLocaleDateString("en-CA");
-      console.log("Formatted:", formattedStartDate, formattedEndDate);
-      setAppliedStartDate(formattedStartDate);
-      setAppliedEndDate(formattedEndDate);
-      setAppliedPreset("")
-      console.log("Applied end date:", formattedEndDate);
-      setFilter(selectedCategory);
-      setFilterFinal(selectedCategory);
-      setIsFiltering(true);
-      toast.success(
-        "Filter applied successfully with selected category and dates!",
-        {
-          position: "top-right",
-          autoClose: 3000,
-          hideProgressBar: false,
-          closeOnClick: true,
-          pauseOnHover: true,
-          draggable: true,
-          progress: undefined,
-          theme: "colored",
-        }
-      );
-    } else if (startDate && !endDate) {
-      toast.error("Please select both start and end dates.", {
-        position: "top-right",
-        autoClose: 3000,
-        hideProgressBar: false,
-        closeOnClick: true,
-        pauseOnHover: true,
-        draggable: true,
-        progress: undefined,
-        theme: "colored",
-      });
-    }
   };
   const handleClearFilter = () => {
     setSelectedCategory({ id: "all", name: "All Channels" });
@@ -830,84 +763,83 @@ useEffect(() => {
         }}
       >
         <Grid item xs={12}>
-          <Box
-            sx={{
-              width: "100%",
-              backgroundColor: "#ffff",
-              height: "9%",
-              marginLeft: "-8px",
-              marginTop: "5%",
-              position: "fixed",
-              display: "flex",
-              flexDirection: "column",
-              top: 0,
-              zIndex: 1100,
-              backgroundColor: "#fff",
-              paddingY: 1,
-            }}
-          >
-            <Grid container spacing={2} className="dashboard-filter">
-              <Grid
-                item
-                xs={12}
-                className="category-select-container"
+          <Grid container spacing={2} className="dashboard-filter">
+            <Grid
+              item
+              xs={12}
+              className="category-select-container"
+              sx={{
+                paddingBottom: "10px",
+                backgroundColor: "#fff",
+                display: "flex",
+                justifyContent: "space-between",
+                alignItems: "center",
+                px: 2,
+                gap: 2,
+              }}
+            >
+              {/* Filters */}
+              <Box
                 sx={{
-                  paddingBottom: "10px",
-                  backgroundColor: "#ffff",
                   display: "flex",
-                  justifyContent: "flex-start",
                   alignItems: "center",
-                  px: 2,
+                  justifyContent: "center",
+                  gap: 1,
+                  flexWrap: "nowrap",
+                  flex: 1,
                 }}
               >
-                <Box
-                  sx={{
-                    fontSize: "32px",
-                    fontFamily:
-                      "'Nunito Sans', -apple-system, 'Segoe UI', 'Roboto', 'Helvetica Neue', 'Arial', sans-serif",
-                    fontWeight: 500,
-                    padding: "0px 20.5% 0px 11px",
-                  }}
-                >
-                  Welcome
+                <Box sx={{ width: "180px" }}>
+                  <CountrySelector
+                    selectedCountry={selectedCountry}
+                    onCountryChange={(country) => {
+                      setSelectedCountry(country);
+                      setActiveFilters((prev) => {
+                        const filtered = prev.filter(
+                          (f) => f.type !== "country",
+                        );
+                        return [
+                          ...filtered,
+                          { type: "country", value: country, label: country },
+                        ];
+                      });
+                    }}
+                  />
                 </Box>
-                 <Box
-                  sx={{
-                    position: "relative",
-                    paddingRight: "5%",
-                    width: "150px",
-                  }}
-                >
+                <Box sx={{ width: "190px" }}>
                   <BrandSelector
-                  selectedBrand={selectedBrand}
-                  setSelectedBrand={setSelectedBrand}
-                  brandList={brandList}
-                  inputValueBrand={inputValueBrand}
-                  setInputValueBrand={setInputValueBrand}
-                  brandLimit={brandLimit}
-                  setBrandLimit={setBrandLimit}
-                  isLoading={isLoading}
-                  hasMore={hasMore}
-                  toggleSelection={toggleSelection}
-                  label="Brands"
-                  width={190}
-                />
+                    selectedBrand={selectedBrand}
+                    setSelectedBrand={(brands) => {
+                      setSelectedBrand(brands);
+                      setActiveFilters((prev) => {
+                        const filtered = prev.filter((f) => f.type !== "brand");
+                        const brandFilters = brands.map((brand) => ({
+                          type: "brand",
+                          value: brand.id,
+                          label: brand.name,
+                        }));
+                        return [...filtered, ...brandFilters];
+                      });
+                    }}
+                    brandList={brandList}
+                    inputValueBrand={inputValueBrand}
+                    setInputValueBrand={setInputValueBrand}
+                    brandLimit={brandLimit}
+                    setBrandLimit={setBrandLimit}
+                    isLoading={isLoading}
+                    hasMore={hasMore}
+                    toggleSelection={toggleSelection}
+                    label="Brands"
+                  />
                 </Box>
-               
-                <Box
-                  sx={{
-                    position: "relative",
-                    paddingRight: "4%",
-                    width: "150px",
-                  }}
-                >
+                <Box sx={{ width: "140px" }}>
                   <Autocomplete
                     multiple
                     disableCloseOnSelect
                     options={[
                       ...selectedSku,
                       ...skuList.filter(
-                        (s) => !selectedSku.some((ss) => ss.id === s.id)
+                        (s) => !selectedSku.some((ss) => ss.id === s.id),
                       ),
                     ]}
                     getOptionLabel={(option) =>
@@ -924,12 +856,22 @@ useEffect(() => {
                     value={selectedSku}
                     onChange={(event, newValue) => {
                       setSelectedSku(newValue);
+                      setActiveFilters((prev) => {
+                        const filtered = prev.filter((f) => f.type !== "sku");
+                        const skuFilters = newValue.map((sku) => ({
+                          type: "sku",
+                          value: sku.id,
+                          label: sku.sku,
+                        }));
+                        return [...filtered, ...skuFilters];
+                      });
+                      updateMergedProducts(selectedAsin, newValue);
                     }}
                     renderTags={() => null}
                     noOptionsText={inputValueSku ? "No options" : ""}
                     renderOption={(props, option) => {
                       const isSelected = selectedSku.some(
-                        (s) => s.id === option.id
+                        (s) => s.id === option.id,
                       );
                       return (
                         <Box
@@ -961,39 +903,11 @@ useEffect(() => {
                         }}
                       />
                     )}
-                    PopperComponent={(props) => (
-                      <Box
-                        {...props}
-                        sx={{
-                          zIndex: 1300,
-                          width: 220,
-                          bgcolor: "white",
-                          boxShadow: 3,
-                          borderRadius: 1,
-                          overflow: "auto",
-                          maxHeight: 300,
-                          position: "absolute",
-                        }}
-                        onScroll={(event) => {
-                          const { scrollTop, scrollHeight, clientHeight } =
-                            event.target;
-                          if (
-                            scrollTop + clientHeight >= scrollHeight - 5 &&
-                            !isLoading &&
-                            hasMore
-                          ) {
-                            setSkuLimit((prev) => prev + 10);
-                          }
-                        }}
-                      >
-                        {props.children}
-                      </Box>
-                    )}
                     sx={{
                       "& .MuiInputBase-root": {
                         height: 40,
                         fontSize: 14,
-                        width: 190,
+                        width: 140,
                       },
                       "& input": {
                         fontSize: 13,
@@ -1001,430 +915,209 @@ useEffect(() => {
                     }}
                   />
                 </Box>
-                {/* <Box sx={{ width: 160, position: "relative" }}>
+                <Box>
+                  <Button
+                    variant="outlined"
+                    onClick={handleMenuOpen}
+                    sx={{
+                      width: 160,
+                      height: 40,
+                      justifyContent: "space-between",
+                      padding: "9px 8px 6px 8px",
+                      color: "rgba(0, 0, 0, 0.6)",
+                      fontSize: "16px",
+                      borderColor: "#cacaca",
+                      textTransform: "none",
+                    }}
+                  >
+                    {selectedCategory
+                      ? selectedCategory.fulfillment
+                        ? `${selectedCategory.name} - ${selectedCategory.fulfillment}`
+                        : selectedCategory.name
+                      : "Select Channel"}
+                    <ArrowDropDownIcon />
+                  </Button>
+                </Box>
+                <Menu
+                  anchorEl={anchorEl}
+                  open={Boolean(anchorEl)}
+                  onClose={handleMenuClose}
+                  PaperProps={{
+                    sx: { maxHeight: 400, width: 143, fontSize: "15px" },
+                  }}
+                >
+                  {isLoading ? (
+                    <MenuItem disabled>
+                      <CircularProgress size={24} sx={{ margin: "0 auto" }} />
+                    </MenuItem>
+                  ) : (
+                    enhancedCategories.map((category) => (
+                      <div key={category.id}>
+                        <MenuItem
+                          onClick={() => handleCategorySelect(category)}
+                          sx={{
+                            pl: 2,
+                            color: "black",
+                            display: "flex",
+                            justifyContent: "space-between",
+                          }}
+                        >
+                          <div
+                            style={{
+                              display: "flex",
+                              alignItems: "center",
+                            }}
+                          >
+                            <ListItemIcon>
+                              {category.icon ||
+                                (category.imageUrl ? (
+                                  <img
+                                    src={category.imageUrl}
+                                    alt={category.name}
+                                    style={{
+                                      width: 17,
+                                      height: 14,
+                                      marginRight: 5,
+                                    }}
+                                  />
+                                ) : (
+                                  <ImageIcon
+                                    sx={{ width: 17, height: 14, mr: 0.5 }}
+                                  />
+                                ))}
+                            </ListItemIcon>
+                            <ListItemText primary={category.name} />
+                          </div>
+                          {category.fulfillment_channel && (
+                            <IconButton
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                toggleExpandCategory(category.id);
+                              }}
+                              size="small"
+                              sx={{ ml: 1 }}
+                            >
+                              {expandedCategories[category.id] ? (
+                                <ExpandLessIcon fontSize="small" />
+                              ) : (
+                                <ExpandMoreIcon fontSize="small" />
+                              )}
+                            </IconButton>
+                          )}
+                        </MenuItem>
+                        {category.fulfillment_channel && (
+                          <Collapse
+                            in={expandedCategories[category.id]}
+                            timeout="auto"
+                            unmountOnExit
+                          >
+                            {category.fulfillment_channel.map((channelObj) => {
+                              const [label, value] =
+                                Object.entries(channelObj)[0];
+                              return (
+                                <MenuItem
+                                  key={label}
+                                  onClick={() =>
+                                    handleFulfillmentSelect(category, {
+                                      label,
+                                      value,
+                                    })
+                                  }
+                                  sx={{ pl: 6 }}
+                                >
+                                  {label}
+                                </MenuItem>
+                              );
+                            })}
+                          </Collapse>
+                        )}
+                      </div>
+                    ))
+                  )}
+                </Menu>
+                <Box sx={{ width: "150px" }}>
                   <Autocomplete
                     multiple
+                    disableCloseOnSelect
                     freeSolo
-                    disableClearable
                     options={[
-                      ...selectedManufacturer,
-                      ...manufacturerList.filter(
-                        (m) => !selectedManufacturer.includes(m)
+                      ...selectedAsin,
+                      ...asinList.filter(
+                        (a) => !selectedAsin.some((sa) => sa.id === a.id),
                       ),
                     ]}
-                    filterSelectedOptions={false}
-                    inputValue={inputValueManufactuer}
-                    value={selectedManufacturer}
-                    onInputChange={(e, newInputValue) => {
-                      setInputValueManufactuer(newInputValue);
+                    getOptionLabel={(option) =>
+                      typeof option === "string" ? option : option.Asin
+                    }
+                    isOptionEqualToValue={(option, value) =>
+                      option.id === value.id
+                    }
+                    inputValue={inputValueAsin}
+                    onInputChange={(e, newInputValue) =>
+                      setInputValueAsin(newInputValue)
+                    }
+                    value={selectedAsin}
+                    onChange={(event, newValue) => {
+                      setSelectedAsin(newValue);
+                      setActiveFilters((prev) => {
+                        const filtered = prev.filter((f) => f.type !== "asin");
+                        const asinFilters = newValue.map((asin) => ({
+                          type: "asin",
+                          value: asin.id,
+                          label: asin.Asin,
+                        }));
+                        return [...filtered, ...asinFilters];
+                      });
+                      updateMergedProducts(newValue, selectedSku);
                     }}
-                    onChange={() => {}}
                     renderTags={() => null}
                     renderOption={(props, option) => {
-                      const isSelected = selectedManufacturer.includes(option);
+                      const isSelected = selectedAsin.some(
+                        (s) => s.id === option.id,
+                      );
                       return (
                         <Box
                           component="li"
                           {...props}
-                          onClick={() => handleToggleManufacturer(option)}
+                          onClick={() => toggleSelectionAsin(option)}
                           sx={{
                             backgroundColor: isSelected
                               ? "#b6d5f3 !important"
                               : "transparent",
                             fontSize: 13,
-                            padding: "6px 10px",
                             cursor: "pointer",
                           }}
                         >
-                          {option}
+                          {option.Asin}
                         </Box>
                       );
                     }}
                     renderInput={(params) => (
                       <TextField
                         {...params}
-                        label="MFG"
-                        placeholder="Search..."
+                        label="Product ID"
+                        size="small"
+                        placeholder="Search ASIN..."
                         InputProps={{
                           ...params.InputProps,
                           endAdornment: <>{params.InputProps.endAdornment}</>,
                         }}
-                        size="small"
                       />
-                    )}
-                    PopperComponent={(props) => (
-                      <Box
-                        {...props}
-                        sx={{
-                          zIndex: 1300,
-                          width: 220,
-                          bgcolor: "white",
-                          boxShadow: 3,
-                          borderRadius: 1,
-                          overflow: "auto",
-                          maxHeight: 300,
-                          position: "absolute",
-                        }}
-                      > */}
-                        {/* Custom chip display inside dropdown */}
-                        {/* {selectedManufacturer.length > 0 && (
-          <Box
-            sx={{
-              display: 'flex',
-              overflowX: 'auto',
-              whiteSpace: 'nowrap',
-              gap: 1,
-              px: 1,
-              pt: 1,
-            }}
-          >
-            {selectedManufacturer.map((manufacturer) => (
-              <Chip
-                key={manufacturer}
-                label={manufacturer}
-                size="small"
-                onDelete={() => handleRemoveManufacturer(manufacturer)}
-                sx={{
-                  backgroundColor: '#007bff',
-                  color: '#fff',
-                  fontWeight: 500,
-                  fontSize: '0.75rem',
-                  '.MuiChip-deleteIcon': {
-                    color: '#fff',
-                  },
-                }}
-              />
-            ))}
-          </Box>
-        )} */}
-                        {/* {props.children}
-                      </Box>
                     )}
                     sx={{
                       "& .MuiInputBase-root": {
                         height: 40,
                         fontSize: 14,
-                        width: 170,
+                        width: 150,
                       },
                       "& input": {
                         fontSize: 13,
                       },
                     }}
                   />
-                </Box> */}
-                <Box
-                  sx={{
-                    marginLeft: "19px",
-                    position: "relative",
-                    paddingRight: "10px",
-                  }}
-                >
-                  <>
-                    <Button
-                      variant="outlined"
-                      onClick={handleMenuOpen}
-                      sx={{
-                        width: 140,
-                        height: 40,
-                        justifyContent: "space-between",
-                        padding: "9px 8px 6px 8px",
-                        color: "rgba(0, 0, 0, 0.6)",
-                        fontSize: "16px",
-                        borderColor: "#cacaca",
-                        textTransform: "none",
-                      }}
-                    >
-                      {selectedCategory
-                        ? selectedCategory.fulfillment
-                          ? `${selectedCategory.name} - ${selectedCategory.fulfillment}`
-                          : selectedCategory.name
-                        : "Select Category"}
-                      <ArrowDropDownIcon />
-                    </Button>
-                    <Menu
-                      anchorEl={anchorEl}
-                      open={Boolean(anchorEl)}
-                      onClose={handleMenuClose}
-                      PaperProps={{
-                        sx: { maxHeight: 400, width: 143, fontSize: "15px" },
-                      }}
-                    >
-                      {isLoading ? (
-                        <MenuItem disabled>
-                          <CircularProgress
-                            size={24}
-                            sx={{ margin: "0 auto" }}
-                          />
-                        </MenuItem>
-                      ) : (
-                        enhancedCategories.map((category) => (
-                          <div key={category.id}>
-                            <MenuItem
-                              onClick={() => handleCategorySelect(category)}
-                              sx={{
-                                pl: 2,
-                                color: "black",
-                                display: "flex",
-                                justifyContent: "space-between",
-                              }}
-                            >
-                              <div
-                                style={{
-                                  display: "flex",
-                                  alignItems: "center",
-                                }}
-                              >
-                                <ListItemIcon>
-                                  {category.icon ||
-                                    (category.imageUrl ? (
-                                      <img
-                                        src={category.imageUrl}
-                                        alt={category.name}
-                                        style={{
-                                          width: 17,
-                                          height: 14,
-                                          marginRight: 5,
-                                        }}
-                                      />
-                                    ) : (
-                                      <ImageIcon
-                                        sx={{ width: 17, height: 14, mr: 0.5 }}
-                                      />
-                                    ))}
-                                </ListItemIcon>
-                                <ListItemText primary={category.name} />
-                              </div>
-                              {category.fulfillment_channel && (
-                                <IconButton
-                                  onClick={(e) => {
-                                    e.stopPropagation();
-                                    toggleExpandCategory(category.id);
-                                  }}
-                                  size="small"
-                                  sx={{ ml: 1 }}
-                                >
-                                  {expandedCategories[category.id] ? (
-                                    <ExpandLessIcon fontSize="small" />
-                                  ) : (
-                                    <ExpandMoreIcon fontSize="small" />
-                                  )}
-                                </IconButton>
-                              )}
-                            </MenuItem>
-                            {category.fulfillment_channel && (
-                              <Collapse
-                                in={expandedCategories[category.id]}
-                                timeout="auto"
-                                unmountOnExit
-                              >
-                                {category.fulfillment_channel.map(
-                                  (channelObj) => {
-                                    const [label, value] =
-                                      Object.entries(channelObj)[0];
-                                    return (
-                                      <MenuItem
-                                        key={label}
-                                        onClick={() =>
-                                          handleFulfillmentSelect(category, {
-                                            label,
-                                            value,
-                                          })
-                                        }
-                                        sx={{ pl: 6 }}
-                                      >
-                                        {label}
-                                      </MenuItem>
-                                    );
-                                  }
-                                )}
-                              </Collapse>
-                            )}
-                          </div>
-                        ))
-                      )}
-                    </Menu>
-                  </>
                 </Box>
-              </Grid>
-            </Grid>
-            <Box
-              sx={{
-                width: "86%",
-                height: "60px",
-                marginTop: "0px",
-                backgroundColor: "#ffff",
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "flex-end",
-                px: 2,
-                paddingLeft: "33px",
-              }}
-            >
-              <Box sx={{ marginTop: "6px", padding: "0px 16px 0px 0px" }}>
-                {/* Apply Button */}
-                <Tooltip title="Apply Filter" arrow>
-                  <Button
-                    onClick={handleApplyFilter}
-                    variant="contained"
-                    sx={{
-                      backgroundColor: "#000080",
-                      color: "white",
-                      minWidth: "auto",
-                      padding: "6px",
-                      boxShadow: "none",
-                      mr: 1,
-                      "&:hover": {
-                        backgroundColor: "darkblue",
-                      },
-                    }}
-                  >
-                    <FilterAltIcon sx={{ color: "white", fontSize: "20px" }} />
-                  </Button>
-                </Tooltip>
-                {/* Reset Button */}
-                <Tooltip title="Reset" arrow>
-                  <Button
-                    onClick={handleClearFilter}
-                    variant="outlined"
-                    sx={{
-                      backgroundColor: "#000080",
-                      minWidth: "auto",
-                      padding: "6px",
-                      "&:hover": {
-                        backgroundColor: "darkblue",
-                      },
-                    }}
-                  >
-                    <Refresh sx={{ color: "white", fontSize: "19px" }} />
-                  </Button>
-                </Tooltip>
-              </Box>
-              <Box
-                sx={{
-                  position: "relative",
-                  paddingRight: "70px",
-                  width: "150px",
-                }}
-              >
-                <Autocomplete
-                  multiple
-                  disableCloseOnSelect
-                  freeSolo
-                  options={[
-                    ...selectedAsin,
-                    ...asinList.filter(
-                      (a) => !selectedAsin.some((sa) => sa.id === a.id)
-                    ),
-                  ]}
-                  getOptionLabel={(option) =>
-                    typeof option === "string" ? option : option.Asin
-                  }
-                  isOptionEqualToValue={(option, value) =>
-                    option.id === value.id
-                  }
-                  inputValue={inputValueAsin}
-                  onInputChange={(e, newInputValue) =>
-                    setInputValueAsin(newInputValue)
-                  }
-                  value={selectedAsin}
-                  onChange={() => {}}
-                  renderTags={() => null}
-                  renderOption={(props, option) => {
-                    const isSelected = selectedAsin.some(
-                      (s) => s.id === option.id
-                    );
-                    return (
-                      <Box
-                        component="li"
-                        {...props}
-                        onClick={() => toggleSelectionAsin(option)}
-                        sx={{
-                          backgroundColor: isSelected
-                            ? "#b6d5f3 !important"
-                            : "transparent",
-                          fontSize: 13,
-                          cursor: "pointer",
-                        }}
-                      >
-                        {option.Asin}
-                      </Box>
-                    );
-                  }}
-                  renderInput={(params) => (
-                    <TextField
-                      {...params}
-                      label="ASIN / WPID"
-                      size="small"
-                      placeholder="Search ASIN / WPID..."
-                      InputProps={{
-                        ...params.InputProps,
-                        endAdornment: <>{params.InputProps.endAdornment}</>,
-                      }}
-                    />
-                  )}
-                  PopperComponent={(props) => (
-                    <Box
-                      {...props}
-                      sx={{
-                        zIndex: 1300,
-                        width: 220,
-                        bgcolor: "white",
-                        boxShadow: 3,
-                        borderRadius: 1,
-                        overflow: "auto",
-                        maxHeight: 300,
-                        position: "absolute",
-                      }}
-                    >
-                      {/* {selectedAsin.length > 0 && (
-              <Box
-                sx={{
-                  display: 'flex',
-                  overflowX: 'auto',
-                  whiteSpace: 'nowrap',
-                  gap: 1,
-                  px: 1,
-                  pt: 1,
-                }}
-              >
-                {selectedAsin.map((asin) => (
-                  <Chip
-                    key={asin.id}
-                    label={asin.Asin}
-                    size="small"
-                    onDelete={() => handleRemoveAsin(asin.id)}
-                    sx={{
-                      backgroundColor: '#007bff',
-                      color: '#fff',
-                      fontWeight: 500,
-                      fontSize: '0.75rem',
-                      '.MuiChip-deleteIcon': {
-                        color: '#fff',
-                      },
-                    }}
-                  />
-                ))}
-              </Box>
-            )} */}
-                      {props.children}
-                    </Box>
-                  )}
-                  sx={{
-                    "& .MuiInputBase-root": {
-                      height: 40,
-                      fontSize: 14,
-                      width: 210,
-                    },
-                    "& input": {
-                      fontSize: 13,
-                    },
-                  }}
-                />
-              </Box>
-              <LocalizationProvider dateAdapter={AdapterDayjs}>
-                {/* Preset Dropdown */}
-                <Box sx={{ paddingTop: "5px" }}>
-                  <FormControl size="small" sx={{ minWidth: 130, pr: "9px" }}>
+                <Box sx={{ width: "130px" }}>
+                  <FormControl size="small" sx={{ width: "110%" }}>
                     <InputLabel>Preset</InputLabel>
                     <Select
                       value={selectedPreset}
@@ -1432,89 +1125,95 @@ useEffect(() => {
                       onChange={(e) => {
                         setSelectedPreset(e.target.value);
                         handlePresetSelectHelium(e.target.value);
+                        setBefePreset(e.target.value);
+                        setAppliedPreset(e.target.value);
                       }}
                     >
                       {presets.map((preset) => (
                         <MenuItem key={preset} value={preset}>
-                          {preset}
+                          {getPresetDisplayLabel(preset)}
                         </MenuItem>
                       ))}
                     </Select>
                   </FormControl>
                 </Box>
-                {/* Start Date Picker */}
-                {/* Start Date Picker */}
-                <Box sx={{ paddingRight: "8px", width: "130px" }}>
-                  <DatePicker
-                    label="Start Date"
-                    value={startDate}
-                    onChange={handleStartDateChange}
-                    views={["year", "month", "day"]}
-                    disableFuture
-                    maxDate={endDate}
-                    renderInput={(params) => (
-                      <TextField
-                        {...params}
-                        size="small"
-                        sx={{
-                          minWidth: 90,
-                          pr: "5px",
-                          "& .MuiInputBase-root": {
-                            height: 30,
-                            fontSize: "12px",
-                          },
-                          "& .MuiInputLabel-root": { fontSize: "0.75rem" },
-                        }}
-                      />
-                    )}
-                  />
+                <Box sx={{ width: "130px", ml: 2 }}>
+                  <LocalizationProvider dateAdapter={AdapterDayjs}>
+                    <DatePicker
+                      label="Start Date"
+                      value={startDate}
+                      onChange={handleStartDateChangeOptimized}
+                      format="DD/MM/YYYY"
+                      disableFuture
+                      maxDate={endDate || dayjs()}
+                      slotProps={{
+                        textField: {
+                          size: "small",
+                          sx: datePickerSx,
+                        },
+                      }}
+                    />
+                  </LocalizationProvider>
                 </Box>
-                {/* End Date Picker */}
-                <Box sx={{ paddingRight: "8px", width: "130px" }}>
-                  <DatePicker
-                    label="End Date"
-                    value={endDate}
-                    onChange={handleEndDateChange}
-                    views={["year", "month", "day"]}
-                    minDate={startDate}
-                    shouldDisableDate={(date) =>
-                      date.isBefore(startDate, "day")
-                    }
-                    renderInput={(params) => (
-                      <TextField
-                        {...params}
-                        size="small"
-                        sx={{
-                          minWidth: 90,
-                          pr: "5px",
-                          "& .MuiInputBase-root": {
-                            height: 30,
-                            fontSize: "12px",
-                          },
-                          "& .MuiInputLabel-root": { fontSize: "0.75rem" },
-                        }}
-                      />
-                    )}
-                  />
+                <Box sx={{ width: "130px" }}>
+                  <LocalizationProvider dateAdapter={AdapterDayjs}>
+                    <DatePicker
+                      label="End Date"
+                      value={endDate}
+                      onChange={handleEndDateChangeOptimized}
+                      format="DD/MM/YYYY"
+                      disableFuture
+                      minDate={startDate}
+                      disabled={!startDate}
+                      openTo="day"
+                      views={["year", "month", "day"]}
+                      slotProps={{
+                        textField: {
+                          size: "small",
+                          sx: datePickerSx,
+                        },
+                        calendarHeader: {
+                          defaultCalendarMonth: startDate,
+                        },
+                      }}
+                      referenceDate={startDate || dayjs()}
+                    />
+                  </LocalizationProvider>
                 </Box>
-              </LocalizationProvider>
-            </Box>
-          </Box>
-        </Grid>
-        <Grid
-          item
-          xs={12}
-          sx={{
-            marginTop: "10%",
-            pt: "0 !important",
-            pl: "16px !important",
-            pr: "16px !important",
-          }}
-        >
+                <Box
+                  sx={{
+                    display: "flex",
+                    gap: 1,
+                    flexShrink: 0,
+                    position: "relative",
+                    right: 0,
+                  }}
+                >
+                  <Tooltip title="Reset" arrow>
+                    <Button
+                      onClick={handleClearFilter}
+                      variant="outlined"
+                      sx={{
+                        backgroundColor: "#000080",
+                        minWidth: "auto",
+                        padding: "8px",
+                        "&:hover": {
+                          backgroundColor: "darkblue",
+                        },
+                      }}
+                    >
+                      <Refresh sx={{ color: "white", fontSize: "19px" }} />
+                    </Button>
+                  </Tooltip>
+                </Box>
+              </Box>
+            </Grid>
+          </Grid>
           {activeFilters.length > 0 && (
             <Box
               sx={{
                 display: "flex",
+                width: "88%",
                 flexWrap: "wrap",
                 alignItems: "center",
                 gap: 1,
@@ -1522,6 +1221,8 @@ useEffect(() => {
                 border: "1px solid #e0e0e0",
                 borderRadius: "8px",
                 backgroundColor: "#f9f9f9",
+                mx: 2,
+                mt: 2,
               }}
             >
               <Typography variant="body2" sx={{ fontWeight: "bold", mr: 1 }}>
@@ -1554,10 +1255,21 @@ useEffect(() => {
             </Box>
           )}
         </Grid>
-        {/* Display Cards and Components */}
+        <Grid
+          item
+          xs={12}
+          sx={{
+            marginTop: "5%",
+            pt: "0 !important",
+            pl: "16px !important",
+            pr: "16px !important",
+          }}
+        ></Grid>
+
+        {/* Executive overview */}
         <Grid item xs={12} sm={12} sx={{ marginTop: "0%" }}>
-          {/* <HeliumCard/> */}
           <TestCard
+            country={selectedCountry}
             marketPlaceId={
               selectedCategory == "all" ? selectedCategory : filterFinal
             }
@@ -1571,41 +1283,27 @@ useEffect(() => {
             DateStartDate={appliedStartDate}
             DateEndDate={appliedEndDate}
           />
-          {/* <CardCount marketPlaceId={ selectedCategory == 'all' ? selectedCategory : filterFinal} DateStartDate={appliedStartDate} DateEndDate={appliedEndDate} /> */}
         </Grid>
-        {/* <Grid item xs={12} sm={12} sx={{paddingLeft: '40px'}}
-      >
-          <CardComponent   widgetData={befePreset} marketPlaceId={selectedCategory == 'all' ? selectedCategory : filterFinal} DateStartDate={appliedStartDate} DateEndDate={appliedEndDate} brand_id={selectedBrandFilter} product_id={mergedProductsFilter} manufacturer_name={selectedManufacturerFilter} fulfillment_channel={selectedFulfillment}/>
-        </Grid> */}
+        
+        {/* all market plaes */}
+        <Grid item xs={12} sm={12} sx={{marginBottom: "2%", paddingRight: "16px" }}>
+          <AllMarketplace
+            country={selectedCountry}
+            widgetData={appliedPreset}
+            marketPlaceId={
+              selectedCategory === "all" ? selectedCategory : filterFinal
+            }
+            brand_id={selectedBrandFilter}
+            product_id={mergedProductsFilter}
+            manufacturer_name={selectedManufacturerFilter}
+            fulfillment_channel={selectedFulfillment}
+            DateStartDate={appliedStartDate}
+            DateEndDate={appliedEndDate}
+          />
+        </Grid>
+        
+        {/* update revuneue table */}
         <Grid container spacing={2}>
-          {/* Left side - Insight */}
-          {/* <Grid item xs={12} md={3}>
-  <Box
-    sx={{
-      borderRight: '1px solid lightgray', 
-      height: '90%', 
-      padding: '16px', 
-    }}
-  >
-    <InsightCategory />
-  </Box>
-</Grid> */}
-          <Grid
-            item
-            xs={12}
-            sm={12}
-            sx={{ width: "100%", borderRadius: "2px" }}
-          >
-            <Box
-              sx={{
-                padding: "16px",
-              }}
-            >
-              <InsightCategory />
-            </Box>
-          </Grid>
-          {/* Right side - Tabs + Content */}
-          {/* <Grid item xs={12} md={9}> */}
           <Grid
             item
             xs={12}
@@ -1643,19 +1341,35 @@ useEffect(() => {
                   {[
                     {
                       label: "Revenue",
-                      icon: <BarChartOutlined fontSize="small" />,
+                      icon: (
+                        <BarChartOutlined
+                          sx={{ fontSize: { xs: 16, sm: 20 } }}
+                        />
+                      ),
                     },
                     {
                       label: "Top Products",
-                      icon: <EmojiEventsOutlined fontSize="small" />,
+                      icon: (
+                        <EmojiEventsOutlined
+                          sx={{ fontSize: { xs: 16, sm: 20 } }}
+                        />
+                      ),
                     },
                     {
                       label: "Total Sales",
-                      icon: <AttachMoneyOutlined fontSize="small" />,
+                      icon: (
+                        <AttachMoneyOutlined
+                          sx={{ fontSize: { xs: 16, sm: 20 } }}
+                        />
+                      ),
                     },
                     {
                       label: "Latest Orders",
-                      icon: <ShoppingCartOutlined fontSize="small" />,
+                      icon: (
+                        <ShoppingCartOutlined
+                          sx={{ fontSize: { xs: 16, sm: 20 } }}
+                        />
+                      ),
                     },
                   ].map((item, index) => (
                     <Tab
@@ -1664,34 +1378,36 @@ useEffect(() => {
                       iconPosition="start"
                       label={
                         <Typography
-                          fontSize="14px"
                           sx={{
+                            fontSize: { xs: "11px", sm: "12px", md: "14px" },
                             fontFamily:
                               "'Nunito Sans', -apple-system, 'Segoe UI', 'Roboto', 'Helvetica Neue', 'Arial', sans-serif",
+                            fontWeight: tab === index ? 600 : "normal",
+                            display: { xs: "none", sm: "block" },
                           }}
-                          fontWeight={tab === index ? 600 : "normal"}
                         >
                           {item.label}
                         </Typography>
                       }
                       sx={{
                         textTransform: "none",
-                        minHeight: 26,
-                        px: 1.2,
-                        mx: 0.4,
-                        fontSize: "14px",
-                        borderRadius: "16px",
+                        minHeight: { xs: 24, sm: 26 },
+                        minWidth: { xs: "auto", sm: "unset" },
+                        px: { xs: 0.5, sm: 0.8, md: 1.2 },
+                        mx: { xs: 0.2, sm: 0.3, md: 0.4 },
+                        fontSize: { xs: "11px", sm: "12px", md: "14px" },
+                        borderRadius: { xs: "12px", sm: "14px", md: "16px" },
                         color: "#2b2f3c",
                         backgroundColor: tab === index ? "#fff" : "transparent",
-                        "&.Mui-selected": {
-                          color: "#000",
-                        },
+                        "&.Mui-selected": { color: "#000" },
                         "&:hover": {
                           backgroundColor:
                             tab === index ? "#fff" : "rgb(166, 183, 201)",
                         },
-                        "&:active": {
-                          backgroundColor: "rgb(103, 132, 162)",
+                        "&:active": { backgroundColor: "rgb(103, 132, 162)" },
+                        "& .MuiTab-iconWrapper": {
+                          marginRight: { xs: 0, sm: "6px" },
+                          marginBottom: { xs: 0, sm: "0 !important" },
                         },
                       }}
                     />
@@ -1701,6 +1417,7 @@ useEffect(() => {
               <Box>
                 {tab === 0 && (
                   <CompareChart
+                    country={selectedCountry}
                     startDate={appliedStartDateHelium}
                     endDate={appliedEndDateHelium}
                     widgetData={appliedPreset}
@@ -1715,23 +1432,9 @@ useEffect(() => {
                     DateEndDate={appliedEndDate}
                   />
                 )}
-                {/* {tab === 0 && (
-  (befePreset === 'Today' || befePreset === 'Yesterday') ? (
-         <RevenueTimeGraph
-        startDate={startDateHelium}
-        endDate={endDateHelium}
-        widgetData={befePreset}  marketPlaceId={selectedCategory == 'all' ? selectedCategory : filterFinal} brand_id={selectedBrandFilter}   product_id={mergedProductsFilter} manufacturer_name={selectedManufacturerFilter} fulfillment_channel={selectedFulfillment}
-    DateStartDate={appliedStartDate} DateEndDate={appliedEndDate}  />
-     ) : (
-        <RevenueWidget
-        startDate={startDateHelium}
-        endDate={endDateHelium}
-        widgetData={befePreset}  marketPlaceId={selectedCategory == 'all' ? selectedCategory : filterFinal} brand_id={selectedBrandFilter}   product_id={mergedProductsFilter} manufacturer_name={selectedManufacturerFilter} fulfillment_channel={selectedFulfillment}
-    DateStartDate={appliedStartDate} DateEndDate={appliedEndDate}  />
-      )
-)} */}
                 {tab === 1 && (
                   <TopProducts
+                    country={selectedCountry}
                     startDate={appliedStartDateHelium}
                     endDate={appliedEndDateHelium}
                     widgetData={appliedPreset}
@@ -1748,6 +1451,7 @@ useEffect(() => {
                 )}
                 {tab === 2 && (
                   <TotalOrdersGraph
+                    country={selectedCountry}
                     key={setResetCounter}
                     widgetData={appliedPreset}
                     marketPlaceId={
@@ -1765,6 +1469,7 @@ useEffect(() => {
                 )}
                 {tab === 3 && (
                   <LastOrders
+                    country={selectedCountry}
                     marketPlaceId={
                       selectedCategory === "all"
                         ? selectedCategory
@@ -1780,8 +1485,11 @@ useEffect(() => {
             </Box>
           </Grid>
         </Grid>
+
+        {/* period comparision */}
         <Grid item xs={12} sm={12}>
           <PeriodComparission
+            country={selectedCountry}
             marketPlaceId={
               selectedCategory === "all" ? selectedCategory : filterFinal
             }
@@ -1791,8 +1499,11 @@ useEffect(() => {
             fulfillment_channel={selectedFulfillment}
           />
         </Grid>
+
+        {/* performance summary */}
         <Grid item xs={12} sm={12}>
           <MetricCard
+            country={selectedCountry}
             startDate={appliedStartDateHelium}
             endDate={appliedEndDateHelium}
             widgetData={appliedPreset}
@@ -1807,68 +1518,72 @@ useEffect(() => {
             DateEndDate={appliedEndDate}
           />
         </Grid>
+
+        {/* sales decresing incresing */}
         <Grid item xs={12} sm={12}>
           <ProductPerformanceContainer
-  userId={userIds}
-  marketPlaceId={selectedCategory === "all" ? selectedCategory : filterFinal}
-  brand_id={selectedBrandFilter}
-  product_id={mergedProductsFilter}
-  manufacturer_name={selectedManufacturerFilter}
-  fulfillment_channel={selectedFulfillment}
-  DateStartDate={appliedStartDate}
-  DateEndDate={appliedEndDate}
-/>  
-          <Grid item xs={12} sm={12} sx={{ width: "99%" }}>
-            <AllMarketplace
-              widgetData={appliedPreset}
-              marketPlaceId={
-                selectedCategory === "all" ? selectedCategory : filterFinal
-              }
-              brand_id={selectedBrandFilter}
-              product_id={mergedProductsFilter}
-              manufacturer_name={selectedManufacturerFilter}
-              fulfillment_channel={selectedFulfillment}
-              DateStartDate={appliedStartDate}
-              DateEndDate={appliedEndDate}
-            />
-          </Grid>
-          <Grid item xs={12} sm={12} sx={{ width: "99%" }}>
-            <ProfitAndLoss
-              widgetData={appliedPreset}
-              marketPlaceId={
-                selectedCategory == "all" ? selectedCategory : filterFinal
-              }
-              brand_id={selectedBrandFilter}
-              fulfillment_channel={selectedFulfillment}
-              manufacturer_name={selectedManufacturerFilter}
-              product_id={mergedProductsFilter}
-              DateStartDate={appliedStartDate}
-              DateEndDate={appliedEndDate}
-            />
-          </Grid>
-          {/* <Grid item xs={12} sm={12} sx={{width:'99%'}}>
-          <TestProfitLoss  widgetData={befePreset} marketPlaceId={selectedCategory == 'all' ? selectedCategory : filterFinal}/>
-        </Grid> */}
-          <Grid item xs={12} sm={12}>
-            <MyProductList
-              widgetData={appliedPreset}
-              marketPlaceId={
-                selectedCategory == "all" ? selectedCategory : filterFinal
-              }
-              brand_id={selectedBrandFilter}
-              product_id={mergedProductsFilter}
-              manufacturer_name={selectedManufacturerFilter}
-              fulfillment_channel={selectedFulfillment}
-              DateStartDate={appliedStartDate}
-              DateEndDate={appliedEndDate}
-            />
-          </Grid>
+            country={selectedCountry}
+            userId={userIds}
+            marketPlaceId={
+              selectedCategory === "all" ? selectedCategory : filterFinal
+            }
+            brand_id={selectedBrandFilter}
+            product_id={mergedProductsFilter}
+            manufacturer_name={selectedManufacturerFilter}
+            fulfillment_channel={selectedFulfillment}
+            DateStartDate={appliedStartDate}
+            DateEndDate={appliedEndDate}
+            widgetData={appliedPreset}
+          />
         </Grid>
-        {/* <Grid item xs={12} sm={12}>
-          <ProductTableDashboard marketPlaceId={selectedCategory == 'all' ? selectedCategory : filterFinal} DateStartDate={appliedStartDate} DateEndDate={appliedEndDate} />
-        </Grid>  */}
+        
+        {/* Insights cardd */}
+        <Grid item xs={12} sm={12} sx={{ width: "100%", borderRadius: "2px" }}>
+          <Box
+            sx={{
+              // padding: "16px",
+              paddingRight: "16px",
+            }}
+          >
+            <InsightCategory />
+          </Box>
+        </Grid>
+
+        {/* P & L */}
+        <Grid item xs={12} sm={12} sx={{ width: "99%" }}>
+          <ProfitAndLoss
+            country={selectedCountry}
+            widgetData={appliedPreset}
+            marketPlaceId={
+              selectedCategory == "all" ? selectedCategory : filterFinal
+            }
+            brand_id={selectedBrandFilter}
+            fulfillment_channel={selectedFulfillment}
+            manufacturer_name={selectedManufacturerFilter}
+            product_id={mergedProductsFilter}
+            DateStartDate={appliedStartDate}
+            DateEndDate={appliedEndDate}
+          />
+        </Grid>
+        
+        {/* product list */}
+        <Grid item xs={12} sm={12} sx={{width: "99%"}}>
+          <MyProductList
+            country={selectedCountry}
+            widgetData={appliedPreset}
+            marketPlaceId={
+              selectedCategory == "all" ? selectedCategory : filterFinal
+            }
+            brand_id={selectedBrandFilter}
+            product_id={mergedProductsFilter}
+            manufacturer_name={selectedManufacturerFilter}
+            fulfillment_channel={selectedFulfillment}
+            DateStartDate={appliedStartDate}
+            DateEndDate={appliedEndDate}
+          />
+        </Grid>
+
       </Grid>
-      {/* Move this outside the sticky header */}
     </Box>
   );
 }
