@@ -51,37 +51,37 @@ import CountrySelector from "../../../utils/countrySelector";
 
 const InventoryList = ({ fetchOrdersFromParent }) => {
   const theme = useTheme();
-  const isMobile = useMediaQuery(theme.breakpoints.down('md'));
-  
+  const isMobile = useMediaQuery(theme.breakpoints.down("md"));
+
   const location = useLocation();
   const {
     categories,
     loading: marketplaceLoading,
-    selectedCountry,       
-  setSelectedCountry
+    selectedCountry,
+    setSelectedCountry,
   } = useMarketplace();
   const navigate = useNavigate();
-  
+
   const handleMenuOpen = (event) => {
     setAnchorEl(event.currentTarget);
   };
-  
+
   const handleMenuClose = () => {
     setAnchorEl(null);
     setExpandedCategories({});
   };
-  
+
   const [expandedCategories, setExpandedCategories] = useState({});
   const [selectedFulfillment, setselectFulfillment] = useState("");
   const [inventoryList, setInventory] = useState([]);
-  
+
   const handleFulfillmentSelect = (category, fulfillment) => {
     const { label, value } = fulfillment;
     setselectFulfillment(value);
     setSelectedCategory({ ...category, fulfillment: label });
     handleMenuClose();
   };
-  
+
   const [currentColumn, setCurrentColumn] = useState("");
   const [anchorEl, setAnchorEl] = useState(null);
   const [sortConfig, setSortConfig] = useState({ key: "", direction: "asc" });
@@ -99,7 +99,7 @@ const InventoryList = ({ fetchOrdersFromParent }) => {
     id: "all",
     name: "All Channels",
   });
-  
+
   const enhancedCategories = useEnhancedCategories(categories);
   const [open, setOpen] = useState(false);
   const queryParams = new URLSearchParams(window.location.search);
@@ -111,7 +111,7 @@ const InventoryList = ({ fetchOrdersFromParent }) => {
     setOpen(false);
     fetchOrderData(selectedCategory.id, page, rowsPerPage);
   };
-  
+
   const toggleExpandCategory = (categoryId) => {
     setExpandedCategories((prev) => ({
       ...prev,
@@ -139,9 +139,16 @@ const InventoryList = ({ fetchOrdersFromParent }) => {
     searchQuery,
   });
 
-  const fetchOrderData = async (marketId, currentPage, currentRowsPerPage, currentSortConfig, currentSearchQuery) => {
+  const fetchOrderData = async (
+    marketId,
+    currentPage,
+    currentRowsPerPage,
+    currentSortConfig,
+    currentSearchQuery,
+  ) => {
     setLoading(true);
-    const validRowsPerPage = currentRowsPerPage && currentRowsPerPage > 0 ? currentRowsPerPage : 25;
+    const validRowsPerPage =
+      currentRowsPerPage && currentRowsPerPage > 0 ? currentRowsPerPage : 25;
     const skip = (currentPage - 1) * validRowsPerPage;
 
     try {
@@ -152,9 +159,11 @@ const InventoryList = ({ fetchOrdersFromParent }) => {
         userIds = data.id;
       }
 
-      const marketplaceIdToUse = marketId || (localStorage.getItem("selectedCategory")
-        ? JSON.parse(localStorage.getItem("selectedCategory")).id
-        : "all");
+      const marketplaceIdToUse =
+        marketId ||
+        (localStorage.getItem("selectedCategory")
+          ? JSON.parse(localStorage.getItem("selectedCategory")).id
+          : "all");
 
       const response = await axios.post(
         `${process.env.REACT_APP_IP}fetchInventryList/`,
@@ -166,19 +175,21 @@ const InventoryList = ({ fetchOrdersFromParent }) => {
           search_query: currentSearchQuery,
           sort_by: currentSortConfig.key,
           sort_by_value: currentSortConfig.direction === "asc" ? 1 : -1,
-          country:selectedCountry
-        }
+          country: selectedCountry,
+        },
       );
 
       if (response.data.data.inventry_list) {
         setInventory(response.data.data.inventry_list);
         setCustomStatus(response.data.data.status);
         setOrderCount(response.data.data.total_count);
-        setTotalPages(Math.ceil(response.data.data.total_count / validRowsPerPage));
+        setTotalPages(
+          Math.ceil(response.data.data.total_count / validRowsPerPage),
+        );
         setLogoMarket(
           Array.isArray(response.data.data.marketplace_list)
             ? response.data.data.marketplace_list
-            : []
+            : [],
         );
       } else {
         setInventory([]);
@@ -212,7 +223,7 @@ const InventoryList = ({ fetchOrdersFromParent }) => {
       page,
       rowsPerPage,
       sortConfig,
-      location.state?.searchQuery || ""
+      location.state?.searchQuery || "",
     );
 
     prevParams.current = {
@@ -229,11 +240,18 @@ const InventoryList = ({ fetchOrdersFromParent }) => {
       selectedCategory.id !== prevParams.current.selectedCategoryId ||
       page !== prevParams.current.page ||
       rowsPerPage !== prevParams.current.rowsPerPage ||
-      JSON.stringify(sortConfig) !== JSON.stringify(prevParams.current.sortConfig) ||
+      JSON.stringify(sortConfig) !==
+        JSON.stringify(prevParams.current.sortConfig) ||
       searchQuery !== prevParams.current.searchQuery;
 
     if (shouldFetch) {
-      fetchOrderData(selectedCategory.id, page, rowsPerPage, sortConfig, searchQuery);
+      fetchOrderData(
+        selectedCategory.id,
+        page,
+        rowsPerPage,
+        sortConfig,
+        searchQuery,
+      );
 
       prevParams.current = {
         selectedCategoryId: selectedCategory.id,
@@ -254,17 +272,17 @@ const InventoryList = ({ fetchOrdersFromParent }) => {
     setAnchorEl(event.currentTarget);
     setCurrentColumn(column);
   };
-  
+
   const handleMarketplaceSelect = (category) => {
     setSelectedCategory(category);
-    const safeCategory={
-      id:category.id,
-      name:category.name
-    }
+    const safeCategory = {
+      id: category.id,
+      name: category.name,
+    };
     localStorage.setItem("selectedCategory", JSON.stringify(safeCategory));
     setPage(1);
-  };  
-  
+  };
+
   const handleSelectSort = (key, direction) => {
     setSortConfig({ key, direction });
     setPage(1);
@@ -302,175 +320,187 @@ const InventoryList = ({ fetchOrdersFromParent }) => {
 
   return (
     <Box sx={{ flex: 1, width: "100%", px: { xs: 1, sm: 2 } }}>
-<Box
-  sx={{
-    display: "flex",
-    flexDirection: "column",
-    gap: 2,
-    my: 2,
-    justifyContent: "flex-end",
-    alignItems: "center",
-    position: "fixed",
-    top: 0,
-    right: 0,
-    marginTop: { xs: "10px", md: "20px" },
-    width: { xs: "100%", md: "108%" },
-    backgroundColor: "white",
-    zIndex: 100,
-    px: { xs: 2, md: 0 },
-    pb: 2,
-    boxShadow: { xs: "0 2px 4px rgba(0,0,0,0.1)", md: "none" },
-  }}
->
-  <Box
-    sx={{
-      display: "flex",
-      flexDirection: { xs: "column", md: "row" },
-      gap: { xs: 1, md: 2 },
-      my: 2,
-      marginRight: { xs: 0, md: "4%" },
-      justifyContent: { xs: "center", md: "flex-end" },
-      alignItems: { xs: "stretch", md: "center" },
-      marginTop: { xs: "4%", md: "6%" },
-      width: "100%",
-    }}
-  >
-    {/* Country Selector */}
-    <Box sx={{ width: { xs: "100%", md: "auto" } }}>
-      <CountrySelector
-        selectedCountry={selectedCountry}
-        onCountryChange={(country) => {
-          setSelectedCountry(country);
-          setPage(1);
-        }}
-        minWidth={150}
+      {/* Fixed Header (Filters, Search, Buttons) */}
+      <Box
         sx={{
-          width: { xs: "100%", md: 150 }
+          position: "fixed",
+          top: 0,
+          right: 0,
+          marginTop: { xs: "60px", md: "90px" },
+          marginRight: { xs: "0px", md: "22px" },
+          width: { xs: "calc(100% - 20px)", md: "100%" },
+          backgroundColor: "white",
+          zIndex: 100,
+          padding: { xs: "8px", md: "10px" },
+          border: { xs: "1px solid #e0e0e0", md: "none" },
+          borderRadius: { xs: "8px", md: 0 },
+          boxShadow: { xs: "0 2px 8px rgba(0,0,0,0.1)", md: "none" },
+          boxSizing: "border-box",
         }}
-      />
-    </Box>
-
-    {/* Marketplace Selector */}
-    <Box sx={{ width: { xs: "100%", md: "auto" } }}>
-      <FormControl size="small" sx={{ width: { xs: "100%", md: 150 } }}>
-        <Select
-          value={selectedCategory?.id || "all"}
-          onChange={(e) => {
-            const selected = enhancedCategories.find(
-              (cat) => cat.id === e.target.value
-            );
-            if (selected) {
-              handleMarketplaceSelect(selected);
-            }
-          }}
-          displayEmpty
-          renderValue={(selected) => {
-            const category = enhancedCategories.find(cat => cat.id === selected);
-            if (!category) return "All Channels";
-            
-            if (category.id === "all") {
-              return <span>{category.name}</span>;
-            }
-            
-            return (
-              <Box display="flex" alignItems="center" gap={1}>
-                {category.icon ||
-                  (category.imageUrl ? (
-                    <img
-                      src={category.imageUrl}
-                      alt={category.name}
-                      width={18}
-                      height={14}
-                    />
-                  ) : (
-                    <ImageIcon fontSize="small" />
-                  ))}
-                <span>{category.name}</span>
-              </Box>
-            );
-          }}
-        >
-          {marketplaceLoading ? (
-            <MenuItem disabled>Loading...</MenuItem>
-          ) : (
-            enhancedCategories.map((category) => (
-              <MenuItem key={category.id} value={category.id}>
-                <Box display="flex" alignItems="center" gap={1}>
-                  {category.icon ||
-                    (category.imageUrl ? (
-                      <img
-                        src={category.imageUrl}
-                        alt={category.name}
-                        width={18}
-                        height={14}
-                      />
-                    ) : category.id !== "all" ? (
-                      <ImageIcon fontSize="small" />
-                    ) : null)}
-                  <span>{category.name}</span>
-                </Box>
-              </MenuItem>
-            ))
-          )}
-        </Select>
-      </FormControl>
-    </Box>
-
-    {/* Search Field */}
-    <TextField
-      size="small"
-      placeholder="Search by Product Title, Sku..."
-      value={searchQuery}
-      onChange={handleSearchChange}
-      sx={{
-        width: { xs: "100%", md: 300 },
-        "& input": {
-          fontSize: "14px",
-        },
-      }}
-    />
-
-    {/* Action Buttons */}
-    <Box sx={{ 
-      display: "flex", 
-      gap: 1, 
-      width: { xs: "100%", md: "auto" },
-      justifyContent: { xs: "flex-end", md: "flex-start" } 
-    }}>
-      <Tooltip title="Reset" arrow>
-        <Button
-          variant="outlined"
+      >
+        {/* Scrollable row (horizontal scroll on mobile, normal row on desktop) */}
+        <Box
           sx={{
-            backgroundColor: "#000080",
-            minWidth: "auto",
-            padding: "6px",
             display: "flex",
-            justifyContent: "center",
+            flexDirection: "row",
+            flexWrap: "nowrap",
             alignItems: "center",
-            flex: { xs: 0, md: "none" },
-            width: { xs: "48px", md: "auto" },
-            "&:hover": {
-              backgroundColor: "darkblue",
+            justifyContent: { xs: "flex-start", md: "flex-end" },
+            gap: { xs: 1, md: 2 },
+            overflowX: { xs: "auto", md: "visible" },
+            overflowY: "hidden",
+            WebkitOverflowScrolling: "touch",
+            pb: { xs: 1, md: 0 },
+            "& > *": { flexShrink: 0 },
+            "&::-webkit-scrollbar": { height: "4px" },
+            "&::-webkit-scrollbar-thumb": {
+              backgroundColor: "#bbb",
+              borderRadius: "10px",
+            },
+            "&::-webkit-scrollbar-track": {
+              backgroundColor: "#f1f1f1",
+              borderRadius: "10px",
             },
           }}
-          onClick={handleResetChange} 
         >
-          <Refresh sx={{ color: "white", fontSize: { xs: "18px", md: "20px" } }} />
-        </Button>
-      </Tooltip>
-    </Box>
+          {/* Country Selector */}
+          <Box sx={{ width: { xs: 170, md: "auto" }, display: "flex" }}>
+            <CountrySelector
+              selectedCountry={selectedCountry}
+              onCountryChange={(country) => {
+                setSelectedCountry(country);
+                setPage(1);
+              }}
+              minWidth={150}
+              sx={{ width: { xs: "100%", md: 150 } }}
+            />
+          </Box>
 
-    {/* Inventory Count */}
-    <Typography variant="body2" sx={{ 
-      textAlign: { xs: "center", md: "left" },
-      width: { xs: "100%", md: "auto" },
-      mt: { xs: 1, md: 0 }
-    }}>
-      Total Inventory: {orderCount ? orderCount : "0"}
-    </Typography>
-  </Box>
-</Box>
+          {/* Marketplace Selector */}
+          <Box sx={{ width: { xs: 180, md: "auto" } }}>
+            <FormControl size="small" sx={{ width: { xs: "100%", md: 150 } }}>
+              <Select
+                value={selectedCategory?.id || "all"}
+                onChange={(e) => {
+                  const selected = enhancedCategories.find(
+                    (cat) => cat.id === e.target.value,
+                  );
+                  if (selected) {
+                    handleMarketplaceSelect(selected);
+                  }
+                }}
+                displayEmpty
+                renderValue={(selected) => {
+                  const category = enhancedCategories.find(
+                    (cat) => cat.id === selected,
+                  );
+                  if (!category) return "All Channels";
 
+                  if (category.id === "all") {
+                    return <span>{category.name}</span>;
+                  }
+
+                  return (
+                    <Box display="flex" alignItems="center" gap={1}>
+                      {category.icon ||
+                        (category.imageUrl ? (
+                          <img
+                            src={category.imageUrl}
+                            alt={category.name}
+                            width={18}
+                            height={14}
+                          />
+                        ) : (
+                          <ImageIcon fontSize="small" />
+                        ))}
+                      <span>{category.name}</span>
+                    </Box>
+                  );
+                }}
+              >
+                {marketplaceLoading ? (
+                  <MenuItem disabled>Loading...</MenuItem>
+                ) : (
+                  enhancedCategories.map((category) => (
+                    <MenuItem key={category.id} value={category.id}>
+                      <Box display="flex" alignItems="center" gap={1}>
+                        {category.icon ||
+                          (category.imageUrl ? (
+                            <img
+                              src={category.imageUrl}
+                              alt={category.name}
+                              width={18}
+                              height={14}
+                            />
+                          ) : category.id !== "all" ? (
+                            <ImageIcon fontSize="small" />
+                          ) : null)}
+                        <span>{category.name}</span>
+                      </Box>
+                    </MenuItem>
+                  ))
+                )}
+              </Select>
+            </FormControl>
+          </Box>
+
+          {/* Search Field */}
+          <TextField
+            size="small"
+            placeholder="Search by Product Title, Sku..."
+            value={searchQuery}
+            onChange={handleSearchChange}
+            sx={{
+              width: { xs: 260, md: 300 },
+              "& input": { fontSize: "14px" },
+            }}
+          />
+
+          {/* Action Buttons */}
+          <Box
+            sx={{
+              display: "flex",
+              flexDirection: "row",
+              alignItems: "center",
+              gap: 1,
+            }}
+          >
+            <Tooltip title="Reset" arrow>
+              <Button
+                variant="outlined"
+                sx={{
+                  backgroundColor: "#000080",
+                  minWidth: "auto",
+                  padding: "6px",
+                  display: "flex",
+                  justifyContent: "center",
+                  alignItems: "center",
+                  width: { xs: "40px", md: "auto" },
+                  "&:hover": { backgroundColor: "darkblue" },
+                }}
+                onClick={handleResetChange}
+              >
+                <Refresh
+                  sx={{ color: "white", fontSize: { xs: "18px", md: "20px" } }}
+                />
+              </Button>
+            </Tooltip>
+          </Box>
+
+          {/* Inventory Count */}
+          <Typography
+            variant="body2"
+            sx={{
+              whiteSpace: "nowrap",
+              display: "flex",
+              alignItems: "center",
+              px: 1,
+            }}
+          >
+            Total Inventory: {orderCount ? orderCount : "0"}
+          </Typography>
+        </Box>
+      </Box>
 
       {/* Main Content */}
       <Box sx={{ paddingTop: { xs: "220px", md: "180px" } }}>
@@ -485,7 +515,7 @@ const InventoryList = ({ fetchOrdersFromParent }) => {
         ) : (
           <>
             {/* Mobile Card View */}
-            <Box sx={{ display: { xs: 'block', md: 'none' } }}>
+            <Box sx={{ display: { xs: "block", md: "none" } }}>
               {inventoryList.map((order, index) => (
                 <Card key={order.id} sx={{ mb: 2, p: 2 }}>
                   <Grid container spacing={2} alignItems="center">
@@ -508,7 +538,13 @@ const InventoryList = ({ fetchOrdersFromParent }) => {
                       <Typography variant="body2" color="textSecondary">
                         SKU: {order.sku || "N/A"}
                       </Typography>
-                      <Box sx={{ display: 'flex', justifyContent: 'space-between', mt: 1 }}>
+                      <Box
+                        sx={{
+                          display: "flex",
+                          justifyContent: "space-between",
+                          mt: 1,
+                        }}
+                      >
                         <Typography variant="body2">
                           Qty: {order.quantity || 0}
                         </Typography>
@@ -523,7 +559,7 @@ const InventoryList = ({ fetchOrdersFromParent }) => {
             </Box>
 
             {/* Desktop Table View - Using Original Headers */}
-            <Box sx={{ display: { xs: 'none', md: 'block' } }}>
+            <Box sx={{ display: { xs: "none", md: "block" } }}>
               <TableContainer
                 component={Paper}
                 sx={{
@@ -559,16 +595,34 @@ const InventoryList = ({ fetchOrdersFromParent }) => {
                     }}
                   >
                     <TableRow>
-                      <TableCell sx={{ fontWeight: "bold", textAlign: "center" }}>Image</TableCell>
-                      <TableCell sx={{ fontWeight: "bold", textAlign: "center" }}>SKU</TableCell>
-                      <TableCell sx={{ fontWeight: "bold", textAlign: "center" }}>Product Title</TableCell>
-                      <TableCell sx={{ fontWeight: "bold", textAlign: "center" }}>
+                      <TableCell
+                        sx={{ fontWeight: "bold", textAlign: "center" }}
+                      >
+                        Image
+                      </TableCell>
+                      <TableCell
+                        sx={{ fontWeight: "bold", textAlign: "center" }}
+                      >
+                        SKU
+                      </TableCell>
+                      <TableCell
+                        sx={{ fontWeight: "bold", textAlign: "center" }}
+                      >
+                        Product Title
+                      </TableCell>
+                      <TableCell
+                        sx={{ fontWeight: "bold", textAlign: "center" }}
+                      >
                         Quantity
-                        <IconButton onClick={(e) => handleOpenMenu(e, "quantity")}>
+                        <IconButton
+                          onClick={(e) => handleOpenMenu(e, "quantity")}
+                        >
                           <MoreVertIcon sx={{ fontSize: "14px" }} />
                         </IconButton>
                       </TableCell>
-                      <TableCell sx={{ fontWeight: "bold", textAlign: "center" }}>
+                      <TableCell
+                        sx={{ fontWeight: "bold", textAlign: "center" }}
+                      >
                         Price
                         <IconButton onClick={(e) => handleOpenMenu(e, "price")}>
                           <MoreVertIcon sx={{ fontSize: "14px" }} />
@@ -579,10 +633,14 @@ const InventoryList = ({ fetchOrdersFromParent }) => {
                   <TableBody>
                     {inventoryList.map((order) => {
                       const marketplace = logoMarket.find(
-                        (market) => market.name === order.marketplace_name
+                        (market) => market.name === order.marketplace_name,
                       );
                       return (
-                        <TableRow key={order.id} hover style={{ cursor: "pointer" }}>
+                        <TableRow
+                          key={order.id}
+                          hover
+                          style={{ cursor: "pointer" }}
+                        >
                           <TableCell sx={{ textAlign: "center" }}>
                             <img
                               src={order.image_url || soon}
@@ -608,10 +666,18 @@ const InventoryList = ({ fetchOrdersFromParent }) => {
                           >
                             {order.sku || "N/A"}
                           </TableCell>
-                          <TableCell sx={{ textAlign: "center", minWidth: 280, width: 280 }}>
+                          <TableCell
+                            sx={{
+                              textAlign: "center",
+                              minWidth: 280,
+                              width: 280,
+                            }}
+                          >
                             {order.product_title}
                           </TableCell>
-                          <TableCell sx={{ textAlign: "center", paddingLeft: "3px" }}>
+                          <TableCell
+                            sx={{ textAlign: "center", paddingLeft: "3px" }}
+                          >
                             {order.quantity || 0}
                           </TableCell>
                           <TableCell
@@ -636,21 +702,23 @@ const InventoryList = ({ fetchOrdersFromParent }) => {
       </Box>
 
       {/* Pagination Controls */}
-      <Box sx={{ 
-        display: "flex",
-        flexDirection: { xs: "column", md: "row" },
-        alignItems: { xs: "stretch", md: "center" },
-        justifyContent: "flex-end", 
-        mt: 2,
-        gap: { xs: 2, md: 1 }
-      }}>
+      <Box
+        sx={{
+          display: "flex",
+          flexDirection: { xs: "column", md: "row" },
+          alignItems: { xs: "stretch", md: "center" },
+          justifyContent: "flex-end",
+          mt: 2,
+          gap: { xs: 2, md: 1 },
+        }}
+      >
         <Select
           value={rowsPerPage}
           onChange={handleRowsPerPageChange}
           size="small"
-          sx={{ 
+          sx={{
             minWidth: 70,
-            width: { xs: "100%", md: "auto" }
+            width: { xs: "100%", md: "auto" },
           }}
         >
           <MenuItem value={25}>25/page</MenuItem>
@@ -667,13 +735,17 @@ const InventoryList = ({ fetchOrdersFromParent }) => {
             "& .MuiPagination-ul": {
               justifyContent: { xs: "center", md: "flex-start" },
               flexWrap: "wrap",
-            }
+            },
           }}
         />
       </Box>
 
       {/* Sorting Menu */}
-      <Menu anchorEl={anchorEl} open={Boolean(anchorEl)} onClose={handleCloseMenu}>
+      <Menu
+        anchorEl={anchorEl}
+        open={Boolean(anchorEl)}
+        onClose={handleCloseMenu}
+      >
         {currentColumn === "customer_name" && (
           <>
             <MenuItem onClick={() => handleSelectSort("customer_name", "asc")}>
@@ -684,7 +756,7 @@ const InventoryList = ({ fetchOrdersFromParent }) => {
             </MenuItem>
           </>
         )}
-        {currentColumn === "price" && ( 
+        {currentColumn === "price" && (
           <>
             <MenuItem onClick={() => handleSelectSort("price", "asc")}>
               Sort Low to High

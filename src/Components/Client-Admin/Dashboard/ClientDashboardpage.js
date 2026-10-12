@@ -748,7 +748,7 @@ function ClientDashboardpage() {
     });
   };
   return (
-    <Box sx={{ marginTop: "5%" }}>
+    <Box sx={{ marginTop: "50px" }}>
       <Grid
         container
         spacing={2}
@@ -762,6 +762,8 @@ function ClientDashboardpage() {
           boxShadow: "0 2px 4px rgba(0,0,0,0.1)",
         }}
       >
+        {/* filters */}
+
         <Grid item xs={12}>
           <Grid container spacing={2} className="dashboard-filter">
             <Grid
@@ -776,6 +778,9 @@ function ClientDashboardpage() {
                 alignItems: "center",
                 px: 2,
                 gap: 2,
+                overflowX: { xs: "auto", md: "visible" },
+                overflowY: "hidden",
+                WebkitOverflowScrolling: "touch",
               }}
             >
               {/* Filters */}
@@ -783,13 +788,15 @@ function ClientDashboardpage() {
                 sx={{
                   display: "flex",
                   alignItems: "center",
-                  justifyContent: "center",
+                  justifyContent: { xs: "flex-start", md: "center" },
                   gap: 1,
                   flexWrap: "nowrap",
-                  flex: 1,
+                  flex: { xs: "0 0 auto", md: 1 },
+                  width: { xs: "max-content", md: "auto" },
+                  minWidth: { xs: "max-content", md: 0 },
                 }}
               >
-                <Box sx={{ width: "180px" }}>
+                <Box sx={{ width: "180px", flexShrink: 0 }}>
                   <CountrySelector
                     selectedCountry={selectedCountry}
                     onCountryChange={(country) => {
@@ -806,7 +813,8 @@ function ClientDashboardpage() {
                     }}
                   />
                 </Box>
-                <Box sx={{ width: "190px" }}>
+
+                <Box sx={{ width: "190px", flexShrink: 0 }}>
                   <BrandSelector
                     selectedBrand={selectedBrand}
                     setSelectedBrand={(brands) => {
@@ -832,7 +840,8 @@ function ClientDashboardpage() {
                     label="Brands"
                   />
                 </Box>
-                <Box sx={{ width: "140px" }}>
+
+                <Box sx={{ width: "140px", flexShrink: 0 }}>
                   <Autocomplete
                     multiple
                     disableCloseOnSelect
@@ -915,7 +924,8 @@ function ClientDashboardpage() {
                     }}
                   />
                 </Box>
-                <Box>
+
+                <Box sx={{ flexShrink: 0 }}>
                   <Button
                     variant="outlined"
                     onClick={handleMenuOpen}
@@ -938,6 +948,7 @@ function ClientDashboardpage() {
                     <ArrowDropDownIcon />
                   </Button>
                 </Box>
+
                 <Menu
                   anchorEl={anchorEl}
                   open={Boolean(anchorEl)}
@@ -988,6 +999,7 @@ function ClientDashboardpage() {
                             </ListItemIcon>
                             <ListItemText primary={category.name} />
                           </div>
+
                           {category.fulfillment_channel && (
                             <IconButton
                               onClick={(e) => {
@@ -1005,6 +1017,7 @@ function ClientDashboardpage() {
                             </IconButton>
                           )}
                         </MenuItem>
+
                         {category.fulfillment_channel && (
                           <Collapse
                             in={expandedCategories[category.id]}
@@ -1035,7 +1048,8 @@ function ClientDashboardpage() {
                     ))
                   )}
                 </Menu>
-                <Box sx={{ width: "150px" }}>
+
+                <Box sx={{ width: "150px", flexShrink: 0 }}>
                   <Autocomplete
                     multiple
                     disableCloseOnSelect
@@ -1116,7 +1130,8 @@ function ClientDashboardpage() {
                     }}
                   />
                 </Box>
-                <Box sx={{ width: "130px" }}>
+
+                <Box sx={{ width: "130px", flexShrink: 0 }}>
                   <FormControl size="small" sx={{ width: "110%" }}>
                     <InputLabel>Preset</InputLabel>
                     <Select
@@ -1137,7 +1152,8 @@ function ClientDashboardpage() {
                     </Select>
                   </FormControl>
                 </Box>
-                <Box sx={{ width: "130px", ml: 2 }}>
+
+                <Box sx={{ width: "130px", ml: 2, flexShrink: 0 }}>
                   <LocalizationProvider dateAdapter={AdapterDayjs}>
                     <DatePicker
                       label="Start Date"
@@ -1155,7 +1171,8 @@ function ClientDashboardpage() {
                     />
                   </LocalizationProvider>
                 </Box>
-                <Box sx={{ width: "130px" }}>
+
+                <Box sx={{ width: "130px", flexShrink: 0 }}>
                   <LocalizationProvider dateAdapter={AdapterDayjs}>
                     <DatePicker
                       label="End Date"
@@ -1180,6 +1197,7 @@ function ClientDashboardpage() {
                     />
                   </LocalizationProvider>
                 </Box>
+
                 <Box
                   sx={{
                     display: "flex",
@@ -1209,6 +1227,7 @@ function ClientDashboardpage() {
               </Box>
             </Grid>
           </Grid>
+
           {activeFilters.length > 0 && (
             <Box
               sx={{
@@ -1228,6 +1247,7 @@ function ClientDashboardpage() {
               <Typography variant="body2" sx={{ fontWeight: "bold", mr: 1 }}>
                 Active Filters:
               </Typography>
+
               {activeFilters.map((filter, index) => (
                 <Chip
                   key={`${filter.type}-${filter.value}-${index}`}
@@ -1241,6 +1261,7 @@ function ClientDashboardpage() {
                   }}
                 />
               ))}
+
               <Button
                 variant="text"
                 size="small"
@@ -1255,6 +1276,7 @@ function ClientDashboardpage() {
             </Box>
           )}
         </Grid>
+
         <Grid
           item
           xs={12}
@@ -1284,9 +1306,14 @@ function ClientDashboardpage() {
             DateEndDate={appliedEndDate}
           />
         </Grid>
-        
+
         {/* all market plaes */}
-        <Grid item xs={12} sm={12} sx={{marginBottom: "2%", paddingRight: "16px" }}>
+        <Grid
+          item
+          xs={12}
+          sm={12}
+          sx={{ marginBottom: "2%", paddingRight: "16px" }}
+        >
           <AllMarketplace
             country={selectedCountry}
             widgetData={appliedPreset}
@@ -1301,7 +1328,7 @@ function ClientDashboardpage() {
             DateEndDate={appliedEndDate}
           />
         </Grid>
-        
+
         {/* update revuneue table */}
         <Grid container spacing={2}>
           <Grid
@@ -1536,7 +1563,7 @@ function ClientDashboardpage() {
             widgetData={appliedPreset}
           />
         </Grid>
-        
+
         {/* Insights cardd */}
         <Grid item xs={12} sm={12} sx={{ width: "100%", borderRadius: "2px" }}>
           <Box
@@ -1565,9 +1592,9 @@ function ClientDashboardpage() {
             DateEndDate={appliedEndDate}
           />
         </Grid>
-        
+
         {/* product list */}
-        <Grid item xs={12} sm={12} sx={{width: "99%"}}>
+        <Grid item xs={12} sm={12} sx={{ width: "99%" }}>
           <MyProductList
             country={selectedCountry}
             widgetData={appliedPreset}
@@ -1582,7 +1609,6 @@ function ClientDashboardpage() {
             DateEndDate={appliedEndDate}
           />
         </Grid>
-
       </Grid>
     </Box>
   );

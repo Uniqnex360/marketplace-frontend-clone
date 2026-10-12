@@ -56,9 +56,9 @@ import { formatCurrency } from "../../../utils/currencyFormatter";
 
 const OrderList = ({ fetchOrdersFromParent }) => {
   const theme = useTheme();
-  const isMobile = useMediaQuery(theme.breakpoints.down('md'));
-  const isSmallMobile = useMediaQuery(theme.breakpoints.down('sm'));
-  
+  const isMobile = useMediaQuery(theme.breakpoints.down("md"));
+  const isSmallMobile = useMediaQuery(theme.breakpoints.down("sm"));
+
   const location = useLocation();
   const navigate = useNavigate();
   const [orders, setOrders] = useState([]);
@@ -93,12 +93,12 @@ const OrderList = ({ fetchOrdersFromParent }) => {
     name: "All Channels",
   });
   const {
-        categories,
-        loading: marketplaceLoading,
-        selectedCountry,
-        setSelectedCountry,
-      } = useMarketplace();
-const enhancedCategories = useEnhancedCategories(categories);
+    categories,
+    loading: marketplaceLoading,
+    selectedCountry,
+    setSelectedCountry,
+  } = useMarketplace();
+  const enhancedCategories = useEnhancedCategories(categories);
 
   const systemTimeZone = Intl.DateTimeFormat().resolvedOptions().timeZone;
   const handleClearFilter = () => {
@@ -125,13 +125,13 @@ const enhancedCategories = useEnhancedCategories(categories);
   }
   const handleMarketplaceSelect = (category) => {
     setSelectedCategory(category);
-    const safeCategory={
-      id:category.id,
-      name:category.name
-    }
+    const safeCategory = {
+      id: category.id,
+      name: category.name,
+    };
     localStorage.setItem("selectedCategory", JSON.stringify(safeCategory));
     setPage(1);
-  };  
+  };
   const queryParams = new URLSearchParams(window.location.search);
   const initialPage = parseInt(queryParams.get("page")) || 1;
   const initialRowsPerPage = parseInt(queryParams.get("rowsPerPage"), 10) || 25;
@@ -168,7 +168,7 @@ const enhancedCategories = useEnhancedCategories(categories);
               user_id: userIds,
               limit: brandLimit,
             },
-          }
+          },
         );
         const names = response.data.data.brand_list || [];
         setBrandList(names);
@@ -190,9 +190,8 @@ const enhancedCategories = useEnhancedCategories(categories);
     try {
       const marketplaceId = selectedCategory?.id || "all";
 
-
       const payload = {
-        country:selectedCountry,
+        country: selectedCountry,
         user_id: userIds,
         skip: skip >= 0 ? skip : 0,
         limit: validRowsPerPage,
@@ -207,7 +206,7 @@ const enhancedCategories = useEnhancedCategories(categories);
       }
       const response = await axios.post(
         `${process.env.REACT_APP_IP_V2}clickhouse/fetchAllorders_clickhouse/`,
-        payload
+        payload,
       );
 
       const responseData = response.data?.data || {};
@@ -215,11 +214,11 @@ const enhancedCategories = useEnhancedCategories(categories);
       setLogoMarket(
         Array.isArray(responseData.marketplace_list)
           ? responseData.marketplace_list
-          : []
+          : [],
       );
       setOrderCount(responseData.total_count || 0);
       setTotalPages(
-        Math.ceil((responseData.total_count || 0) / validRowsPerPage)
+        Math.ceil((responseData.total_count || 0) / validRowsPerPage),
       );
       setCustomStatus(responseData.status || "");
       setManualOrders([]);
@@ -242,7 +241,7 @@ const enhancedCategories = useEnhancedCategories(categories);
     sortConfig,
     searchQuery,
     selectedStatus,
-    selectedCountry
+    selectedCountry,
   });
   useEffect(() => {
     const shouldFetch =
@@ -252,8 +251,8 @@ const enhancedCategories = useEnhancedCategories(categories);
       JSON.stringify(sortConfig) !==
         JSON.stringify(prevParams.current.sortConfig) ||
       searchQuery !== prevParams.current.searchQuery ||
-      selectedStatus !== prevParams.current.selectedStatus||
-      selectedCountry !== prevParams.current.selectedCountry; 
+      selectedStatus !== prevParams.current.selectedStatus ||
+      selectedCountry !== prevParams.current.selectedCountry;
     if (shouldFetch) {
       fetchOrderData(selectedCategory.id, page, rowsPerPage);
       prevParams.current = {
@@ -263,7 +262,7 @@ const enhancedCategories = useEnhancedCategories(categories);
         sortConfig,
         searchQuery,
         selectedStatus,
-        selectedCountry
+        selectedCountry,
       };
     }
   }, [
@@ -329,7 +328,7 @@ const enhancedCategories = useEnhancedCategories(categories);
     setSelectedCategory({ id: "all", name: "All Channels" });
     localStorage.setItem(
       "selectedCategory",
-      JSON.stringify({ id: "all", name: "All Channels" })
+      JSON.stringify({ id: "all", name: "All Channels" }),
     );
     setPage(1);
     setSelectedStatus("all");
@@ -386,14 +385,14 @@ const enhancedCategories = useEnhancedCategories(categories);
           headers: {
             "Content-Type": "application/json",
           },
-        }
+        },
       );
       const url = window.URL.createObjectURL(new Blob([response.data]));
       const link = document.createElement("a");
       link.href = url;
       link.setAttribute(
         "download",
-        `orders_${new Date().toISOString().split("T")[0]}.${downloadFormat}`
+        `orders_${new Date().toISOString().split("T")[0]}.${downloadFormat}`,
       );
       document.body.appendChild(link);
       link.click();
@@ -416,65 +415,70 @@ const enhancedCategories = useEnhancedCategories(categories);
   return (
     <Box sx={{ flex: 1, width: "100%", px: { xs: 1, sm: 2 } }}>
       {/* Header Section - Made Responsive */}
+      {/* Fixed Header (Filters, Search, Buttons) */}
       <Box
         sx={{
-          display: "flex",
-          flexDirection: "column",
-          gap: 2,
-          my: 2,
-          justifyContent: "flex-end",
-          alignItems: "center",
           position: "fixed",
-          top: -40,
+          top: 0,
           right: 0,
-          marginTop: { xs: "10px", md: "20px" },
-          width: { xs: "100%", md: "108%" },
+          marginTop: { xs: "60px", md: "90px" },
+          marginRight: { xs: "0px", md: "22px" },
+          width: { xs: "calc(100% - 20px)", md: "100%" },
           backgroundColor: "white",
           zIndex: 100,
-          px: { xs: 2, md: 0 },
-          pb: 2,
-          boxShadow: { xs: "0 2px 4px rgba(0,0,0,0.1)", md: "none" },
+          padding: { xs: "8px", md: "10px" },
+          border: { xs: "1px solid #e0e0e0", md: "none" },
+          borderRadius: { xs: "8px", md: 0 },
+          boxShadow: { xs: "0 2px 8px rgba(0,0,0,0.1)", md: "none" },
+          boxSizing: "border-box",
         }}
       >
+        {/* Scrollable row (horizontal scroll on mobile, normal row on desktop) */}
         <Box
           sx={{
             display: "flex",
-            flexDirection: { xs: "column", md: "row" },
+            flexDirection: "row",
+            flexWrap: "nowrap",
+            alignItems: "center",
+            justifyContent: { xs: "flex-start", md: "flex-end" },
             gap: { xs: 1, md: 2 },
-            my: 2,
-            marginRight: { xs: 0, md: "4%" },
-            justifyContent: { xs: "center", md: "flex-end" },
-            alignItems: { xs: "stretch", md: "center" },
-            marginTop: { xs: "4%", md: "6%" },
-            width: "100%",
+            overflowX: { xs: "auto", md: "visible" },
+            overflowY: "hidden",
+            WebkitOverflowScrolling: "touch",
+            pb: { xs: 1, md: 0 },
+            "& > *": { flexShrink: 0 },
+            "&::-webkit-scrollbar": { height: "4px" },
+            "&::-webkit-scrollbar-thumb": {
+              backgroundColor: "#bbb",
+              borderRadius: "10px",
+            },
+            "&::-webkit-scrollbar-track": {
+              backgroundColor: "#f1f1f1",
+              borderRadius: "10px",
+            },
           }}
         >
-         <Box sx={{ 
-    width: { xs: "100%", md: "auto" },
-    display: "flex",
-    justifyContent: "flex-start"
-  }}>
-    <CountrySelector
-      selectedCountry={selectedCountry}
-      onCountryChange={(country) => {
-        setSelectedCountry(country);
-        setPage(1); // Reset to first page when country changes
-      }}
-      minWidth={150}
-      sx={{
-        width: { xs: "100%", md: 150 }
-      }}
-    />
-  </Box>
-    
+          {/* Country Selector */}
+          <Box sx={{ width: { xs: 170, md: "auto" }, display: "flex" }}>
+            <CountrySelector
+              selectedCountry={selectedCountry}
+              onCountryChange={(country) => {
+                setSelectedCountry(country);
+                setPage(1);
+              }}
+              minWidth={150}
+              sx={{ width: { xs: "100%", md: 150 } }}
+            />
+          </Box>
+
           {/* Marketplace Selector */}
-          <Box sx={{ width: { xs: "100%", md: "auto" } }}>
+          <Box sx={{ width: { xs: 180, md: "auto" } }}>
             <FormControl size="small" sx={{ width: { xs: "100%", md: 180 } }}>
               <Select
                 value={selectedCategory?.id || "all"}
                 onChange={(e) => {
                   const selected = enhancedCategories.find(
-                    (cat) => cat.id === e.target.value
+                    (cat) => cat.id === e.target.value,
                   );
                   if (selected) {
                     handleMarketplaceSelect(selected);
@@ -509,12 +513,12 @@ const enhancedCategories = useEnhancedCategories(categories);
           </Box>
 
           {/* Status Filter */}
-          <Box sx={{ width: { xs: "100%", md: "auto" },p:{xs:2,md:0} }}>
+          <Box sx={{ width: { xs: 140, md: "auto" } }}>
             <FormControl size="small" sx={{ width: { xs: "100%", md: 150 } }}>
               <InputLabel>Status</InputLabel>
               <Select
                 value={selectedStatus}
-                label="status"
+                label="Status"
                 onChange={(e) => setSelectedStatus(e.target.value)}
               >
                 <MenuItem value="all">All Status</MenuItem>
@@ -532,21 +536,20 @@ const enhancedCategories = useEnhancedCategories(categories);
             value={searchQuery}
             onChange={handleSearchChange}
             sx={{
-              width: { xs: "100%", md: 300 },
-              "& input": {
-                fontSize: "14px",
-              },
-              p:{xs:2,md:0} 
+              width: { xs: 240, md: 300 },
+              "& input": { fontSize: "14px" },
             }}
           />
 
           {/* Action Buttons */}
-          <Box sx={{ 
-            display: "flex", 
-            gap: 1, 
-            width: { xs: "100%", md: "auto" },
-            justifyContent: { xs: "space-between", md: "flex-start" }
-          }}>
+          <Box
+            sx={{
+              display: "flex",
+              flexDirection: "row",
+              alignItems: "center",
+              gap: 1,
+            }}
+          >
             {selectedCategory.id == "custom" && (
               <Button
                 variant="text"
@@ -560,23 +563,32 @@ const enhancedCategories = useEnhancedCategories(categories);
                   padding: { xs: "6px 12px", md: "8px 17px" },
                   textTransform: "capitalize",
                   height: "35px",
-                  flex: { xs: 1, md: "none" },
-                  "&:hover": {
-                    backgroundColor: "darkblue",
-                  },
+                  whiteSpace: "nowrap",
+                  "&:hover": { backgroundColor: "darkblue" },
                 }}
                 onClick={handleOpen}
               >
-                <AddIcon sx={{ marginRight: "3px", fontSize: { xs: "16px", md: "20px" } }} />
-                <Box component="span" sx={{ display: { xs: "none", sm: "inline" } }}>
+                <AddIcon
+                  sx={{
+                    marginRight: "3px",
+                    fontSize: { xs: "16px", md: "20px" },
+                  }}
+                />
+                <Box
+                  component="span"
+                  sx={{ display: { xs: "none", sm: "inline" } }}
+                >
                   Create Order
                 </Box>
-                <Box component="span" sx={{ display: { xs: "inline", sm: "none" } }}>
+                <Box
+                  component="span"
+                  sx={{ display: { xs: "inline", sm: "none" } }}
+                >
                   Create
                 </Box>
               </Button>
             )}
-            
+
             <Button
               variant="contained"
               color="primary"
@@ -585,16 +597,20 @@ const enhancedCategories = useEnhancedCategories(categories);
                 marginLeft: { xs: 0, md: "10px" },
                 backgroundColor: "#000080",
                 fontSize: { xs: "12px", md: "14px" },
-                flex: { xs: 1, md: "none" },
-                "&:hover": {
-                  backgroundColor: "darkblue",
-                },
+                whiteSpace: "nowrap",
+                "&:hover": { backgroundColor: "darkblue" },
               }}
             >
-              <Box component="span" sx={{ display: { xs: "none", sm: "inline" } }}>
+              <Box
+                component="span"
+                sx={{ display: { xs: "none", sm: "inline" } }}
+              >
                 Download orders
               </Box>
-              <Box component="span" sx={{ display: { xs: "inline", sm: "none" } }}>
+              <Box
+                component="span"
+                sx={{ display: { xs: "inline", sm: "none" } }}
+              >
                 Download
               </Box>
             </Button>
@@ -609,25 +625,28 @@ const enhancedCategories = useEnhancedCategories(categories);
                   display: "flex",
                   justifyContent: "center",
                   alignItems: "center",
-                  flex: { xs: "none", md: "none" },
-                  width: { xs: "48px", md: "auto" },
-                  "&:hover": {
-                    backgroundColor: "darkblue",
-                  },
+                  width: { xs: "40px", md: "auto" },
+                  "&:hover": { backgroundColor: "darkblue" },
                 }}
                 onClick={handleResetChange}
               >
-                <Refresh sx={{ color: "white", fontSize: { xs: "18px", md: "20px" } }} />
+                <Refresh
+                  sx={{ color: "white", fontSize: { xs: "18px", md: "20px" } }}
+                />
               </Button>
             </Tooltip>
           </Box>
 
           {/* Order Count */}
-          <Typography variant="body2" sx={{ 
-            textAlign: { xs: "center", md: "left" },
-            width: { xs: "100%", md: "auto" },
-            mt: { xs: 1, md: 0 }
-          }}>
+          <Typography
+            variant="body2"
+            sx={{
+              whiteSpace: "nowrap",
+              display: "flex",
+              alignItems: "center",
+              px: 1,
+            }}
+          >
             Total Orders: {orderCount ? orderCount : "0"}
           </Typography>
         </Box>
@@ -675,8 +694,16 @@ const enhancedCategories = useEnhancedCategories(categories);
                     { label: "Customer Name", key: "customerName" },
                     { label: "Order Date", key: "orderDate" },
                     { label: "Currency", key: "currency" },
-                    { label: "Quantity", key: "total_quantity", sortable: true },
-                    { label: "Order Value", key: "total_price", sortable: true },
+                    {
+                      label: "Quantity",
+                      key: "total_quantity",
+                      sortable: true,
+                    },
+                    {
+                      label: "Order Value",
+                      key: "total_price",
+                      sortable: true,
+                    },
                     { label: "Status", key: "status" },
                     { label: "Actions", key: "actions" },
                   ].map(({ label, key, sortable }) => (
@@ -696,7 +723,9 @@ const enhancedCategories = useEnhancedCategories(categories);
                           onClick={(e) => handleOpenMenu(e, key)}
                           size="small"
                         >
-                          <MoreVertIcon sx={{ fontSize: { xs: "12px", md: "14px" } }} />
+                          <MoreVertIcon
+                            sx={{ fontSize: { xs: "12px", md: "14px" } }}
+                          />
                         </IconButton>
                       )}
                     </TableCell>
@@ -717,7 +746,7 @@ const enhancedCategories = useEnhancedCategories(categories);
                       hover
                       onClick={() =>
                         navigate(
-                          `/Home/orders/customList/${order.id}?page=${page}`
+                          `/Home/orders/customList/${order.id}?page=${page}`,
                         )
                       }
                       style={{ cursor: "pointer" }}
@@ -747,8 +776,8 @@ const enhancedCategories = useEnhancedCategories(categories);
                         {order.customer_name ? order.customer_name : "N/A"}
                       </TableCell>
                       <TableCell
-                        sx={{ 
-                          textAlign: "center", 
+                        sx={{
+                          textAlign: "center",
                           minWidth: 120,
                           fontSize: { xs: "0.8rem", md: "0.9rem" },
                           px: { xs: 1, md: 2 },
@@ -765,28 +794,40 @@ const enhancedCategories = useEnhancedCategories(categories);
                                 minute: "2-digit",
                                 hour12: true,
                                 timeZone: systemTimeZone,
-                              }
+                              },
                             )
                           : "N/A"}
                       </TableCell>
-                      <TableCell align="center" sx={{ fontSize: { xs: "0.8rem", md: "0.9rem" } }}>
+                      <TableCell
+                        align="center"
+                        sx={{ fontSize: { xs: "0.8rem", md: "0.9rem" } }}
+                      >
                         {order.currency ? order.currency : "USD"}
                       </TableCell>
                       <TableCell
                         align="center"
-                        sx={{ 
-                          paddingLeft: "3px", 
+                        sx={{
+                          paddingLeft: "3px",
                           minWidth: 130,
                           fontSize: { xs: "0.8rem", md: "0.9rem" },
                         }}
                       >
                         {order.total_quantity ? order.total_quantity : "N/A"}
                       </TableCell>
-                      <TableCell align="center" sx={{ paddingLeft: "3px", fontSize: { xs: "0.8rem", md: "0.9rem" } }}>
-  {order.total_price && !isNaN(order.total_price)
-    ? formatCurrency(order.total_price.toFixed(2), selectedCountry)
-    : "N/A"}
-</TableCell>
+                      <TableCell
+                        align="center"
+                        sx={{
+                          paddingLeft: "3px",
+                          fontSize: { xs: "0.8rem", md: "0.9rem" },
+                        }}
+                      >
+                        {order.total_price && !isNaN(order.total_price)
+                          ? formatCurrency(
+                              order.total_price.toFixed(2),
+                              selectedCountry,
+                            )
+                          : "N/A"}
+                      </TableCell>
                       <TableCell
                         sx={{
                           textAlign: "center",
@@ -818,7 +859,11 @@ const enhancedCategories = useEnhancedCategories(categories);
                     <TableCell
                       colSpan={8}
                       align="center"
-                      sx={{ fontWeight: "bold", color: "red", fontSize: { xs: "0.8rem", md: "0.9rem" } }}
+                      sx={{
+                        fontWeight: "bold",
+                        color: "red",
+                        fontSize: { xs: "0.8rem", md: "0.9rem" },
+                      }}
                     >
                       No Custom Orders Found
                     </TableCell>
@@ -867,8 +912,16 @@ const enhancedCategories = useEnhancedCategories(categories);
                     { label: "Channel Name", key: "channelName" },
                     { label: "Order Date", key: "order_date", sortable: true },
                     { label: "Currency", key: "currency" },
-                    { label: "Quantity", key: "items_order_quantity", sortable: true },
-                    { label: "Order Value", key: "order_total", sortable: true },
+                    {
+                      label: "Quantity",
+                      key: "items_order_quantity",
+                      sortable: true,
+                    },
+                    {
+                      label: "Order Value",
+                      key: "order_total",
+                      sortable: true,
+                    },
                     { label: "Status", key: "order_status", sortable: true },
                     { label: "Actions", key: "actions" },
                   ].map(({ label, key, sortable }) => (
@@ -888,7 +941,9 @@ const enhancedCategories = useEnhancedCategories(categories);
                           onClick={(e) => handleOpenMenu(e, key)}
                           size="small"
                         >
-                          <MoreVertIcon sx={{ fontSize: { xs: "12px", md: "14px" } }} />
+                          <MoreVertIcon
+                            sx={{ fontSize: { xs: "12px", md: "14px" } }}
+                          />
                         </IconButton>
                       )}
                     </TableCell>
@@ -907,7 +962,11 @@ const enhancedCategories = useEnhancedCategories(categories);
                     <TableCell
                       colSpan={8}
                       align="center"
-                      sx={{ fontWeight: "bold", color: "red", fontSize: { xs: "0.8rem", md: "0.9rem" } }}
+                      sx={{
+                        fontWeight: "bold",
+                        color: "red",
+                        fontSize: { xs: "0.8rem", md: "0.9rem" },
+                      }}
                     >
                       No Orders To Show
                     </TableCell>
@@ -915,7 +974,7 @@ const enhancedCategories = useEnhancedCategories(categories);
                 ) : (
                   orders.map((order) => {
                     const marketplace = logoMarket.find(
-                      (market) => market.name === order.marketplace_name
+                      (market) => market.name === order.marketplace_name,
                     );
                     return (
                       <TableRow
@@ -923,24 +982,28 @@ const enhancedCategories = useEnhancedCategories(categories);
                         hover
                         onClick={() =>
                           navigate(
-                            `/Home/orders/details/${order.id}?page=${page}&rowsPerPage=${rowsPerPage}`
+                            `/Home/orders/details/${order.id}?page=${page}&rowsPerPage=${rowsPerPage}`,
                           )
                         }
                         state={{ searchQuery: searchTerm }}
                         style={{ cursor: "pointer" }}
                       >
-                        <TableCell sx={{ 
-                          textAlign: "center", 
-                          fontSize: { xs: "0.8rem", md: "0.9rem" },
-                          px: { xs: 1, md: 2 },
-                        }}>
+                        <TableCell
+                          sx={{
+                            textAlign: "center",
+                            fontSize: { xs: "0.8rem", md: "0.9rem" },
+                            px: { xs: 1, md: 2 },
+                          }}
+                        >
                           {order.purchase_order_id}
                         </TableCell>
-                        <TableCell sx={{ 
-                          textAlign: "center", 
-                          fontSize: { xs: "0.8rem", md: "0.9rem" },
-                          px: { xs: 1, md: 2 },
-                        }}>
+                        <TableCell
+                          sx={{
+                            textAlign: "center",
+                            fontSize: { xs: "0.8rem", md: "0.9rem" },
+                            px: { xs: 1, md: 2 },
+                          }}
+                        >
                           {marketplace && (
                             <div
                               style={{
@@ -969,7 +1032,10 @@ const enhancedCategories = useEnhancedCategories(categories);
                                   }}
                                 />
                               )}
-                              <Box component="span" sx={{ display: { xs: "none", sm: "inline" } }}>
+                              <Box
+                                component="span"
+                                sx={{ display: { xs: "none", sm: "inline" } }}
+                              >
                                 {marketplace.marketplace_name}
                               </Box>
                             </div>
@@ -977,8 +1043,8 @@ const enhancedCategories = useEnhancedCategories(categories);
                           {!marketplace && order.marketplace_name}
                         </TableCell>
                         <TableCell
-                          sx={{ 
-                            textAlign: "center", 
+                          sx={{
+                            textAlign: "center",
                             paddingLeft: "3px",
                             fontSize: { xs: "0.8rem", md: "0.9rem" },
                             px: { xs: 1, md: 2 },
@@ -995,20 +1061,22 @@ const enhancedCategories = useEnhancedCategories(categories);
                                   minute: "2-digit",
                                   hour12: true,
                                   timeZone: "US/Pacific",
-                                }
+                                },
                               )
                             : "N/A"}
                         </TableCell>
-                        <TableCell sx={{ 
-                          textAlign: "center", 
-                          fontSize: { xs: "0.8rem", md: "0.9rem" },
-                          px: { xs: 1, md: 2 },
-                        }}>
+                        <TableCell
+                          sx={{
+                            textAlign: "center",
+                            fontSize: { xs: "0.8rem", md: "0.9rem" },
+                            px: { xs: 1, md: 2 },
+                          }}
+                        >
                           {order.currency}
                         </TableCell>
                         <TableCell
-                          sx={{ 
-                            textAlign: "center", 
+                          sx={{
+                            textAlign: "center",
                             paddingLeft: "3px",
                             fontSize: { xs: "0.8rem", md: "0.9rem" },
                             px: { xs: 1, md: 2 },
@@ -1019,28 +1087,39 @@ const enhancedCategories = useEnhancedCategories(categories);
                             : "N/A"}
                         </TableCell>
                         <TableCell
-                          sx={{ 
-                            textAlign: "center", 
+                          sx={{
+                            textAlign: "center",
                             paddingLeft: "3px",
                             fontSize: { xs: "0.8rem", md: "0.9rem" },
                             px: { xs: 1, md: 2 },
                           }}
                         >
-                           {order.order_total && !isNaN(order.order_total)
-    ? formatCurrency(order.order_total.toFixed(2), selectedCountry)
-    : "N/A"}
+                          {order.order_total && !isNaN(order.order_total)
+                            ? formatCurrency(
+                                order.order_total.toFixed(2),
+                                selectedCountry,
+                              )
+                            : "N/A"}
                         </TableCell>
-                        <TableCell sx={{ 
-                          textAlign: "center", 
-                          fontSize: { xs: "0.8rem", md: "0.9rem" },
-                          px: { xs: 1, md: 2 },
-                        }}>
+                        <TableCell
+                          sx={{
+                            textAlign: "center",
+                            fontSize: { xs: "0.8rem", md: "0.9rem" },
+                            px: { xs: 1, md: 2 },
+                          }}
+                        >
                           {order.order_status || "N/A"}
                         </TableCell>
                         <TableCell sx={{ textAlign: "center" }}>
                           <Tooltip title="View Order Details" arrow>
-                            <Button variant="text" sx={{ color: "#000080" }} size="small">
-                              <Visibility sx={{ fontSize: { xs: 18, md: 20 } }} />
+                            <Button
+                              variant="text"
+                              sx={{ color: "#000080" }}
+                              size="small"
+                            >
+                              <Visibility
+                                sx={{ fontSize: { xs: 18, md: 20 } }}
+                              />
                             </Button>
                           </Tooltip>
                         </TableCell>
@@ -1069,9 +1148,9 @@ const enhancedCategories = useEnhancedCategories(categories);
           value={rowsPerPage}
           onChange={handleRowsPerPageChange}
           size="small"
-          sx={{ 
+          sx={{
             minWidth: 70,
-            width: { xs: "100%", md: "auto" }
+            width: { xs: "100%", md: "auto" },
           }}
         >
           <MenuItem value={25}>25/page</MenuItem>
@@ -1090,7 +1169,7 @@ const enhancedCategories = useEnhancedCategories(categories);
             "& .MuiPagination-ul": {
               justifyContent: { xs: "center", md: "flex-start" },
               flexWrap: "wrap",
-            }
+            },
           }}
           onRowsPerPageChange={(event) => {
             setRowsPerPage(parseInt(event.target.value, 10));
@@ -1222,7 +1301,11 @@ const enhancedCategories = useEnhancedCategories(categories);
           }}
         >
           <Stack spacing={2}>
-            <Typography variant="h6" gutterBottom sx={{ fontSize: { xs: "1.2rem", md: "1.5rem" } }}>
+            <Typography
+              variant="h6"
+              gutterBottom
+              sx={{ fontSize: { xs: "1.2rem", md: "1.5rem" } }}
+            >
               Download Orders
             </Typography>
             {selectedBrand.length > 0 && (
@@ -1262,7 +1345,7 @@ const enhancedCategories = useEnhancedCategories(categories);
                       size="small"
                       onDelete={() =>
                         setSelectedBrand((prev) =>
-                          prev.filter((b) => b.id !== brand.id)
+                          prev.filter((b) => b.id !== brand.id),
                         )
                       }
                     />
@@ -1282,11 +1365,11 @@ const enhancedCategories = useEnhancedCategories(categories);
               hasMore={hasMore}
               toggleSelection={(option) => {
                 const isSelected = selectedBrand.some(
-                  (b) => b.id === option.id
+                  (b) => b.id === option.id,
                 );
                 if (isSelected) {
                   setSelectedBrand(
-                    selectedBrand.filter((b) => b.id !== option.id)
+                    selectedBrand.filter((b) => b.id !== option.id),
                   );
                 } else {
                   setSelectedBrand([...selectedBrand, option]);

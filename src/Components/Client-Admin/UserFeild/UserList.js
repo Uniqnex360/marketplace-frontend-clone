@@ -30,13 +30,13 @@ import SearchIcon from "@mui/icons-material/Search";
 import axios from "axios";
 import CloseIcon from "@mui/icons-material/Close";
 import UserAdd from "../UserFeild/UserAdd";
-import { Link } from 'react-router-dom';
-import EditIcon from '@mui/icons-material/Edit';
+import { Link } from "react-router-dom";
+import EditIcon from "@mui/icons-material/Edit";
 
 function UserList() {
   const theme = useTheme();
-  const isMobile = useMediaQuery(theme.breakpoints.down('md'));
-  
+  const isMobile = useMediaQuery(theme.breakpoints.down("md"));
+
   const [clientData, setClientData] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -75,7 +75,7 @@ function UserList() {
           user_id: userIds,
           sort_by: key,
           sort_by_value: sortValue,
-        }
+        },
       );
       setClientData(response.data.data.users || []);
     } catch (err) {
@@ -93,14 +93,17 @@ function UserList() {
 
   const filteredClientData = (clientData || []).filter(
     (client) =>
-      (client.first_name && client.first_name.toLowerCase().includes(searchTerm.toLowerCase())) ||
-      (client.email && client.email.toLowerCase().includes(searchTerm.toLowerCase())) ||
-      (client.role_name && client.role_name.toLowerCase().includes(searchTerm.toLowerCase()))
+      (client.first_name &&
+        client.first_name.toLowerCase().includes(searchTerm.toLowerCase())) ||
+      (client.email &&
+        client.email.toLowerCase().includes(searchTerm.toLowerCase())) ||
+      (client.role_name &&
+        client.role_name.toLowerCase().includes(searchTerm.toLowerCase())),
   );
 
   const paginatedClientData = filteredClientData.slice(
     page * rowsPerPage,
-    page * rowsPerPage + rowsPerPage
+    page * rowsPerPage + rowsPerPage,
   );
 
   const totalPages = Math.ceil(filteredClientData.length / rowsPerPage);
@@ -117,66 +120,87 @@ function UserList() {
   return (
     <Box sx={{ p: { xs: 1, md: 3 }, marginTop: { xs: "60px", md: "80px" } }}>
       {/* Header Section - Fixed position below navbar */}
-      <Box sx={{ 
-        p: { xs: 2, md: 2 }, 
-        display: 'flex', 
-        flexDirection: { xs: 'column', md: 'row' },
-        justifyContent: { xs: "space-between", md: "flex-end" },  
-        alignItems: { xs: 'stretch', md: 'center' },
-        gap: { xs: 2, md: 0 },
-        position: 'fixed',
-        top: { xs: '55px', md: '65px' },
-        left: 0,
-        right: 0,
-        backgroundColor: 'white',
-        zIndex: 10,
-        boxShadow: '0 2px 4px rgba(0,0,0,0.1)',
-        px: { xs: 2, md: 3 },
-        py: 2,
-      }}>
-        {/* Search Field */}
-        <TextField
-          variant="outlined"
-          value={searchTerm}
-          size="small"
-          onChange={handleSearchChange}
-          autoFocus
-          placeholder="Search by Username, Email, Role..."
-          fullWidth={isMobile}
-          InputProps={{
-            startAdornment: (
-              <InputAdornment position="start">
-                <SearchIcon sx={{ fontSize: "20px" }} />
-              </InputAdornment>
-            ),
-            style: { fontSize: "12px" },
-          }}
-          sx={{ 
-            maxWidth: { xs: '100%', md: '300px' },
-            marginRight: { xs: 0, md: 2 }
-          }}
-        />
-
-        {/* Add New User Button */}
-        <Button
+      {/* Header Section - Fixed position below navbar */}
+      <Box
+        sx={{
+          position: "fixed",
+          top: { xs: "55px", md: "65px" },
+          left: 0,
+          right: 0,
+          backgroundColor: "white",
+          zIndex: 10,
+          boxShadow: "0 2px 4px rgba(0,0,0,0.1)",
+          px: { xs: 2, md: 3 },
+          py: { xs: 1, md: 2 },
+          boxSizing: "border-box",
+        }}
+      >
+        {/* Scrollable row (horizontal scroll on mobile, normal row on desktop) */}
+        <Box
           sx={{
-            textTransform: "capitalize",
-            color: '#fff',
-            background: "#000080",
-            "&:hover": {
-              backgroundColor: "#000080",
+            display: "flex",
+            flexDirection: "row",
+            flexWrap: "nowrap",
+            alignItems: "center",
+            justifyContent: { xs: "flex-start", md: "flex-end" },
+            gap: { xs: 1, md: 2 },
+            overflowX: { xs: "auto", md: "visible" },
+            overflowY: "hidden",
+            WebkitOverflowScrolling: "touch",
+            pb: { xs: 1, md: 0 },
+            "& > *": { flexShrink: 0 },
+            "&::-webkit-scrollbar": { height: "4px" },
+            "&::-webkit-scrollbar-thumb": {
+              backgroundColor: "#bbb",
+              borderRadius: "10px",
             },
-            maxWidth: { xs: '100%', md: '150px' },
-            width: { xs: '100%', md: 'auto' },
+            "&::-webkit-scrollbar-track": {
+              backgroundColor: "#f1f1f1",
+              borderRadius: "10px",
+            },
           }}
-          variant="contained"
-          onClick={() => {
-            setSelectedClient(null);
-            setOpenDialog(true);
-          }} 
         >
-          Add New User
-        </Button>
+          {/* Search Field */}
+          <TextField
+            variant="outlined"
+            value={searchTerm}
+            size="small"
+            onChange={handleSearchChange}
+            autoFocus
+            placeholder="Search by Username, Email, Role..."
+            InputProps={{
+              startAdornment: (
+                <InputAdornment position="start">
+                  <SearchIcon sx={{ fontSize: "20px" }} />
+                </InputAdornment>
+              ),
+              style: { fontSize: "12px" },
+            }}
+            sx={{
+              width: { xs: 260, md: 300 },
+            }}
+          />
+
+          {/* Add New User Button */}
+          <Button
+            sx={{
+              textTransform: "capitalize",
+              color: "#fff",
+              background: "#000080",
+              whiteSpace: "nowrap",
+              "&:hover": {
+                backgroundColor: "#000080",
+              },
+            }}
+            variant="contained"
+            onClick={() => {
+              setSelectedClient(null);
+              setOpenDialog(true);
+            }}
+          >
+            Add New User
+          </Button>
+        </Box>
       </Box>
 
       {/* Dialog for Adding/Editing User */}
@@ -188,20 +212,22 @@ function UserList() {
         fullScreen={isMobile}
         PaperProps={{
           style: {
-            width: isMobile ? '100%' : '600px',
-            maxWidth: '100%',
-            margin: isMobile ? 0 : '32px',
-            height: isMobile ? '100%' : 'auto',
-            maxHeight: isMobile ? '100%' : '80vh',
+            width: isMobile ? "100%" : "600px",
+            maxWidth: "100%",
+            margin: isMobile ? 0 : "32px",
+            height: isMobile ? "100%" : "auto",
+            maxHeight: isMobile ? "100%" : "80vh",
           },
         }}
       >
-        <DialogTitle sx={{ 
-          display: 'flex', 
-          justifyContent: 'space-between', 
-          alignItems: 'center',
-          fontSize: { xs: '1.1rem', md: '1.25rem' }
-        }}>
+        <DialogTitle
+          sx={{
+            display: "flex",
+            justifyContent: "space-between",
+            alignItems: "center",
+            fontSize: { xs: "1.1rem", md: "1.25rem" },
+          }}
+        >
           {selectedClient ? "Edit Client" : "Add New User"}
           <IconButton onClick={() => setOpenDialog(false)}>
             <CloseIcon />
@@ -221,7 +247,7 @@ function UserList() {
 
       {/* Loading and Error States */}
       {loading && (
-        <Box sx={{ display: 'flex', justifyContent: 'center', p: 3, mt: 8 }}>
+        <Box sx={{ display: "flex", justifyContent: "center", p: 3, mt: 8 }}>
           <CircularProgress />
         </Box>
       )}
@@ -245,21 +271,26 @@ function UserList() {
                       <CardContent>
                         <Grid container spacing={2} alignItems="center">
                           <Grid item xs={8}>
-                            <Typography 
-                              variant="subtitle1" 
+                            <Typography
+                              variant="subtitle1"
                               fontWeight="bold"
                               component={Link}
                               to={`/Home/users/userdetails/${client.id}?page=${page}`}
-                              sx={{ 
-                                textDecoration: "none", 
+                              sx={{
+                                textDecoration: "none",
                                 color: "black",
                                 display: "block",
-                                mb: 1
+                                mb: 1,
                               }}
                             >
-                              {client?.first_name || "N/A"} {client?.last_name || "N/A"}
+                              {client?.first_name || "N/A"}{" "}
+                              {client?.last_name || "N/A"}
                             </Typography>
-                            <Typography variant="body2" color="textSecondary" sx={{ mb: 0.5 }}>
+                            <Typography
+                              variant="body2"
+                              color="textSecondary"
+                              sx={{ mb: 0.5 }}
+                            >
                               {client.email || "N/A"}
                             </Typography>
                             <Typography variant="body2">
@@ -267,7 +298,7 @@ function UserList() {
                             </Typography>
                           </Grid>
                           <Grid item xs={4} sx={{ textAlign: "right" }}>
-                            <IconButton 
+                            <IconButton
                               onClick={() => {
                                 setSelectedClient(client);
                                 setOpenDialog(true);
@@ -289,9 +320,9 @@ function UserList() {
               </Box>
             ) : (
               /* Desktop Table View */
-              <TableContainer 
-                component={Paper} 
-                sx={{ 
+              <TableContainer
+                component={Paper}
+                sx={{
                   maxHeight: "60vh",
                   overflowY: "overlay",
                   overflowX: "overlay",
@@ -313,24 +344,22 @@ function UserList() {
                 }}
               >
                 <Table size="small">
-                  <TableHead sx={{
-                    backgroundColor: "#f6f6f6",
-                    position: "sticky",
-                    right: 0,
-                    top: 0,
-                    zIndex: 2,
-                    textAlign: "center",
-                  }}>
+                  <TableHead
+                    sx={{
+                      backgroundColor: "#f6f6f6",
+                      position: "sticky",
+                      right: 0,
+                      top: 0,
+                      zIndex: 2,
+                      textAlign: "center",
+                    }}
+                  >
                     <TableRow>
                       <TableCell sx={{ fontWeight: "bold" }}>
                         Username
                       </TableCell>
-                      <TableCell sx={{ fontWeight: "bold" }}>
-                        Email
-                      </TableCell>
-                      <TableCell sx={{ fontWeight: "bold" }}>
-                        Role
-                      </TableCell>
+                      <TableCell sx={{ fontWeight: "bold" }}>Email</TableCell>
+                      <TableCell sx={{ fontWeight: "bold" }}>Role</TableCell>
                       <TableCell>Actions</TableCell>
                     </TableRow>
                   </TableHead>
@@ -339,17 +368,23 @@ function UserList() {
                       paginatedClientData.map((client) => (
                         <TableRow key={client.id}>
                           <TableCell>
-                            <Link to={`/Home/users/userdetails/${client.id}?page=${page}`} style={{ textDecoration: 'none', color: 'black' }}>
-                              {client?.first_name || "N/A"} {client?.last_name || "N/A"}
+                            <Link
+                              to={`/Home/users/userdetails/${client.id}?page=${page}`}
+                              style={{ textDecoration: "none", color: "black" }}
+                            >
+                              {client?.first_name || "N/A"}{" "}
+                              {client?.last_name || "N/A"}
                             </Link>
                           </TableCell>
                           <TableCell>{client.email || "N/A"}</TableCell>
                           <TableCell>{client.role_name || "N/A"}</TableCell>
                           <TableCell>
-                            <IconButton onClick={() => {
-                              setSelectedClient(client);
-                              setOpenDialog(true);
-                            }}>
+                            <IconButton
+                              onClick={() => {
+                                setSelectedClient(client);
+                                setOpenDialog(true);
+                              }}
+                            >
                               <EditIcon />
                             </IconButton>
                           </TableCell>
@@ -371,22 +406,24 @@ function UserList() {
       </Box>
 
       {/* Pagination UI */}
-      <Box sx={{ 
-        display: "flex", 
-        flexDirection: { xs: 'column', md: 'row' },
-        alignItems: { xs: 'stretch', md: 'center' },
-        justifyContent: "flex-end", 
-        mt: 2,
-        gap: { xs: 2, md: 1 }
-      }}>
+      <Box
+        sx={{
+          display: "flex",
+          flexDirection: { xs: "column", md: "row" },
+          alignItems: { xs: "stretch", md: "center" },
+          justifyContent: "flex-end",
+          mt: 2,
+          gap: { xs: 2, md: 1 },
+        }}
+      >
         {/* Rows per page selector */}
         <Select
           value={rowsPerPage}
           onChange={handleRowsPerPageChange}
           size="small"
-          sx={{ 
+          sx={{
             minWidth: 70,
-            width: { xs: '100%', md: 'auto' }
+            width: { xs: "100%", md: "auto" },
           }}
         >
           <MenuItem value={25}>25/page</MenuItem>
@@ -402,9 +439,9 @@ function UserList() {
           color="primary"
           size="small"
           sx={{
-            '& .MuiPagination-ul': {
-              justifyContent: { xs: 'center', md: 'flex-start' }
-            }
+            "& .MuiPagination-ul": {
+              justifyContent: { xs: "center", md: "flex-start" },
+            },
           }}
         />
       </Box>

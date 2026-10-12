@@ -138,7 +138,7 @@ const ProductTable = () => {
     sortConfig,
     selectedCategory,
     searchQuery,
-    selectedCountry
+    selectedCountry,
   ]);
 
   // Effect to set search term from location state (for navigation)
@@ -208,7 +208,7 @@ const ProductTable = () => {
           sort_by_value: sortConfig.direction === "asc" ? 1 : -1,
           skip: skip >= 0 ? skip : 0,
           limit: validRowsPerPage,
-        }
+        },
       );
 
       if (
@@ -227,13 +227,15 @@ const ProductTable = () => {
             name: "N/A",
           },
           quantity: product.quantity || 0,
-          price: product.price ? formatCurrency(product.price, selectedCountry) : formatCurrency('0.00', selectedCountry),
+          price: product.price
+            ? formatCurrency(product.price, selectedCountry)
+            : formatCurrency("0.00", selectedCountry),
         }));
 
         setProductData(products);
         setProductCount(response.data.data.total_count);
         setTotalPages(
-          Math.ceil(response.data.data.total_count / validRowsPerPage)
+          Math.ceil(response.data.data.total_count / validRowsPerPage),
         );
       } else {
         console.error("No valid products found in response:", response.data);
@@ -260,12 +262,12 @@ const ProductTable = () => {
     navigate(`/Home/products?page=${value}&rowsPerPage=${rowsPerPage}`);
     setPage(value);
   };
-  
+
   const handleChangePage = (event, newPage) => {
     navigate(`/Home/products?page=${newPage}&&rowsPerPage=${rowsPerPage}`);
     setPage(newPage);
   };
-  
+
   const handleSearchChange = (e) => {
     const value = e.target.value;
     setSearchTerm(value);
@@ -365,7 +367,13 @@ const ProductTable = () => {
           marginTop: { xs: "30px", md: "50px" },
         }}
       >
-        <Box sx={{ display: "flex", gap: 2, flexDirection: { xs: "column", md: "row" } }}>
+        <Box
+          sx={{
+            display: "flex",
+            gap: 2,
+            flexDirection: { xs: "column", md: "row" },
+          }}
+        >
           {filterVisible && (
             <Box
               sx={{
@@ -389,228 +397,217 @@ const ProductTable = () => {
 
           {/* Fixed Header (Search, Buttons) */}
           {/* Fixed Header (Search, Buttons) */}
-<Box
-  sx={{
-    display: "flex",
-    flexDirection: { xs: "column", md: "row" },
-    gap: { xs: 1, md: 2 },
-    my: 2,
-    justifyContent: "flex-end",
-    alignItems: { xs: "center", md: "center" }, // Changed from "stretch" to "center"
-    position: "fixed",
-    top: 0,
-    right: 0,
-    marginTop: { xs: "60px", md: "90px" },
-    marginRight: { xs: "0px", md: "22px" },
-    width: { xs: "calc(100% - 20px)", md: filterVisible ? "calc(100% - 235px)" : "100%" },
-    backgroundColor: "white",
-    zIndex: 100,
-    padding: { xs: "8px", md: "10px" },
-    border: { xs: "1px solid #e0e0e0", md: "none" },
-    borderRadius: { xs: "8px", md: 0 },
-    boxShadow: { xs: "0 2px 8px rgba(0,0,0,0.1)", md: "none" },
-  }}
->
-  <Box sx={{ 
-    marginTop: { xs: 0, md: "-7px" },
-    width: { xs: "100%", md: "auto" },
-    display: "flex",
-    justifyContent: "flex-start"
-  }}>
-    <CountrySelector
-      selectedCountry={selectedCountry}
-      onCountryChange={(country) => {
-        setSelectedCountry(country);
-        setPage(1); // Reset to first page when country changes
-      }}
-      minWidth={150}
-      sx={{
-        width: { xs: "100%", md: 150 }
-      }}
-    />
-  </Box>
-
-  {/* Marketplace Selector - Full width on mobile */}
-  <Box sx={{ 
-    marginTop: { xs: 0, md: "-7px" },
-    width: { xs: "100%", md: "auto" }, // Added full width on mobile
-    display: "flex",
-    justifyContent: "flex" // Center on mobile
-  }}>
-    <FormControl size="small" sx={{ width: { xs: "100%", md: 180 } }}>
-      <Select
-        value={selectedCategory?.id || "all"}
-        onChange={(e) => {
-          const selected = enhancedCategories.find(
-            (cat) => cat.id === e.target.value
-          );
-          if (selected) {
-            handleMarketplaceSelect(selected);
-          }
-        }}
-        displayEmpty
-      >
-        {marketplaceLoading ? (
-          <MenuItem disabled>Loading...</MenuItem>
-        ) : (
-          enhancedCategories.map((category) => (
-            <MenuItem key={category.id} value={category.id}>
-              <Box display="flex" alignItems="center" gap={1}>
-                {category.icon ||
-                  (category.imageUrl ? (
-                    <img
-                      src={category.imageUrl}
-                      alt={category.name}
-                      width={18}
-                      height={14}
-                    />
-                  ) : (
-                    <ImageIcon fontSize="small" />
-                  ))}
-                <span>{category.name}</span>
+          <Box
+            sx={{
+              position: "fixed",
+              top: 0,
+              right: 0,
+              marginTop: { xs: "60px", md: "90px" },
+              marginRight: { xs: "0px", md: "22px" },
+              width: {
+                xs: "calc(100% - 20px)",
+                md: filterVisible ? "calc(100% - 235px)" : "100%",
+              },
+              backgroundColor: "white",
+              zIndex: 100,
+              padding: { xs: "8px", md: "10px" },
+              border: { xs: "1px solid #e0e0e0", md: "none" },
+              borderRadius: { xs: "8px", md: 0 },
+              boxShadow: { xs: "0 2px 8px rgba(0,0,0,0.1)", md: "none" },
+              boxSizing: "border-box",
+              my: 2,
+            }}
+          >
+            {/* Scrollable row (horizontal scroll on mobile, normal row on desktop) */}
+            <Box
+              sx={{
+                display: "flex",
+                flexDirection: "row",
+                flexWrap: "nowrap",
+                alignItems: "center",
+                justifyContent: { xs: "flex-start", md: "flex-end" },
+                gap: { xs: 1, md: 2 },
+                overflowX: { xs: "auto", md: "visible" },
+                overflowY: "hidden",
+                WebkitOverflowScrolling: "touch",
+                pb: { xs: 1, md: 0 },
+                "& > *": { flexShrink: 0 },
+                "&::-webkit-scrollbar": { height: "4px" },
+                "&::-webkit-scrollbar-thumb": {
+                  backgroundColor: "#bbb",
+                  borderRadius: "10px",
+                },
+                "&::-webkit-scrollbar-track": {
+                  backgroundColor: "#f1f1f1",
+                  borderRadius: "10px",
+                },
+              }}
+            >
+              {/* Country Selector */}
+              <Box
+                sx={{
+                  marginTop: { xs: 0, md: "-7px" },
+                  width: { xs: 170, md: "auto" },
+                  display: "flex",
+                  justifyContent: "flex-start",
+                }}
+              >
+                <CountrySelector
+                  selectedCountry={selectedCountry}
+                  onCountryChange={(country) => {
+                    setSelectedCountry(country);
+                    setPage(1);
+                  }}
+                  minWidth={150}
+                  sx={{ width: { xs: "100%", md: 150 } }}
+                />
               </Box>
-            </MenuItem>
-          ))
-        )}
-      </Select>
-    </FormControl>
-  </Box>
 
-  {/* Search Field - Full width on mobile */}
-  <TextField
-    size="small"
-    placeholder="Search Title | SKU | Product Type"
-    value={searchTerm}
-    onChange={handleSearchChange}
-    sx={{
-      width: { xs: "100%", md: 300 },
-      "& input": {
-        fontSize: "14px",
-      },
-    }}
-  />
+              {/* Marketplace Selector */}
+              <Box
+                sx={{
+                  marginTop: { xs: 0, md: "-7px" },
+                  width: { xs: 180, md: "auto" },
+                  display: "flex",
+                }}
+              >
+                <FormControl
+                  size="small"
+                  sx={{ width: { xs: "100%", md: 180 } }}
+                >
+                  <Select
+                    value={selectedCategory?.id || "all"}
+                    onChange={(e) => {
+                      const selected = enhancedCategories.find(
+                        (cat) => cat.id === e.target.value,
+                      );
+                      if (selected) {
+                        handleMarketplaceSelect(selected);
+                      }
+                    }}
+                    displayEmpty
+                  >
+                    {marketplaceLoading ? (
+                      <MenuItem disabled>Loading...</MenuItem>
+                    ) : (
+                      enhancedCategories.map((category) => (
+                        <MenuItem key={category.id} value={category.id}>
+                          <Box display="flex" alignItems="center" gap={1}>
+                            {category.icon ||
+                              (category.imageUrl ? (
+                                <img
+                                  src={category.imageUrl}
+                                  alt={category.name}
+                                  width={18}
+                                  height={14}
+                                />
+                              ) : (
+                                <ImageIcon fontSize="small" />
+                              ))}
+                            <span>{category.name}</span>
+                          </Box>
+                        </MenuItem>
+                      ))
+                    )}
+                  </Select>
+                </FormControl>
+              </Box>
 
-  {/* Action Buttons - Horizontal on mobile */}
-  <Box
-    sx={{
-      display: "flex",
-      flexDirection: { xs: "row", md: "row" },
-      gap: 1,
-      justifyContent: { xs: "center", md: "flex-start" }, // Changed to center on mobile
-      width: { xs: "100%", md: "auto" },
-    }}
-  >
-    {/* Mobile Filter Toggle Button */}
-    {/* <Tooltip title="Filter" arrow>
-      <Button
-        variant="text"
-        color="primary"
-        onClick={handleAddFilterClick}
-        sx={{
-          backgroundColor: "#000080",
-          color: "white",
-          minWidth: "auto",
-          height: "32px",
-          width: { xs: "48px", md: "32px" },
-          padding: "6px",
-          display: "flex",
-          justifyContent: "center",
-          alignItems: "center",
-          flex: { xs: "none", md: "none" }, // Changed from 1 to none
-          "&:hover": {
-            backgroundColor: "darkblue",
-          },
-        }}
-      >
-        <FilterListIcon sx={{ color: "white", fontSize: "20px" }} />
-      </Button>
-    </Tooltip> */}
+              {/* Search Field */}
+              <TextField
+                size="small"
+                placeholder="Search Title | SKU | Product Type"
+                value={searchTerm}
+                onChange={handleSearchChange}
+                sx={{
+                  width: { xs: 260, md: 300 },
+                  "& input": { fontSize: "14px" },
+                }}
+              />
 
-    <Tooltip title="Import" arrow>
-      <Button
-        variant="contained"
-        sx={{
-          backgroundColor: "#000080",
-          minWidth: "auto",
-          padding: "6px",
-          height: "32px",
-          width: { xs: "48px", md: "32px" },
-          display: "flex",
-          justifyContent: "center",
-          alignItems: "center",
-          flex: { xs: "none", md: "none" }, // Changed from 1 to none
-          "&:hover": {
-            backgroundColor: "darkblue",
-          },
-        }}
-        onClick={handleImportClick}
-      >
-        <PublishIcon sx={{ color: "white", fontSize: "20px" }} />
-      </Button>
-    </Tooltip>
+              {/* Action Buttons */}
+              <Box
+                sx={{
+                  display: "flex",
+                  flexDirection: "row",
+                  gap: 1,
+                  justifyContent: "flex-start",
+                }}
+              >
+                <Tooltip title="Import" arrow>
+                  <Button
+                    variant="contained"
+                    sx={{
+                      backgroundColor: "#000080",
+                      minWidth: "auto",
+                      padding: "6px",
+                      height: "32px",
+                      width: { xs: "40px", md: "32px" },
+                      display: "flex",
+                      justifyContent: "center",
+                      alignItems: "center",
+                      "&:hover": { backgroundColor: "darkblue" },
+                    }}
+                    onClick={handleImportClick}
+                  >
+                    <PublishIcon sx={{ color: "white", fontSize: "20px" }} />
+                  </Button>
+                </Tooltip>
 
-    <Tooltip title="Export" arrow>
-      <Button
-        variant="outlined"
-        sx={{
-          backgroundColor: "#000080",
-          minWidth: "auto",
-          padding: "6px",
-          display: "flex",
-          height: "32px",
-          width: { xs: "48px", md: "32px" },
-          justifyContent: "center",
-          alignItems: "center",
-          flex: { xs: "none", md: "none" }, // Changed from 1 to none
-          "&:hover": {
-            backgroundColor: "darkblue",
-          },
-        }}
-      >
-        <Download sx={{ color: "white", fontSize: "20px" }} />
-      </Button>
-    </Tooltip>
+                <Tooltip title="Export" arrow>
+                  <Button
+                    variant="outlined"
+                    sx={{
+                      backgroundColor: "#000080",
+                      minWidth: "auto",
+                      padding: "6px",
+                      height: "32px",
+                      width: { xs: "40px", md: "32px" },
+                      display: "flex",
+                      justifyContent: "center",
+                      alignItems: "center",
+                      "&:hover": { backgroundColor: "darkblue" },
+                    }}
+                  >
+                    <Download sx={{ color: "white", fontSize: "20px" }} />
+                  </Button>
+                </Tooltip>
 
-    <Tooltip title="Reset" arrow>
-      <Button
-        variant="outlined"
-        sx={{
-          backgroundColor: "#000080",
-          minWidth: "auto",
-          padding: "6px",
-          height: "32px",
-          width: { xs: "48px", md: "32px" },
-          display: "flex",
-          justifyContent: "center",
-          alignItems: "center",
-          flex: { xs: "none", md: "none" }, // Changed from 1 to none
-          "&:hover": {
-            backgroundColor: "darkblue",
-          },
-        }}
-        onClick={() => {
-          handleResetChange();
-        }}
-      >
-        <Refresh sx={{ color: "white", fontSize: "20px" }} />
-      </Button>
-    </Tooltip>
-  </Box>
+                <Tooltip title="Reset" arrow>
+                  <Button
+                    variant="outlined"
+                    sx={{
+                      backgroundColor: "#000080",
+                      minWidth: "auto",
+                      padding: "6px",
+                      height: "32px",
+                      width: { xs: "40px", md: "32px" },
+                      display: "flex",
+                      justifyContent: "center",
+                      alignItems: "center",
+                      "&:hover": { backgroundColor: "darkblue" },
+                    }}
+                    onClick={handleResetChange}
+                  >
+                    <Refresh sx={{ color: "white", fontSize: "20px" }} />
+                  </Button>
+                </Tooltip>
+              </Box>
 
-  {/* Product Count - Full width on mobile */}
-  <Typography 
-    variant="body2" 
-    sx={{ 
-      textAlign: { xs: "center", md: "left" },
-      width: { xs: "100%", md: "auto" },
-      mt: { xs: 0, md: 0 }, // Removed top margin on mobile
-      display: "flex",
-      justifyContent: "center" // Center on mobile
-    }}
-  >
-    Total Products: {productCount ? productCount : "0"}
-  </Typography>
-</Box>
+              {/* Product Count */}
+              <Typography
+                variant="body2"
+                sx={{
+                  whiteSpace: "nowrap",
+                  display: "flex",
+                  alignItems: "center",
+                  px: 1,
+                }}
+              >
+                Total Products: {productCount ? productCount : "0"}
+              </Typography>
+            </Box>
+          </Box>
 
           {/* Table Section (Scrollable) */}
           <Box
@@ -666,13 +663,17 @@ const ProductTable = () => {
                   <TableRow>
                     {/* Render Static Column Headers */}
                     <TableCell
-                      sx={{ 
-                        textAlign: "center", 
+                      sx={{
+                        textAlign: "center",
                         backgroundColor: "#f6f6f6",
                         px: { xs: 1, md: 2 },
                       }}
                     >
-                      <Typography variant="subtitle2" fontWeight="bold" fontSize={{ xs: "0.75rem", md: "0.875rem" }}>
+                      <Typography
+                        variant="subtitle2"
+                        fontWeight="bold"
+                        fontSize={{ xs: "0.75rem", md: "0.875rem" }}
+                      >
                         Image
                       </Typography>
                     </TableCell>
@@ -685,7 +686,11 @@ const ProductTable = () => {
                         px: { xs: 1, md: 2 },
                       }}
                     >
-                      <Typography variant="subtitle2" fontWeight="bold" fontSize={{ xs: "0.75rem", md: "0.875rem" }}>
+                      <Typography
+                        variant="subtitle2"
+                        fontWeight="bold"
+                        fontSize={{ xs: "0.75rem", md: "0.875rem" }}
+                      >
                         SKU
                       </Typography>
                     </TableCell>
@@ -698,13 +703,19 @@ const ProductTable = () => {
                         px: { xs: 1, md: 2 },
                       }}
                     >
-                      <Typography variant="subtitle2" fontWeight="bold" fontSize={{ xs: "0.75rem", md: "0.875rem" }}>
+                      <Typography
+                        variant="subtitle2"
+                        fontWeight="bold"
+                        fontSize={{ xs: "0.75rem", md: "0.875rem" }}
+                      >
                         Title
                         <IconButton
                           onClick={(e) => handleOpenMenu(e, "product_title")}
                           size="small"
                         >
-                          <MoreVertIcon sx={{ fontSize: { xs: "12px", md: "14px" } }} />
+                          <MoreVertIcon
+                            sx={{ fontSize: { xs: "12px", md: "14px" } }}
+                          />
                         </IconButton>
                       </Typography>
                     </TableCell>
@@ -717,17 +728,23 @@ const ProductTable = () => {
                         px: { xs: 1, md: 2 },
                       }}
                     >
-                      <Typography variant="subtitle2" fontWeight="bold" fontSize={{ xs: "0.75rem", md: "0.875rem" }}>
+                      <Typography
+                        variant="subtitle2"
+                        fontWeight="bold"
+                        fontSize={{ xs: "0.75rem", md: "0.875rem" }}
+                      >
                         Category
                         <IconButton
                           onClick={(e) => handleOpenMenu(e, "category")}
                           size="small"
                         >
-                          <MoreVertIcon sx={{ fontSize: { xs: "12px", md: "14px" } }} />
+                          <MoreVertIcon
+                            sx={{ fontSize: { xs: "12px", md: "14px" } }}
+                          />
                         </IconButton>
                       </Typography>
                     </TableCell>
-                    
+
                     {/* <TableCell
                       sx={{ 
                         textAlign: "center", 
@@ -739,7 +756,7 @@ const ProductTable = () => {
                         Channel
                       </Typography>
                     </TableCell> */}
-                    
+
                     <TableCell
                       sx={{
                         textAlign: "center",
@@ -748,17 +765,23 @@ const ProductTable = () => {
                         px: { xs: 1, md: 2 },
                       }}
                     >
-                      <Typography variant="subtitle2" fontWeight="bold" fontSize={{ xs: "0.75rem", md: "0.875rem" }}>
+                      <Typography
+                        variant="subtitle2"
+                        fontWeight="bold"
+                        fontSize={{ xs: "0.75rem", md: "0.875rem" }}
+                      >
                         Quantity
                         <IconButton
                           onClick={(e) => handleOpenMenu(e, "quantity")}
                           size="small"
                         >
-                          <MoreVertIcon sx={{ fontSize: { xs: "12px", md: "14px" } }} />
+                          <MoreVertIcon
+                            sx={{ fontSize: { xs: "12px", md: "14px" } }}
+                          />
                         </IconButton>
                       </Typography>
                     </TableCell>
-                    
+
                     <TableCell
                       sx={{
                         textAlign: "center",
@@ -767,25 +790,35 @@ const ProductTable = () => {
                         px: { xs: 1, md: 2 },
                       }}
                     >
-                      <Typography variant="subtitle2" fontWeight="bold" fontSize={{ xs: "0.75rem", md: "0.875rem" }}>
+                      <Typography
+                        variant="subtitle2"
+                        fontWeight="bold"
+                        fontSize={{ xs: "0.75rem", md: "0.875rem" }}
+                      >
                         Price
-                        <IconButton 
+                        <IconButton
                           onClick={(e) => handleOpenMenu(e, "price")}
                           size="small"
                         >
-                          <MoreVertIcon sx={{ fontSize: { xs: "12px", md: "14px" } }} />
+                          <MoreVertIcon
+                            sx={{ fontSize: { xs: "12px", md: "14px" } }}
+                          />
                         </IconButton>
                       </Typography>
                     </TableCell>
-                    
+
                     <TableCell
-                      sx={{ 
-                        textAlign: "center", 
+                      sx={{
+                        textAlign: "center",
                         backgroundColor: "#f6f6f6",
                         px: { xs: 1, md: 2 },
                       }}
                     >
-                      <Typography variant="subtitle2" fontWeight="bold" fontSize={{ xs: "0.75rem", md: "0.875rem" }}>
+                      <Typography
+                        variant="subtitle2"
+                        fontWeight="bold"
+                        fontSize={{ xs: "0.75rem", md: "0.875rem" }}
+                      >
                         Action
                       </Typography>
                     </TableCell>
@@ -801,7 +834,9 @@ const ProductTable = () => {
                   ) : productData.length > 0 ? (
                     productData.map((product) => (
                       <TableRow key={product.productId} hover>
-                        <TableCell sx={{ textAlign: "center", px: { xs: 1, md: 2 } }}>
+                        <TableCell
+                          sx={{ textAlign: "center", px: { xs: 1, md: 2 } }}
+                        >
                           <Link
                             to={`/Home/products/details/${product.productId}?page=${page}&&rowsPerPage=${rowsPerPage}`}
                             style={{ textDecoration: "none" }}
@@ -839,23 +874,35 @@ const ProductTable = () => {
                           </Link>
                         </TableCell>
 
-                        <TableCell sx={{ textAlign: "left", px: { xs: 1, md: 2 } }}>
+                        <TableCell
+                          sx={{ textAlign: "left", px: { xs: 1, md: 2 } }}
+                        >
                           <Link
                             to={`/Home/products/details/${product.productId}?page=${page}&&rowsPerPage=${rowsPerPage}`}
                             style={{ textDecoration: "none", color: "black" }}
                           >
-                            <span style={{ fontSize: { xs: "0.75rem", md: "0.875rem" } }}>
+                            <span
+                              style={{
+                                fontSize: { xs: "0.75rem", md: "0.875rem" },
+                              }}
+                            >
                               {product.title}
                             </span>
                           </Link>
                         </TableCell>
-                        
-                        <TableCell sx={{ textAlign: "center", px: { xs: 1, md: 2 } }}>
-                          <span style={{ fontSize: { xs: "0.75rem", md: "0.875rem" } }}>
+
+                        <TableCell
+                          sx={{ textAlign: "center", px: { xs: 1, md: 2 } }}
+                        >
+                          <span
+                            style={{
+                              fontSize: { xs: "0.75rem", md: "0.875rem" },
+                            }}
+                          >
                             {product.category || "N/A"}
                           </span>
                         </TableCell>
-                        
+
                         {/* <TableCell
                           align="center"
                           sx={{ 
@@ -912,17 +959,21 @@ const ProductTable = () => {
                         </TableCell> */}
 
                         <TableCell
-                          sx={{ 
-                            textAlign: "center", 
+                          sx={{
+                            textAlign: "center",
                             paddingLeft: { xs: "2px", md: "3px" },
                             px: { xs: 1, md: 2 },
                           }}
                         >
-                          <span style={{ fontSize: { xs: "0.75rem", md: "0.875rem" } }}>
+                          <span
+                            style={{
+                              fontSize: { xs: "0.75rem", md: "0.875rem" },
+                            }}
+                          >
                             {product.quantity || 0}
                           </span>
                         </TableCell>
-                        
+
                         <TableCell
                           sx={{
                             paddingLeft: { xs: "2px", md: "3px" },
@@ -932,18 +983,29 @@ const ProductTable = () => {
                             px: { xs: 1, md: 2 },
                           }}
                         >
-                          <span style={{ fontSize: { xs: "0.75rem", md: "0.875rem" } }}>
+                          <span
+                            style={{
+                              fontSize: { xs: "0.75rem", md: "0.875rem" },
+                            }}
+                          >
                             {product.price || "$0.00"}
                           </span>
                         </TableCell>
 
-                        <TableCell sx={{ textAlign: "center", px: { xs: 1, md: 2 } }}>
+                        <TableCell
+                          sx={{ textAlign: "center", px: { xs: 1, md: 2 } }}
+                        >
                           <Link
                             to={`/Home/products/details/${product.productId}?page=${page}&&rowsPerPage=${rowsPerPage}`}
                             style={{ textDecoration: "none" }}
                           >
                             <IconButton color="primary" size="small">
-                              <EditIcon sx={{ color: "#000080", fontSize: { xs: "18px", md: "20px" } }} />
+                              <EditIcon
+                                sx={{
+                                  color: "#000080",
+                                  fontSize: { xs: "18px", md: "20px" },
+                                }}
+                              />
                             </IconButton>
                           </Link>
                         </TableCell>
@@ -977,9 +1039,9 @@ const ProductTable = () => {
                 value={rowsPerPage}
                 onChange={handleRowsPerPageChange}
                 size="small"
-                sx={{ 
+                sx={{
                   minWidth: 70,
-                  width: { xs: "100%", md: "auto" }
+                  width: { xs: "100%", md: "auto" },
                 }}
               >
                 <MenuItem value={50}>50/page</MenuItem>
@@ -999,7 +1061,7 @@ const ProductTable = () => {
                   "& .MuiPagination-ul": {
                     justifyContent: { xs: "center", md: "flex-start" },
                     flexWrap: "wrap",
-                  }
+                  },
                 }}
                 onRowsPerPageChange={(event) => {
                   setRowsPerPage(parseInt(event.target.value, 10));
@@ -1048,7 +1110,7 @@ const ProductTable = () => {
             </MenuItem>
           </>
         )}
-        
+
         {/* Sorting for Price */}
         {currentColumn === "price" && (
           <>
