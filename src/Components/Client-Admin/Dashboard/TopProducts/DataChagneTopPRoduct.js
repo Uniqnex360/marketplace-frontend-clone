@@ -726,7 +726,7 @@ export default function TopProductsChart({ startDate, endDate, widgetData, marke
                         spacing={1}
                         mt={2}
                     >
-                        <Button
+                        {/* <Button
                             variant="outlined"
                             startIcon={<InfoOutlinedIcon />}
                             onClick={() => setOpenNote(true)}
@@ -741,7 +741,7 @@ export default function TopProductsChart({ startDate, endDate, widgetData, marke
                             }}
                         >
                             Add Note
-                        </Button>
+                        </Button> */}
                         <Switch
                             checked={events}
                             onChange={(e) => setEvents(e.target.checked)}

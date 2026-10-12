@@ -130,9 +130,9 @@ function NewTopProducts() {
             <Typography variant="h6">Top 5 Products</Typography>
           </Grid>
           <Grid item>
-            <Button startIcon={<AddIcon />} size="small">
+            {/* <Button startIcon={<AddIcon />} size="small">
               Add Note
-            </Button>
+            </Button> */}
             <Switch
               checked={showEvents}
               onChange={handleEventsToggle}

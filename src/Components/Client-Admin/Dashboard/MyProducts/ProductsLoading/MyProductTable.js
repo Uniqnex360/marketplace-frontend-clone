@@ -22,9 +22,11 @@ import TabsOverview from '../CollapseDetial/TabsOverview';
 import ProductCell from './ProductCell';
 import CustomizeTooltip from '../../../CustomTooltip/CustomTooltip';
 import ProductCellParent from './ProductCellParent';
+import { formatCurrency } from '../../../../../utils/currencyFormatter';
 
 
-const MyProductTable = ({ products, visibleColumns, onSort, isParentType, imageSize }) => {
+
+const MyProductTable = ({ products, visibleColumns, onSort, isParentType, imageSize,country }) => {
   const [loading, setLoading] = useState(false);
   const [expandedRows, setExpandedRows] = useState({}); // Change to an object
   const navigate = useNavigate();
@@ -404,15 +406,14 @@ const MyProductTable = ({ products, visibleColumns, onSort, isParentType, imageS
                               row?.price
                             ) :
 
-                              col === 'Sales Today' ? (
-                                <div style={{ display: 'flex', flexDirection: 'column', fontSize: '14px' }}>
-                                  <span>${row.salesForToday ? row.salesForToday : '0.00'}</span>
-                                  {/* <span>{row.salesForTodayPeriod}</span> */}
-                                </div>
-                              )
+            col === 'Sales Today' ? (
+  <div style={{ display: 'flex', flexDirection: 'column', fontSize: '14px' }}>
+    <span>{row.salesForToday ? formatCurrency(row.salesForToday, country) : formatCurrency('0.00', country)}</span>
+  </div>
+)
                                 : col === 'Units Sold' ? (
                                   <div style={{ display: 'flex', flexDirection: 'column', fontSize: '14px' }}>
-                                    <span>{row.unitsSoldForToday ? row.unitsSoldForToday : '0.00'}</span>
+                                     <span>{row.unitsSoldForToday ? row.unitsSoldForToday : '0'}</span>
 
                                     <span
                                       style={{
@@ -457,7 +458,7 @@ const MyProductTable = ({ products, visibleColumns, onSort, isParentType, imageS
                                   col === 'Refunds($)' ? (
 
                                     <div style={{ display: 'flex', flexDirection: 'column', fontSize: '14px' }}>
-                                      <span>${row.refundsAmount ? row.refundsAmount : '0.00'}</span>
+                                      <span>{formatCurrency(row.refundsAmount ? row.refundsAmount : '0.00',country)}</span>
 
                                       <span
                                         style={{
@@ -468,7 +469,7 @@ const MyProductTable = ({ products, visibleColumns, onSort, isParentType, imageS
                                           gap: '4px',
                                         }}
                                       >
-                                        $ {Math.abs(row.refundsAmountforPeriod || 0)}
+                                         {formatCurrency(Math.abs(row.refundsAmountforPeriod || 0),country)}
                                         {row.refundsAmountforPeriod < 0 ? (
                                           <ArrowDownwardIcon sx={{ color: 'red', fontSize: 14 }} />
                                         ) : (
@@ -483,7 +484,7 @@ const MyProductTable = ({ products, visibleColumns, onSort, isParentType, imageS
 
 
                                     <div style={{ display: 'flex', flexDirection: 'column', fontSize: '14px' }}>
-                                      <span>${row.netProfit ? row.netProfit : '0.00'}</span>
+                                      <span>{formatCurrency(row.netProfit ? row.netProfit : '0.00',country)}</span>
                                       <span
                                         style={{
                                           fontSize: '12px',
@@ -493,7 +494,7 @@ const MyProductTable = ({ products, visibleColumns, onSort, isParentType, imageS
                                           gap: '4px',
                                         }}
                                       >
-                                        $ {Math.abs(row.netProfitforPeriod || 0)}
+                                        {formatCurrency(Math.abs(row.netProfitforPeriod || 0),country)}
                                         {row.netProfitforPeriod < 0 ? (
                                           <ArrowDownwardIcon sx={{ color: 'red', fontSize: 14 }} />
                                         ) : (
@@ -551,7 +552,7 @@ const MyProductTable = ({ products, visibleColumns, onSort, isParentType, imageS
                                         row.fulfillmentChannel)
                                         :
                                         col === 'current price Range' ? (
-                                          `$${parseFloat(row.price_start || 0).toFixed(2)}-$${parseFloat(row.price_end || 0).toFixed(2)}`
+                                          `${formatCurrency(parseFloat(row.price_start || 0).toFixed(2), country)}-${formatCurrency(parseFloat(row.price_end || 0).toFixed(2), country)}`
 
                                         )
                                           : col === 'Category & Subcategory BSR' ? (

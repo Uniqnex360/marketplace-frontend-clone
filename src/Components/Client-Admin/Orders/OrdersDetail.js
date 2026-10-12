@@ -15,7 +15,9 @@ import {
   TableHead,
   TableRow,
   Paper,
-  Skeleton, // Import Skeleton from MUI
+  Skeleton,
+  useMediaQuery,
+  useTheme,
 } from "@mui/material";
 import axios from "axios";
 import {
@@ -35,6 +37,10 @@ import { useParams } from "react-router-dom";
 import { useNavigate, useLocation } from "react-router-dom";
 
 const OrderDetail = () => {
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down('md'));
+  const isSmallMobile = useMediaQuery(theme.breakpoints.down('sm'));
+  
   const location = useLocation();
   const navigate = useNavigate();
   const [order, setOrder] = useState(null);
@@ -125,13 +131,13 @@ const OrderDetail = () => {
   };
 
   const renderSkeletonLoader = () => (
-    <Box sx={{ p: 3, backgroundColor: "#f4f6f8" }}>
-      <Box sx={{ display: "flex", alignItems: "center", padding: "20px" }}>
+    <Box sx={{ p: { xs: 1, md: 3 }, backgroundColor: "#f4f6f8" }}>
+      <Box sx={{ display: "flex", alignItems: "center", padding: { xs: "10px", md: "20px" } }}>
         <Skeleton variant="circular" width={40} height={40} />
         <Skeleton variant="text" width={200} sx={{ ml: 2 }} />
       </Box>
 
-      <Grid container spacing={3} style={{ padding: "20px" }}>
+      <Grid container spacing={3} style={{ padding: { xs: "10px", md: "20px" } }}>
         {[...Array(3)].map((_, index) => (
           <Grid item xs={12} md={4} key={index}>
             <Card sx={{ height: "100%" }}>
@@ -147,7 +153,7 @@ const OrderDetail = () => {
         ))}
       </Grid>
 
-      <Card style={{ margin: "20px", padding: "10px" }}>
+      <Card style={{ margin: { xs: "10px", md: "20px" }, padding: "10px" }}>
         <CardContent>
           <Grid container spacing={2}>
             <Grid item xs={12} md={6}>
@@ -166,7 +172,7 @@ const OrderDetail = () => {
         </CardContent>
       </Card>
 
-      <Card style={{ margin: "20px", padding: "10px" }}>
+      <Card style={{ margin: { xs: "10px", md: "20px" }, padding: "10px" }}>
         <CardContent>
           <TableContainer component={Paper}>
             <Table>
@@ -202,85 +208,101 @@ const OrderDetail = () => {
       {loading ? (
         renderSkeletonLoader()
       ) : (
-        <Box sx={{ p: 3, backgroundColor: "#f4f6f8" }}>
-          <div style={{ padding: "20px", fontSize: "14px" }}>
+        <Box sx={{ p: { xs: 1, md: 3 }, backgroundColor: "#f4f6f8" }}>
+          <div style={{ padding: { xs: "10px", md: "20px" }, fontSize: "14px" }}>
+            {/* Back Button Section */}
             <Box
-              sx={{ display: "flex", alignItems: "center", padding: "20px" }}
+              sx={{ 
+                display: "flex", 
+                alignItems: "center", 
+                padding: { xs: "10px", md: "20px" },
+                mb: 2
+              }}
             >
-              <IconButton sx={{ marginLeft: "-3%" }} onClick={handleBackClick}>
+              <IconButton 
+                sx={{ 
+                  marginLeft: { xs: 0, md: "-3%" },
+                  mr: 1
+                }} 
+                onClick={handleBackClick}
+              >
                 <ArrowBack />
               </IconButton>
               <Typography
-                gutterBottom
-                sx={{ fontSize: "18px", marginTop: "7px" }}
+                sx={{ 
+                  fontSize: { xs: "16px", md: "18px" },
+                  marginTop: { xs: "0", md: "7px" }
+                }}
               >
                 Back to Orders
               </Typography>
             </Box>
 
+            {/* Cards Grid */}
             <Grid
               container
               spacing={3}
-              style={{
-                paddingLeft: "22px",
-                paddingRight: "20px",
-                marginTop: "10px",
+              sx={{
+                paddingLeft: { xs: "10px", md: "22px" },
+                paddingRight: { xs: "10px", md: "20px" },
+                marginTop: { xs: "5px", md: "10px" },
               }}
             >
+              {/* Order Details Card */}
               <Grid item xs={12} md={4}>
                 <Card sx={{ height: "100%" }}>
                   <CardContent>
-                    <Typography variant="h6" gutterBottom>
+                    <Typography variant="h6" gutterBottom sx={{ fontSize: { xs: "1.1rem", md: "1.25rem" } }}>
                       Order Details
                     </Typography>
 
-                    <Grid container spacing={1} alignItems="center">
-                      <Grid item>
+                    <Grid container spacing={1} alignItems="center" sx={{ mb: 1 }}>
+                      <Grid item xs={1}>
                         <Tooltip title="Channel" arrow>
-                          <Storefront sx={{ color: "#000080" }} />
+                          <Storefront sx={{ color: "#000080", fontSize: { xs: "18px", md: "24px" } }} />
                         </Tooltip>
                       </Grid>
-                      <Grid item>
-                        <Typography>
+                      <Grid item xs={11}>
+                        <Typography sx={{ fontSize: { xs: "0.9rem", md: "1rem" } }}>
                           {order?.marketplace_name || "Not Applicable"}
                         </Typography>
                       </Grid>
                     </Grid>
 
-                    <Grid container spacing={1} alignItems="center">
-                      <Grid item>
+                    <Grid container spacing={1} alignItems="center" sx={{ mb: 1 }}>
+                      <Grid item xs={1}>
                         <Tooltip title="Order Date" arrow>
-                          <CalendarToday sx={{ color: "#000080" }} />
+                          <CalendarToday sx={{ color: "#000080", fontSize: { xs: "18px", md: "24px" } }} />
                         </Tooltip>
                       </Grid>
-                      <Grid item>
-                        <Typography>
+                      <Grid item xs={11}>
+                        <Typography sx={{ fontSize: { xs: "0.9rem", md: "1rem" } }}>
                           {formatDate(order?.order_date) || "Not Applicable"}
                         </Typography>
                       </Grid>
                     </Grid>
 
-                    <Grid container spacing={1} alignItems="center">
-                      <Grid item>
+                    <Grid container spacing={1} alignItems="center" sx={{ mb: 1 }}>
+                      <Grid item xs={1}>
                         <Tooltip title="Order Status" arrow>
-                          <CheckCircle sx={{ color: "#000080" }} />
+                          <CheckCircle sx={{ color: "#000080", fontSize: { xs: "18px", md: "24px" } }} />
                         </Tooltip>
                       </Grid>
-                      <Grid item>
-                        <Typography>
+                      <Grid item xs={11}>
+                        <Typography sx={{ fontSize: { xs: "0.9rem", md: "1rem" } }}>
                           {order?.order_status || "Not Applicable"}
                         </Typography>
                       </Grid>
                     </Grid>
 
                     <Grid container spacing={1} alignItems="center">
-                      <Grid item>
+                      <Grid item xs={1}>
                         <Tooltip title="Order Total" arrow>
-                          <AttachMoney sx={{ color: "#000080" }} />
+                          <AttachMoney sx={{ color: "#000080", fontSize: { xs: "18px", md: "24px" } }} />
                         </Tooltip>
                       </Grid>
-                      <Grid item>
-                        <Typography>
+                      <Grid item xs={11}>
+                        <Typography sx={{ fontSize: { xs: "0.9rem", md: "1rem" } }}>
                           {order?.order_total || "Not Applicable"}
                         </Typography>
                       </Grid>
@@ -289,53 +311,52 @@ const OrderDetail = () => {
                 </Card>
               </Grid>
 
+              {/* Customer Details Card */}
               <Grid item xs={12} md={4}>
                 <Card sx={{ height: "100%" }}>
                   <CardContent>
-                    <Typography variant="h6" gutterBottom>
+                    <Typography variant="h6" gutterBottom sx={{ fontSize: { xs: "1.1rem", md: "1.25rem" } }}>
                       Customer Details
                     </Typography>
 
-                    <Grid container spacing={1} alignItems="center">
-                      <Grid item>
+                    <Grid container spacing={1} alignItems="center" sx={{ mb: 1 }}>
+                      <Grid item xs={1}>
                         <Tooltip title="Customer Name" arrow>
-                          <Person sx={{ color: "#000080" }} />
+                          <Person sx={{ color: "#000080", fontSize: { xs: "18px", md: "24px" } }} />
                         </Tooltip>
                       </Grid>
-                      <Grid item>
-                        <Typography sx={{ color: "#000080" }}>
+                      <Grid item xs={11}>
+                        <Typography sx={{ color: "#000080", fontSize: { xs: "0.9rem", md: "1rem" } }}>
                           {order?.customer_name || "Not Applicable"}
                         </Typography>
                       </Grid>
                     </Grid>
 
-                    <Grid container spacing={1} alignItems="center">
-                      <Grid item>
+                    <Grid container spacing={1} alignItems="center" sx={{ mb: 1 }}>
+                      <Grid item xs={1}>
                         <Tooltip title="Customer Order ID" arrow>
-                          <ConfirmationNumber sx={{ color: "#000080" }} />
+                          <ConfirmationNumber sx={{ color: "#000080", fontSize: { xs: "18px", md: "24px" } }} />
                         </Tooltip>
                       </Grid>
-                      <Grid item>
-                        <Typography sx={{ color: "#000080" }}>
+                      <Grid item xs={11}>
+                        <Typography sx={{ color: "#000080", fontSize: { xs: "0.9rem", md: "1rem" } }}>
                           {order?.customer_order_id || "Not Applicable"}
                         </Typography>
                       </Grid>
                     </Grid>
-                    <Grid container spacing={1}>
-                      <Grid item>
+
+                    <Grid container spacing={1} alignItems="flex-start" sx={{ mb: 1 }}>
+                      <Grid item xs={1}>
                         <Tooltip title="Customer Email" arrow>
-                          <Email sx={{ color: "#000080", fontSize: 20 }} />
+                          <Email sx={{ color: "#000080", fontSize: { xs: "16px", md: "20px" }, mt: 0.5 }} />
                         </Tooltip>
                       </Grid>
-                      <Grid item xs>
+                      <Grid item xs={11}>
                         <Typography
                           sx={{
                             color: "#000080",
                             wordBreak: "break-all",
-                            display: "flex",
-                            alignItems: "center",
-                            marginLeft: "4px",
-                            gap: 1,
+                            fontSize: { xs: "0.9rem", md: "1rem" },
                           }}
                         >
                           {order?.customer_email_id || "Not Applicable"}
@@ -344,13 +365,13 @@ const OrderDetail = () => {
                     </Grid>
 
                     <Grid container spacing={1} alignItems="center">
-                      <Grid item>
+                      <Grid item xs={1}>
                         <Tooltip title="Customer Phone" arrow>
-                          <Phone sx={{ color: "#000080" }} />
+                          <Phone sx={{ color: "#000080", fontSize: { xs: "18px", md: "24px" } }} />
                         </Tooltip>
                       </Grid>
-                      <Grid item>
-                        <Typography sx={{ color: "#000080" }}>
+                      <Grid item xs={11}>
+                        <Typography sx={{ color: "#000080", fontSize: { xs: "0.9rem", md: "1rem" } }}>
                           {shipping?.phone || "Not Applicable"}
                         </Typography>
                       </Grid>
@@ -358,99 +379,90 @@ const OrderDetail = () => {
                   </CardContent>
                 </Card>
               </Grid>
+
+              {/* Fulfillment Details Card */}
               <Grid item xs={12} md={4}>
                 <Card sx={{ height: "100%" }}>
                   <CardContent>
-                    <Typography variant="h6" gutterBottom>
+                    <Typography variant="h6" gutterBottom sx={{ fontSize: { xs: "1.1rem", md: "1.25rem" } }}>
                       Fulfillment Details
                     </Typography>
-                    <Grid
-                      container
-                      spacing={1}
-                      justifyContent="space-between"
-                      sx={{ marginLeft: "2px", paddingTop: "6px" }}
-                    >
-                      <Typography>Fulfillment Status</Typography>
-                      <Typography
-                        sx={{ color: "#000080", paddingRight: "10px" }}
-                      >
-                        {fulfillment?.FulfillmentOption || "Not Applicable"}
-                      </Typography>
-                    </Grid>
-                    <Grid
-                      container
-                      spacing={1}
-                      justifyContent="space-between"
-                      sx={{ marginLeft: "2px", paddingTop: "6px" }}
-                    >
-                      <Typography>Shipping Method</Typography>
-                      <Typography
-                        sx={{ color: "#000080", paddingRight: "10px" }}
-                      >
-                        {fulfillment?.ShipMethod || "Not Applicable"}
-                      </Typography>
-                    </Grid>
+                    
+                    <Box sx={{ mb: 1 }}>
+                      <Grid container justifyContent="space-between" alignItems="center">
+                        <Typography sx={{ fontSize: { xs: "0.9rem", md: "1rem" } }}>
+                          Fulfillment Status
+                        </Typography>
+                        <Typography sx={{ color: "#000080", fontSize: { xs: "0.9rem", md: "1rem" } }}>
+                          {fulfillment?.FulfillmentOption || "Not Applicable"}
+                        </Typography>
+                      </Grid>
+                    </Box>
+
+                    <Box sx={{ mb: 1 }}>
+                      <Grid container justifyContent="space-between" alignItems="center">
+                        <Typography sx={{ fontSize: { xs: "0.9rem", md: "1rem" } }}>
+                          Shipping Method
+                        </Typography>
+                        <Typography sx={{ color: "#000080", fontSize: { xs: "0.9rem", md: "1rem" } }}>
+                          {fulfillment?.ShipMethod || "Not Applicable"}
+                        </Typography>
+                      </Grid>
+                    </Box>
+
                     {fulfillment?.ShipDateTime && (
-                      <Grid
-                        container
-                        spacing={1}
-                        justifyContent="space-between"
-                        sx={{ marginLeft: "2px", paddingTop: "6px" }}
-                      >
-                        <Typography>Ship Date</Typography>
-                        <Typography
-                          sx={{ color: "#000080", paddingRight: "10px" }}
-                        >
-                          {new Date(
-                            fulfillment?.ShipDateTime
-                          ).toLocaleString() || "Not Applicable"}
-                        </Typography>
-                      </Grid>
+                      <Box sx={{ mb: 1 }}>
+                        <Grid container justifyContent="space-between" alignItems="center">
+                          <Typography sx={{ fontSize: { xs: "0.9rem", md: "1rem" } }}>
+                            Ship Date
+                          </Typography>
+                          <Typography sx={{ color: "#000080", fontSize: { xs: "0.9rem", md: "1rem" } }}>
+                            {new Date(fulfillment?.ShipDateTime).toLocaleString() || "Not Applicable"}
+                          </Typography>
+                        </Grid>
+                      </Box>
                     )}
+
                     {fulfillment?.Carrier && (
-                      <Grid
-                        container
-                        spacing={1}
-                        justifyContent="space-between"
-                        sx={{ marginLeft: "2px", paddingTop: "6px" }}
-                      >
-                        <Typography>Carrier</Typography>
-                        <Typography
-                          sx={{ color: "#000080", paddingRight: "10px" }}
-                        >
-                          {fulfillment?.Carrier || "Not Applicable"}
+                      <Box sx={{ mb: 1 }}>
+                        <Grid container justifyContent="space-between" alignItems="center">
+                          <Typography sx={{ fontSize: { xs: "0.9rem", md: "1rem" } }}>
+                            Carrier
+                          </Typography>
+                          <Typography sx={{ color: "#000080", fontSize: { xs: "0.9rem", md: "1rem" } }}>
+                            {fulfillment?.Carrier || "Not Applicable"}
+                          </Typography>
+                        </Grid>
+                      </Box>
+                    )}
+
+                    <Box>
+                      <Grid container justifyContent="space-between" alignItems="center">
+                        <Typography sx={{ fontSize: { xs: "0.9rem", md: "1rem" } }}>
+                          Fulfillment Channel
+                        </Typography>
+                        <Typography sx={{ color: "#000080", fontSize: { xs: "0.9rem", md: "1rem" } }}>
+                          {order?.fulfillment_channel
+                            ? order?.fulfillment_channel
+                            : "Not Applicable"}
                         </Typography>
                       </Grid>
-                    )}
-                    <Grid
-                      container
-                      spacing={1}
-                      justifyContent="space-between"
-                      sx={{ marginLeft: "2px", paddingTop: "6px" }}
-                    >
-                      <Typography>Fulfillment Channel</Typography>
-                      <Typography
-                        sx={{ color: "#000080", paddingRight: "10px" }}
-                      >
-                        {order?.fulfillment_channel
-                          ? order?.fulfillment_channel
-                          : "Not Applicable"}
-                      </Typography>
-                    </Grid>
+                    </Box>
                   </CardContent>
                 </Card>
               </Grid>
             </Grid>
 
-            <Card style={{ margin: "20px", padding: "10px" }}>
+            {/* Shipping Address Card */}
+            <Card sx={{ margin: { xs: "10px", md: "20px" }, padding: "10px" }}>
               <CardContent>
                 <Grid container spacing={2} justifyContent="space-between">
                   <Grid item xs={12} md={6}>
-                    <Typography variant="h6" gutterBottom>
+                    <Typography variant="h6" gutterBottom sx={{ fontSize: { xs: "1.1rem", md: "1.25rem" } }}>
                       Shipping Address
                     </Typography>
 
-                    <Typography variant="body2">
+                    <Typography variant="body2" sx={{ fontSize: { xs: "0.9rem", md: "1rem" } }}>
                       {order?.marketplace_name === "Walmart" ? (
                         <>
                           {shipping?.postalAddress?.name && (
@@ -528,10 +540,11 @@ const OrderDetail = () => {
                       container
                       alignItems="center"
                       spacing={1}
-                      justifyContent="flex-end"
+                      justifyContent={{ xs: "flex-start", md: "flex-end" }}
+                      sx={{ mt: { xs: 2, md: 0 } }}
                     >
                       <Grid item>
-                        <Typography variant="body2">
+                        <Typography variant="body2" sx={{ fontSize: { xs: "0.9rem", md: "1rem" } }}>
                           Has Regulated Items
                         </Typography>
                       </Grid>
@@ -539,6 +552,7 @@ const OrderDetail = () => {
                         <Checkbox
                           checked={order?.has_regulated_items}
                           readOnly
+                          size={isMobile ? "small" : "medium"}
                         />
                       </Grid>
                     </Grid>
@@ -547,26 +561,33 @@ const OrderDetail = () => {
               </CardContent>
             </Card>
 
-            <Card style={{ margin: "20px", padding: "10px" }}>
+            {/* Order Items Table */}
+            <Card sx={{ margin: { xs: "10px", md: "20px" }, padding: "10px" }}>
               <CardContent>
-                <TableContainer component={Paper} style={{ marginTop: "20px" }}>
-                  <Table>
+                <TableContainer 
+                  component={Paper} 
+                  sx={{ 
+                    marginTop: "20px",
+                    overflowX: 'auto'
+                  }}
+                >
+                  <Table sx={{ minWidth: isMobile ? 600 : 800 }}>
                     <TableHead>
                       <TableRow>
-                        <TableCell>
-                          <strong>Product</strong>
+                        <TableCell sx={{ fontWeight: "bold", fontSize: { xs: "0.8rem", md: "0.9rem" } }}>
+                          Product
                         </TableCell>
-                        <TableCell>
-                          <strong>SKU</strong>
+                        <TableCell sx={{ fontWeight: "bold", fontSize: { xs: "0.8rem", md: "0.9rem" } }}>
+                          SKU
                         </TableCell>
-                        <TableCell>
-                          <strong>Quantity</strong>
+                        <TableCell sx={{ fontWeight: "bold", fontSize: { xs: "0.8rem", md: "0.9rem" } }}>
+                          Quantity
                         </TableCell>
-                        <TableCell>
-                          <strong>Unit Price</strong>
+                        <TableCell sx={{ fontWeight: "bold", fontSize: { xs: "0.8rem", md: "0.9rem" } }}>
+                          Unit Price
                         </TableCell>
-                        <TableCell>
-                          <strong>Subtotal</strong>
+                        <TableCell sx={{ fontWeight: "bold", fontSize: { xs: "0.8rem", md: "0.9rem" } }}>
+                          Subtotal
                         </TableCell>
                       </TableRow>
                     </TableHead>
@@ -574,16 +595,16 @@ const OrderDetail = () => {
                     <TableBody>
                       {order?.order_items?.map((item, index) => (
                         <TableRow key={index}>
-                          <TableCell>
+                          <TableCell sx={{ fontSize: { xs: "0.8rem", md: "0.9rem" } }}>
                             {item.ProductDetails?.Title || "N/A"}
                           </TableCell>
-                          <TableCell>
+                          <TableCell sx={{ fontSize: { xs: "0.8rem", md: "0.9rem" } }}>
                             {item.ProductDetails?.SKU || "N/A"}
                           </TableCell>
-                          <TableCell>
+                          <TableCell sx={{ fontSize: { xs: "0.8rem", md: "0.9rem" } }}>
                             {item.ProductDetails?.QuantityOrdered || 0}
                           </TableCell>
-                          <TableCell>
+                          <TableCell sx={{ fontSize: { xs: "0.8rem", md: "0.9rem" } }}>
                             {item.ProductDetails?.unit_price
                               ? `$${
                                   item.ProductDetails.unit_price % 1 >= 0.5
@@ -593,7 +614,7 @@ const OrderDetail = () => {
                               : "N/A"}
                           </TableCell>
 
-                          <TableCell>
+                          <TableCell sx={{ fontSize: { xs: "0.8rem", md: "0.9rem" } }}>
                             {item?.Pricing?.ItemPrice?.Amount !== undefined &&
                             item?.Pricing?.ItemPrice?.Amount !== null
                               ? `$${Number(
@@ -604,11 +625,12 @@ const OrderDetail = () => {
                         </TableRow>
                       ))}
 
+                      {/* Summary Rows */}
                       <TableRow>
-                        <TableCell colSpan={4} align="right">
+                        <TableCell colSpan={4} align="right" sx={{ fontSize: { xs: "0.8rem", md: "0.9rem" } }}>
                           <strong>Tax:</strong>
                         </TableCell>
-                        <TableCell>
+                        <TableCell sx={{ fontSize: { xs: "0.8rem", md: "0.9rem" } }}>
                           {order?.order_items
                             ? `$${order.order_items
                                 .reduce(
@@ -622,10 +644,10 @@ const OrderDetail = () => {
                         </TableCell>
                       </TableRow>
                       <TableRow>
-                        <TableCell colSpan={4} align="right">
+                        <TableCell colSpan={4} align="right" sx={{ fontSize: { xs: "0.8rem", md: "0.9rem" } }}>
                           <strong>Shipping:</strong>
                         </TableCell>
-                        <TableCell>
+                        <TableCell sx={{ fontSize: { xs: "0.8rem", md: "0.9rem" } }}>
                           {order?.shipping_price !== undefined &&
                           order?.shipping_price !== null
                             ? `$${Number(order.shipping_price).toFixed(2)}`
@@ -633,17 +655,17 @@ const OrderDetail = () => {
                         </TableCell>
                       </TableRow>
                       <TableRow>
-                        <TableCell colSpan={4} align="right">
+                        <TableCell colSpan={4} align="right" sx={{ fontSize: { xs: "0.8rem", md: "0.9rem" } }}>
                           <strong>Shipping Tax:</strong>
                         </TableCell>
-                        <TableCell>$0.00</TableCell>
+                        <TableCell sx={{ fontSize: { xs: "0.8rem", md: "0.9rem" } }}>$0.00</TableCell>
                       </TableRow>
 
                       <TableRow>
-                        <TableCell colSpan={4} align="right">
+                        <TableCell colSpan={4} align="right" sx={{ fontSize: { xs: "0.8rem", md: "0.9rem" } }}>
                           <strong>Total:</strong>
                         </TableCell>
-                        <TableCell>
+                        <TableCell sx={{ fontSize: { xs: "0.8rem", md: "0.9rem" } }}>
                           {order?.order_items
                             ? `$${(
                                 order.order_items.reduce(
@@ -658,10 +680,10 @@ const OrderDetail = () => {
                         </TableCell>
                       </TableRow>
                       <TableRow>
-                        <TableCell colSpan={4} align="right">
+                        <TableCell colSpan={4} align="right" sx={{ fontSize: { xs: "0.8rem", md: "0.9rem" } }}>
                           <strong>Merchant Shipment Cost:</strong>
                         </TableCell>
-                        <TableCell>
+                        <TableCell sx={{ fontSize: { xs: "0.8rem", md: "0.9rem" } }}>
                           {order?.merchant_shipment_cost !== undefined &&
                           order?.merchant_shipment_cost !== null
                             ? `$${Number(order.merchant_shipment_cost).toFixed(

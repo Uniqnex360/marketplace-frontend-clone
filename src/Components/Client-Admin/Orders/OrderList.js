@@ -28,6 +28,8 @@ import {
   Stack,
   Divider,
   Chip,
+  useMediaQuery,
+  useTheme,
 } from "@mui/material";
 import { LocalizationProvider, DatePicker } from "@mui/x-date-pickers";
 import { AdapterDateFns } from "@mui/x-date-pickers/AdapterDateFns";
@@ -44,7 +46,19 @@ import { MoreVert as MoreVertIcon } from "@mui/icons-material";
 import { toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import BrandSelector from "../../../utils/BrandSelector";
+import { useMarketplace } from "../../../utils/MarketplaceProvider";
+import AppsIcon from "@mui/icons-material/Apps";
+import ShoppingCartIcon from "@mui/icons-material/ShoppingCart";
+import ImageIcon from "@mui/icons-material/Image";
+import { useEnhancedCategories } from "../../../utils/UseEnhancedCategories";
+import CountrySelector from "../../../utils/countrySelector";
+import { formatCurrency } from "../../../utils/currencyFormatter";
+
 const OrderList = ({ fetchOrdersFromParent }) => {
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down("md"));
+  const isSmallMobile = useMediaQuery(theme.breakpoints.down("sm"));
+
   const location = useLocation();
   const navigate = useNavigate();
   const [orders, setOrders] = useState([]);
@@ -78,6 +92,14 @@ const OrderList = ({ fetchOrdersFromParent }) => {
     id: "all",
     name: "All Channels",
   });
+  const {
+    categories,
+    loading: marketplaceLoading,
+    selectedCountry,
+    setSelectedCountry,
+  } = useMarketplace();
+  const enhancedCategories = useEnhancedCategories(categories);
+
   const systemTimeZone = Intl.DateTimeFormat().resolvedOptions().timeZone;
   const handleClearFilter = () => {
     setSelectedBrand([]);
@@ -101,6 +123,15 @@ const OrderList = ({ fetchOrdersFromParent }) => {
     const data = JSON.parse(userData);
     userIds = data.id;
   }
+  const handleMarketplaceSelect = (category) => {
+    setSelectedCategory(category);
+    const safeCategory = {
+      id: category.id,
+      name: category.name,
+    };
+    localStorage.setItem("selectedCategory", JSON.stringify(safeCategory));
+    setPage(1);
+  };
   const queryParams = new URLSearchParams(window.location.search);
   const initialPage = parseInt(queryParams.get("page")) || 1;
   const initialRowsPerPage = parseInt(queryParams.get("rowsPerPage"), 10) || 25;
@@ -137,7 +168,7 @@ const OrderList = ({ fetchOrdersFromParent }) => {
               user_id: userIds,
               limit: brandLimit,
             },
-          }
+          },
         );
         const names = response.data.data.brand_list || [];
         setBrandList(names);
@@ -157,11 +188,10 @@ const OrderList = ({ fetchOrdersFromParent }) => {
     const validRowsPerPage = rowsPerPage && rowsPerPage > 0 ? rowsPerPage : 25;
     const skip = (page - 1) * validRowsPerPage;
     try {
-      const marketplaceId = localStorage.getItem("selectedCategory")
-        ? JSON.parse(localStorage.getItem("selectedCategory")).id
-        : "all";
-        
+      const marketplaceId = selectedCategory?.id || "all";
+
       const payload = {
+        country: selectedCountry,
         user_id: userIds,
         skip: skip >= 0 ? skip : 0,
         limit: validRowsPerPage,
@@ -175,20 +205,20 @@ const OrderList = ({ fetchOrdersFromParent }) => {
         payload.order_status = selectedStatus;
       }
       const response = await axios.post(
-        `${process.env.REACT_APP_IP}fetchAllorders/`,
-        payload
+        `${process.env.REACT_APP_IP_V2}clickhouse/fetchAllorders_clickhouse/`,
+        payload,
       );
-      
-      const responseData = response.data || {};
+
+      const responseData = response.data?.data || {};
       setOrders(Array.isArray(responseData.orders) ? responseData.orders : []);
       setLogoMarket(
         Array.isArray(responseData.marketplace_list)
           ? responseData.marketplace_list
-          : []
+          : [],
       );
       setOrderCount(responseData.total_count || 0);
       setTotalPages(
-        Math.ceil((responseData.total_count || 0) / validRowsPerPage)
+        Math.ceil((responseData.total_count || 0) / validRowsPerPage),
       );
       setCustomStatus(responseData.status || "");
       setManualOrders([]);
@@ -211,6 +241,7 @@ const OrderList = ({ fetchOrdersFromParent }) => {
     sortConfig,
     searchQuery,
     selectedStatus,
+    selectedCountry,
   });
   useEffect(() => {
     const shouldFetch =
@@ -219,8 +250,9 @@ const OrderList = ({ fetchOrdersFromParent }) => {
       rowsPerPage !== prevParams.current.rowsPerPage ||
       JSON.stringify(sortConfig) !==
         JSON.stringify(prevParams.current.sortConfig) ||
-      searchQuery !== prevParams.current.searchQuery||
-    selectedStatus !== prevParams.current.selectedStatus;
+      searchQuery !== prevParams.current.searchQuery ||
+      selectedStatus !== prevParams.current.selectedStatus ||
+      selectedCountry !== prevParams.current.selectedCountry;
     if (shouldFetch) {
       fetchOrderData(selectedCategory.id, page, rowsPerPage);
       prevParams.current = {
@@ -230,11 +262,13 @@ const OrderList = ({ fetchOrdersFromParent }) => {
         sortConfig,
         searchQuery,
         selectedStatus,
+        selectedCountry,
       };
     }
   }, [
     selectedCategory.id,
     page,
+    selectedCountry,
     rowsPerPage,
     sortConfig,
     searchQuery,
@@ -247,7 +281,7 @@ const OrderList = ({ fetchOrdersFromParent }) => {
       setSelectedCategory(category);
     }
     fetchOrderData(selectedCategory.id, page, rowsPerPage);
-  }, []);
+  }, [selectedCountry]);
   const handleClose = () => {
     setOpen(false);
     fetchOrderData(selectedCategory.id, page, rowsPerPage);
@@ -294,7 +328,7 @@ const OrderList = ({ fetchOrdersFromParent }) => {
     setSelectedCategory({ id: "all", name: "All Channels" });
     localStorage.setItem(
       "selectedCategory",
-      JSON.stringify({ id: "all", name: "All Channels" })
+      JSON.stringify({ id: "all", name: "All Channels" }),
     );
     setPage(1);
     setSelectedStatus("all");
@@ -351,14 +385,14 @@ const OrderList = ({ fetchOrdersFromParent }) => {
           headers: {
             "Content-Type": "application/json",
           },
-        }
+        },
       );
       const url = window.URL.createObjectURL(new Blob([response.data]));
       const link = document.createElement("a");
       link.href = url;
       link.setAttribute(
         "download",
-        `orders_${new Date().toISOString().split("T")[0]}.${downloadFormat}`
+        `orders_${new Date().toISOString().split("T")[0]}.${downloadFormat}`,
       );
       document.body.appendChild(link);
       link.click();
@@ -377,151 +411,260 @@ const OrderList = ({ fetchOrdersFromParent }) => {
       setIsLoading(false);
     }
   };
+
   return (
-    <Box sx={{ flex: 1, width: "100%" }}>
+    <Box sx={{ flex: 1, width: "100%", px: { xs: 1, sm: 2 } }}>
+      {/* Header Section - Made Responsive */}
+      {/* Fixed Header (Filters, Search, Buttons) */}
       <Box
         sx={{
-          display: "flex",
-          flexDirection: "column",
-          gap: 2,
-          my: 2,
-          justifyContent: "flex-end",
-          alignItems: "center",
           position: "fixed",
           top: 0,
           right: 0,
-          marginTop: "20px",
-          width: "108%",
+          marginTop: { xs: "60px", md: "90px" },
+          marginRight: { xs: "0px", md: "22px" },
+          width: { xs: "calc(100% - 20px)", md: "100%" },
           backgroundColor: "white",
           zIndex: 100,
+          padding: { xs: "8px", md: "10px" },
+          border: { xs: "1px solid #e0e0e0", md: "none" },
+          borderRadius: { xs: "8px", md: 0 },
+          boxShadow: { xs: "0 2px 8px rgba(0,0,0,0.1)", md: "none" },
+          boxSizing: "border-box",
         }}
       >
+        {/* Scrollable row (horizontal scroll on mobile, normal row on desktop) */}
         <Box
           sx={{
             display: "flex",
-            gap: 2,
-            my: 2,
-            marginRight: "4%",
-            justifyContent: "flex-end",
+            flexDirection: "row",
+            flexWrap: "nowrap",
             alignItems: "center",
-            marginTop: "6%",
-            width: "100%",
+            justifyContent: { xs: "flex-start", md: "flex-end" },
+            gap: { xs: 1, md: 2 },
+            overflowX: { xs: "auto", md: "visible" },
+            overflowY: "hidden",
+            WebkitOverflowScrolling: "touch",
+            pb: { xs: 1, md: 0 },
+            "& > *": { flexShrink: 0 },
+            "&::-webkit-scrollbar": { height: "4px" },
+            "&::-webkit-scrollbar-thumb": {
+              backgroundColor: "#bbb",
+              borderRadius: "10px",
+            },
+            "&::-webkit-scrollbar-track": {
+              backgroundColor: "#f1f1f1",
+              borderRadius: "10px",
+            },
           }}
         >
-          <Box sx={{ marginTop: "-7px" }}>
-            <ChannelOrder
-              handleProduct={handleProduct}
-              clearChannel={selectedCategory}
+          {/* Country Selector */}
+          <Box sx={{ width: { xs: 170, md: "auto" }, display: "flex" }}>
+            <CountrySelector
+              selectedCountry={selectedCountry}
+              onCountryChange={(country) => {
+                setSelectedCountry(country);
+                setPage(1);
+              }}
+              minWidth={150}
+              sx={{ width: { xs: "100%", md: 150 } }}
             />
           </Box>
-          <FormControl size="small" sx={{ widhth: 150 }}>
-            <InputLabel>Status</InputLabel>
-            <Select
-              value={selectedStatus}
-              label="status"
-              onChange={(e) => setSelectedStatus(e.target.value)}
-            >
-              <MenuItem value="all">All Statuses</MenuItem>
-              <MenuItem value="Pending">Pending</MenuItem>
-              <MenuItem value="Shipped">Shipped</MenuItem>
-              <MenuItem value="Canceled">Canceled</MenuItem>
-            </Select>
-          </FormControl>
 
+          {/* Marketplace Selector */}
+          <Box sx={{ width: { xs: 180, md: "auto" } }}>
+            <FormControl size="small" sx={{ width: { xs: "100%", md: 180 } }}>
+              <Select
+                value={selectedCategory?.id || "all"}
+                onChange={(e) => {
+                  const selected = enhancedCategories.find(
+                    (cat) => cat.id === e.target.value,
+                  );
+                  if (selected) {
+                    handleMarketplaceSelect(selected);
+                  }
+                }}
+                displayEmpty
+              >
+                {marketplaceLoading ? (
+                  <MenuItem disabled>Loading...</MenuItem>
+                ) : (
+                  enhancedCategories.map((category) => (
+                    <MenuItem key={category.id} value={category.id}>
+                      <Box display="flex" alignItems="center" gap={1}>
+                        {category.icon ||
+                          (category.imageUrl ? (
+                            <img
+                              src={category.imageUrl}
+                              alt={category.name}
+                              width={18}
+                              height={14}
+                            />
+                          ) : (
+                            <ImageIcon fontSize="small" />
+                          ))}
+                        <span>{category.name}</span>
+                      </Box>
+                    </MenuItem>
+                  ))
+                )}
+              </Select>
+            </FormControl>
+          </Box>
+
+          {/* Status Filter */}
+          <Box sx={{ width: { xs: 140, md: "auto" } }}>
+            <FormControl size="small" sx={{ width: { xs: "100%", md: 150 } }}>
+              <InputLabel>Status</InputLabel>
+              <Select
+                value={selectedStatus}
+                label="Status"
+                onChange={(e) => setSelectedStatus(e.target.value)}
+              >
+                <MenuItem value="all">All Status</MenuItem>
+                <MenuItem value="Pending">Pending</MenuItem>
+                <MenuItem value="Shipped">Shipped</MenuItem>
+                <MenuItem value="Canceled">Canceled</MenuItem>
+              </Select>
+            </FormControl>
+          </Box>
+
+          {/* Search Field */}
           <TextField
             size="small"
             placeholder="Search Purchase Order ID"
             value={searchQuery}
             onChange={handleSearchChange}
             sx={{
-              width: 300,
-              "& input": {
-                fontSize: "14px",
-              },
+              width: { xs: 240, md: 300 },
+              "& input": { fontSize: "14px" },
             }}
           />
-          {selectedCategory.id == "custom" && (
-            <Button
-              variant="text"
-              color="primary"
-              sx={{
-                backgroundColor: "#000080",
-                fontSize: "14px",
-                color: "white",
-                fontWeight: 400,
-                minWidth: "auto",
-                padding: "8px 17px",
-                textTransform: "capitalize",
-                height: "35px",
-                "&:hover": {
-                  backgroundColor: "darkblue",
-                },
-              }}
-              onClick={handleOpen}
-            >
-              <AddIcon sx={{ marginRight: "3px" }} />
-              Create Order
-            </Button>
-          )}
-          <Button
-            variant="contained"
-            color="primary"
-            onClick={() => setDownloadModalOpen(true)}
+
+          {/* Action Buttons */}
+          <Box
             sx={{
-              marginLeft: "10px",
-              backgroundColor: "#000080",
-              "&:hover": {
-                backgroundColor: "darkblue",
-              },
+              display: "flex",
+              flexDirection: "row",
+              alignItems: "center",
+              gap: 1,
             }}
           >
-            Download orders
-          </Button>
-          <Tooltip title="Reset" arrow>
+            {selectedCategory.id == "custom" && (
+              <Button
+                variant="text"
+                color="primary"
+                sx={{
+                  backgroundColor: "#000080",
+                  fontSize: { xs: "12px", md: "14px" },
+                  color: "white",
+                  fontWeight: 400,
+                  minWidth: "auto",
+                  padding: { xs: "6px 12px", md: "8px 17px" },
+                  textTransform: "capitalize",
+                  height: "35px",
+                  whiteSpace: "nowrap",
+                  "&:hover": { backgroundColor: "darkblue" },
+                }}
+                onClick={handleOpen}
+              >
+                <AddIcon
+                  sx={{
+                    marginRight: "3px",
+                    fontSize: { xs: "16px", md: "20px" },
+                  }}
+                />
+                <Box
+                  component="span"
+                  sx={{ display: { xs: "none", sm: "inline" } }}
+                >
+                  Create Order
+                </Box>
+                <Box
+                  component="span"
+                  sx={{ display: { xs: "inline", sm: "none" } }}
+                >
+                  Create
+                </Box>
+              </Button>
+            )}
+
             <Button
-              variant="outlined"
+              variant="contained"
+              color="primary"
+              onClick={() => setDownloadModalOpen(true)}
               sx={{
+                marginLeft: { xs: 0, md: "10px" },
                 backgroundColor: "#000080",
-                minWidth: "auto",
-                padding: "6px",
-                display: "flex",
-                justifyContent: "center",
-                alignItems: "center",
-                "&:hover": {
-                  backgroundColor: "darkblue",
-                },
+                fontSize: { xs: "12px", md: "14px" },
+                whiteSpace: "nowrap",
+                "&:hover": { backgroundColor: "darkblue" },
               }}
-              onClick={handleResetChange}
             >
-              <Refresh sx={{ color: "white", fontSize: "20px" }} />
+              <Box
+                component="span"
+                sx={{ display: { xs: "none", sm: "inline" } }}
+              >
+                Download orders
+              </Box>
+              <Box
+                component="span"
+                sx={{ display: { xs: "inline", sm: "none" } }}
+              >
+                Download
+              </Box>
             </Button>
-          </Tooltip>
-          <Typography variant="body2">
+
+            <Tooltip title="Reset" arrow>
+              <Button
+                variant="outlined"
+                sx={{
+                  backgroundColor: "#000080",
+                  minWidth: "auto",
+                  padding: "6px",
+                  display: "flex",
+                  justifyContent: "center",
+                  alignItems: "center",
+                  width: { xs: "40px", md: "auto" },
+                  "&:hover": { backgroundColor: "darkblue" },
+                }}
+                onClick={handleResetChange}
+              >
+                <Refresh
+                  sx={{ color: "white", fontSize: { xs: "18px", md: "20px" } }}
+                />
+              </Button>
+            </Tooltip>
+          </Box>
+
+          {/* Order Count */}
+          <Typography
+            variant="body2"
+            sx={{
+              whiteSpace: "nowrap",
+              display: "flex",
+              alignItems: "center",
+              px: 1,
+            }}
+          >
             Total Orders: {orderCount ? orderCount : "0"}
           </Typography>
         </Box>
       </Box>
-      <Button
-        variant="contained"
-        color="primary"
-        onClick={() => setDownloadModalOpen(true)}
-        sx={{ margin: "16px 0" }}
-      >
-        Download orders
-      </Button>
-      <Box sx={{ paddingTop: "150px" }}>
+
+      {/* Main Content */}
+      <Box sx={{ paddingTop: { xs: "180px", md: "150px" } }}>
         {customStatus === "custom" ? (
           <TableContainer
             component={Paper}
             sx={{
-              maxHeight: "70vh",
+              maxHeight: { xs: "60vh", md: "70vh" },
               display: "flex",
               justifyContent: "center",
-              overflowY: "overlay",
-              overflowX: "overlay",
+              overflowX: "auto",
               "&::-webkit-scrollbar": {
-                height: "2px",
-                width: "2px",
+                height: "4px",
+                width: "4px",
               },
               "&::-webkit-scrollbar-thumb": {
                 backgroundColor: "#888",
@@ -536,7 +679,7 @@ const OrderList = ({ fetchOrdersFromParent }) => {
               },
             }}
           >
-            <Table sx={{ minWidth: 650, margin: "0 auto" }}>
+            <Table sx={{ minWidth: isMobile ? 800 : 650 }}>
               <TableHead
                 sx={{
                   position: "sticky",
@@ -546,84 +689,47 @@ const OrderList = ({ fetchOrdersFromParent }) => {
                 }}
               >
                 <TableRow>
-                  <TableCell
-                    sx={{
-                      fontWeight: "bold",
-                      textAlign: "center",
-                      backgroundColor: "#f6f6f6",
-                    }}
-                  >
-                    Purchase Order Id
-                  </TableCell>
-                  <TableCell
-                    sx={{
-                      fontWeight: "bold",
-                      textAlign: "center",
-                      backgroundColor: "#f6f6f6",
-                    }}
-                  >
-                    Customer Name
-                  </TableCell>
-                  <TableCell
-                    sx={{
-                      fontWeight: "bold",
-                      textAlign: "center",
-                      backgroundColor: "#f6f6f6",
-                    }}
-                  >
-                    Order Date
-                  </TableCell>
-                  <TableCell
-                    sx={{
-                      fontWeight: "bold",
-                      textAlign: "center",
-                      backgroundColor: "#f6f6f6",
-                    }}
-                  >
-                    Currency
-                  </TableCell>
-                  <TableCell
-                    align="center"
-                    sx={{ fontWeight: "bold", backgroundColor: "#f6f6f6" }}
-                  >
-                    Quantity
-                    <IconButton
-                      onClick={(e) => handleOpenMenu(e, "total_quantity")}
+                  {[
+                    { label: "Purchase Order Id", key: "purchaseOrderId" },
+                    { label: "Customer Name", key: "customerName" },
+                    { label: "Order Date", key: "orderDate" },
+                    { label: "Currency", key: "currency" },
+                    {
+                      label: "Quantity",
+                      key: "total_quantity",
+                      sortable: true,
+                    },
+                    {
+                      label: "Order Value",
+                      key: "total_price",
+                      sortable: true,
+                    },
+                    { label: "Status", key: "status" },
+                    { label: "Actions", key: "actions" },
+                  ].map(({ label, key, sortable }) => (
+                    <TableCell
+                      key={key}
+                      sx={{
+                        fontWeight: "bold",
+                        textAlign: "center",
+                        backgroundColor: "#f6f6f6",
+                        fontSize: { xs: "0.8rem", md: "0.9rem" },
+                        px: { xs: 1, md: 2 },
+                      }}
                     >
-                      <MoreVertIcon
-                        sx={{ fontSize: "14px", paddingRight: "3px" }}
-                      />
-                    </IconButton>
-                  </TableCell>
-                  <TableCell
-                    align="center"
-                    sx={{ fontWeight: "bold", backgroundColor: "#f6f6f6" }}
-                  >
-                    Order Value
-                    <IconButton
-                      onClick={(e) => handleOpenMenu(e, "total_price")}
-                    >
-                      <MoreVertIcon sx={{ fontSize: "14px" }} />
-                    </IconButton>
-                  </TableCell>
-                  <TableCell
-                    sx={{
-                      fontWeight: "bold",
-                      textAlign: "center",
-                      backgroundColor: "#f6f6f6",
-                    }}
-                  >
-                    Status
-                  </TableCell>
-                  <TableCell
-                    sx={{
-                      fontWeight: "bold",
-                      textAlign: "center",
-                      backgroundColor: "#f6f6f6",
-                    }}
-                  >
-                    Actions
-                  </TableCell>
+                      {label}
+                      {sortable && (
+                        <IconButton
+                          onClick={(e) => handleOpenMenu(e, key)}
+                          size="small"
+                        >
+                          <MoreVertIcon
+                            sx={{ fontSize: { xs: "12px", md: "14px" } }}
+                          />
+                        </IconButton>
+                      )}
+                    </TableCell>
+                  ))}
                 </TableRow>
               </TableHead>
               <TableBody>
@@ -640,7 +746,7 @@ const OrderList = ({ fetchOrdersFromParent }) => {
                       hover
                       onClick={() =>
                         navigate(
-                          `/Home/orders/customList/${order.id}?page=${page}`
+                          `/Home/orders/customList/${order.id}?page=${page}`,
                         )
                       }
                       style={{ cursor: "pointer" }}
@@ -649,11 +755,10 @@ const OrderList = ({ fetchOrdersFromParent }) => {
                         sx={{
                           textAlign: "center",
                           minWidth: 140,
-                          width: 140,
                           wordBreak: "break-word",
                           whiteSpace: "normal",
-                          overflow: "hidden",
-                          textOverflow: "ellipsis",
+                          fontSize: { xs: "0.8rem", md: "0.9rem" },
+                          px: { xs: 1, md: 2 },
                         }}
                       >
                         {order.order_id ? order.order_id : "N/A"}
@@ -662,17 +767,21 @@ const OrderList = ({ fetchOrdersFromParent }) => {
                         sx={{
                           textAlign: "center",
                           minWidth: 120,
-                          width: 120,
                           wordBreak: "break-word",
                           whiteSpace: "normal",
-                          overflow: "hidden",
-                          textOverflow: "ellipsis",
+                          fontSize: { xs: "0.8rem", md: "0.9rem" },
+                          px: { xs: 1, md: 2 },
                         }}
                       >
                         {order.customer_name ? order.customer_name : "N/A"}
                       </TableCell>
                       <TableCell
-                        sx={{ textAlign: "center", minWidth: 120, width: 120 }}
+                        sx={{
+                          textAlign: "center",
+                          minWidth: 120,
+                          fontSize: { xs: "0.8rem", md: "0.9rem" },
+                          px: { xs: 1, md: 2 },
+                        }}
                       >
                         {order.purchase_order_date
                           ? new Date(order.purchase_order_date).toLocaleString(
@@ -685,33 +794,48 @@ const OrderList = ({ fetchOrdersFromParent }) => {
                                 minute: "2-digit",
                                 hour12: true,
                                 timeZone: systemTimeZone,
-                              }
+                              },
                             )
                           : "N/A"}
                       </TableCell>
-                      <TableCell align="center">
+                      <TableCell
+                        align="center"
+                        sx={{ fontSize: { xs: "0.8rem", md: "0.9rem" } }}
+                      >
                         {order.currency ? order.currency : "USD"}
                       </TableCell>
                       <TableCell
                         align="center"
-                        sx={{ paddingLeft: "3px", minWidth: 130, width: 130 }}
+                        sx={{
+                          paddingLeft: "3px",
+                          minWidth: 130,
+                          fontSize: { xs: "0.8rem", md: "0.9rem" },
+                        }}
                       >
                         {order.total_quantity ? order.total_quantity : "N/A"}
                       </TableCell>
-                      <TableCell align="center" sx={{ paddingLeft: "3px" }}>
+                      <TableCell
+                        align="center"
+                        sx={{
+                          paddingLeft: "3px",
+                          fontSize: { xs: "0.8rem", md: "0.9rem" },
+                        }}
+                      >
                         {order.total_price && !isNaN(order.total_price)
-                          ? `$${order.total_price.toFixed(2)}`
+                          ? formatCurrency(
+                              order.total_price.toFixed(2),
+                              selectedCountry,
+                            )
                           : "N/A"}
                       </TableCell>
                       <TableCell
                         sx={{
                           textAlign: "center",
                           minWidth: 120,
-                          width: 120,
                           wordBreak: "break-word",
                           whiteSpace: "normal",
-                          overflow: "hidden",
-                          textOverflow: "ellipsis",
+                          fontSize: { xs: "0.8rem", md: "0.9rem" },
+                          px: { xs: 1, md: 2 },
                         }}
                       >
                         {order.order_status ? order.order_status : "N/A"}
@@ -722,8 +846,9 @@ const OrderList = ({ fetchOrdersFromParent }) => {
                             variant="text"
                             sx={{ color: "#000080" }}
                             onClick={() => handleOpen}
+                            size="small"
                           >
-                            <Visibility sx={{ fontSize: 20 }} />
+                            <Visibility sx={{ fontSize: { xs: 18, md: 20 } }} />
                           </Button>
                         </Tooltip>
                       </TableCell>
@@ -734,7 +859,11 @@ const OrderList = ({ fetchOrdersFromParent }) => {
                     <TableCell
                       colSpan={8}
                       align="center"
-                      sx={{ fontWeight: "bold", color: "red" }}
+                      sx={{
+                        fontWeight: "bold",
+                        color: "red",
+                        fontSize: { xs: "0.8rem", md: "0.9rem" },
+                      }}
                     >
                       No Custom Orders Found
                     </TableCell>
@@ -744,16 +873,16 @@ const OrderList = ({ fetchOrdersFromParent }) => {
             </Table>
           </TableContainer>
         ) : null}
+
         {customStatus !== "custom" ? (
           <TableContainer
             component={Paper}
             sx={{
-              maxHeight: "70vh",
-              overflowY: "overlay",
-              overflowX: "overlay",
+              maxHeight: { xs: "60vh", md: "70vh" },
+              overflowX: "auto",
               "&::-webkit-scrollbar": {
-                height: "2px",
-                width: "2px",
+                height: "4px",
+                width: "4px",
               },
               "&::-webkit-scrollbar-thumb": {
                 backgroundColor: "#888",
@@ -768,7 +897,7 @@ const OrderList = ({ fetchOrdersFromParent }) => {
               },
             }}
           >
-            <Table sx={{ minWidth: 650 }}>
+            <Table sx={{ minWidth: isMobile ? 800 : 650 }}>
               <TableHead
                 sx={{
                   position: "sticky",
@@ -778,98 +907,47 @@ const OrderList = ({ fetchOrdersFromParent }) => {
                 }}
               >
                 <TableRow>
-                  <TableCell
-                    sx={{
-                      fontWeight: "bold",
-                      textAlign: "center",
-                      backgroundColor: "#f6f6f6",
-                    }}
-                  >
-                    Purchase Order ID
-                  </TableCell>
-                  <TableCell
-                    sx={{
-                      fontWeight: "bold",
-                      textAlign: "center",
-                      backgroundColor: "#f6f6f6",
-                    }}
-                  >
-                    Channel Name
-                  </TableCell>
-                  <TableCell
-                    sx={{
-                      fontWeight: "bold",
-                      textAlign: "center",
-                      backgroundColor: "#f6f6f6",
-                    }}
-                  >
-                    Order Date
-                    <IconButton
-                      onClick={(e) => handleOpenMenu(e, "order_date")}
+                  {[
+                    { label: "Purchase Order ID", key: "purchaseOrderId" },
+                    { label: "Channel Name", key: "channelName" },
+                    { label: "Order Date", key: "order_date", sortable: true },
+                    { label: "Currency", key: "currency" },
+                    {
+                      label: "Quantity",
+                      key: "items_order_quantity",
+                      sortable: true,
+                    },
+                    {
+                      label: "Order Value",
+                      key: "order_total",
+                      sortable: true,
+                    },
+                    { label: "Status", key: "order_status", sortable: true },
+                    { label: "Actions", key: "actions" },
+                  ].map(({ label, key, sortable }) => (
+                    <TableCell
+                      key={key}
+                      sx={{
+                        fontWeight: "bold",
+                        textAlign: "center",
+                        backgroundColor: "#f6f6f6",
+                        fontSize: { xs: "0.8rem", md: "0.9rem" },
+                        px: { xs: 1, md: 2 },
+                      }}
                     >
-                      <MoreVertIcon sx={{ fontSize: "14px" }} />
-                    </IconButton>
-                  </TableCell>
-                  <TableCell
-                    sx={{
-                      fontWeight: "bold",
-                      textAlign: "center",
-                      backgroundColor: "#f6f6f6",
-                    }}
-                  >
-                    Currency
-                  </TableCell>
-                  <TableCell
-                    sx={{
-                      fontWeight: "bold",
-                      textAlign: "center",
-                      backgroundColor: "#f6f6f6",
-                    }}
-                  >
-                    Quantity
-                    <IconButton
-                      onClick={(e) => handleOpenMenu(e, "items_order_quantity")}
-                    >
-                      <MoreVertIcon sx={{ fontSize: "14px" }} />
-                    </IconButton>
-                  </TableCell>
-                  <TableCell
-                    sx={{
-                      fontWeight: "bold",
-                      textAlign: "center",
-                      backgroundColor: "#f6f6f6",
-                    }}
-                  >
-                    Order Value
-                    <IconButton
-                      onClick={(e) => handleOpenMenu(e, "order_total")}
-                    >
-                      <MoreVertIcon sx={{ fontSize: "14px" }} />
-                    </IconButton>
-                  </TableCell>
-                  <TableCell
-                    sx={{
-                      fontWeight: "bold",
-                      textAlign: "center",
-                      backgroundColor: "#f6f6f6",
-                    }}
-                  >
-                    Status
-                    <IconButton
-                      onClick={(e) => handleOpenMenu(e, "order_status")}
-                    >
-                      <MoreVertIcon sx={{ fontSize: "14px" }} />
-                    </IconButton>
-                  </TableCell>
-                  <TableCell
-                    sx={{
-                      fontWeight: "bold",
-                      textAlign: "center",
-                      backgroundColor: "#f6f6f6",
-                    }}
-                  >
-                    Actions
-                  </TableCell>
+                      {label}
+                      {sortable && (
+                        <IconButton
+                          onClick={(e) => handleOpenMenu(e, key)}
+                          size="small"
+                        >
+                          <MoreVertIcon
+                            sx={{ fontSize: { xs: "12px", md: "14px" } }}
+                          />
+                        </IconButton>
+                      )}
+                    </TableCell>
+                  ))}
                 </TableRow>
               </TableHead>
               <TableBody>
@@ -884,7 +962,11 @@ const OrderList = ({ fetchOrdersFromParent }) => {
                     <TableCell
                       colSpan={8}
                       align="center"
-                      sx={{ fontWeight: "bold", color: "red" }}
+                      sx={{
+                        fontWeight: "bold",
+                        color: "red",
+                        fontSize: { xs: "0.8rem", md: "0.9rem" },
+                      }}
                     >
                       No Orders To Show
                     </TableCell>
@@ -892,7 +974,7 @@ const OrderList = ({ fetchOrdersFromParent }) => {
                 ) : (
                   orders.map((order) => {
                     const marketplace = logoMarket.find(
-                      (market) => market.name === order.marketplace_name
+                      (market) => market.name === order.marketplace_name,
                     );
                     return (
                       <TableRow
@@ -900,16 +982,28 @@ const OrderList = ({ fetchOrdersFromParent }) => {
                         hover
                         onClick={() =>
                           navigate(
-                            `/Home/orders/details/${order.id}?page=${page}&rowsPerPage=${rowsPerPage}`
+                            `/Home/orders/details/${order.id}?page=${page}&rowsPerPage=${rowsPerPage}`,
                           )
                         }
                         state={{ searchQuery: searchTerm }}
                         style={{ cursor: "pointer" }}
                       >
-                        <TableCell sx={{ textAlign: "center" }}>
+                        <TableCell
+                          sx={{
+                            textAlign: "center",
+                            fontSize: { xs: "0.8rem", md: "0.9rem" },
+                            px: { xs: 1, md: 2 },
+                          }}
+                        >
                           {order.purchase_order_id}
                         </TableCell>
-                        <TableCell sx={{ textAlign: "center" }}>
+                        <TableCell
+                          sx={{
+                            textAlign: "center",
+                            fontSize: { xs: "0.8rem", md: "0.9rem" },
+                            px: { xs: 1, md: 2 },
+                          }}
+                        >
                           {marketplace && (
                             <div
                               style={{
@@ -938,13 +1032,23 @@ const OrderList = ({ fetchOrdersFromParent }) => {
                                   }}
                                 />
                               )}
-                              {marketplace.marketplace_name}
+                              <Box
+                                component="span"
+                                sx={{ display: { xs: "none", sm: "inline" } }}
+                              >
+                                {marketplace.marketplace_name}
+                              </Box>
                             </div>
                           )}
-                          {order.marketplace_name}
+                          {!marketplace && order.marketplace_name}
                         </TableCell>
                         <TableCell
-                          sx={{ textAlign: "center", paddingLeft: "3px" }}
+                          sx={{
+                            textAlign: "center",
+                            paddingLeft: "3px",
+                            fontSize: { xs: "0.8rem", md: "0.9rem" },
+                            px: { xs: 1, md: 2 },
+                          }}
                         >
                           {order.order_date
                             ? new Date(order.order_date).toLocaleString(
@@ -957,35 +1061,65 @@ const OrderList = ({ fetchOrdersFromParent }) => {
                                   minute: "2-digit",
                                   hour12: true,
                                   timeZone: "US/Pacific",
-                                }
+                                },
                               )
                             : "N/A"}
                         </TableCell>
-                        <TableCell sx={{ textAlign: "center" }}>
+                        <TableCell
+                          sx={{
+                            textAlign: "center",
+                            fontSize: { xs: "0.8rem", md: "0.9rem" },
+                            px: { xs: 1, md: 2 },
+                          }}
+                        >
                           {order.currency}
                         </TableCell>
                         <TableCell
-                          sx={{ textAlign: "center", paddingLeft: "3px" }}
+                          sx={{
+                            textAlign: "center",
+                            paddingLeft: "3px",
+                            fontSize: { xs: "0.8rem", md: "0.9rem" },
+                            px: { xs: 1, md: 2 },
+                          }}
                         >
                           {order.items_order_quantity
                             ? order.items_order_quantity
                             : "N/A"}
                         </TableCell>
                         <TableCell
-                          sx={{ textAlign: "center", paddingLeft: "3px" }}
+                          sx={{
+                            textAlign: "center",
+                            paddingLeft: "3px",
+                            fontSize: { xs: "0.8rem", md: "0.9rem" },
+                            px: { xs: 1, md: 2 },
+                          }}
                         >
-                          $
                           {order.order_total && !isNaN(order.order_total)
-                            ? order.order_total.toFixed(2)
+                            ? formatCurrency(
+                                order.order_total.toFixed(2),
+                                selectedCountry,
+                              )
                             : "N/A"}
                         </TableCell>
-                        <TableCell sx={{ textAlign: "center" }}>
+                        <TableCell
+                          sx={{
+                            textAlign: "center",
+                            fontSize: { xs: "0.8rem", md: "0.9rem" },
+                            px: { xs: 1, md: 2 },
+                          }}
+                        >
                           {order.order_status || "N/A"}
                         </TableCell>
                         <TableCell sx={{ textAlign: "center" }}>
                           <Tooltip title="View Order Details" arrow>
-                            <Button variant="text" sx={{ color: "#000080" }}>
-                              <Visibility sx={{ fontSize: 20 }} />
+                            <Button
+                              variant="text"
+                              sx={{ color: "#000080" }}
+                              size="small"
+                            >
+                              <Visibility
+                                sx={{ fontSize: { xs: 18, md: 20 } }}
+                              />
                             </Button>
                           </Tooltip>
                         </TableCell>
@@ -998,19 +1132,26 @@ const OrderList = ({ fetchOrdersFromParent }) => {
           </TableContainer>
         ) : null}
       </Box>
+
+      {/* Pagination - Made Responsive */}
       <Box
         sx={{
           display: "flex",
-          alignItems: "center",
+          flexDirection: { xs: "column", md: "row" },
+          alignItems: { xs: "stretch", md: "center" },
           justifyContent: "flex-end",
           mt: 2,
+          gap: { xs: 2, md: 1 },
         }}
       >
         <Select
           value={rowsPerPage}
           onChange={handleRowsPerPageChange}
           size="small"
-          sx={{ minWidth: 70 }}
+          sx={{
+            minWidth: 70,
+            width: { xs: "100%", md: "auto" },
+          }}
         >
           <MenuItem value={25}>25/page</MenuItem>
           <MenuItem value={50}>50/page</MenuItem>
@@ -1024,12 +1165,20 @@ const OrderList = ({ fetchOrdersFromParent }) => {
           onPageChange={handleChangePage}
           color="primary"
           size="small"
+          sx={{
+            "& .MuiPagination-ul": {
+              justifyContent: { xs: "center", md: "flex-start" },
+              flexWrap: "wrap",
+            },
+          }}
           onRowsPerPageChange={(event) => {
             setRowsPerPage(parseInt(event.target.value, 10));
             setPage(1);
           }}
         />
       </Box>
+
+      {/* Modals */}
       <Modal open={open} onClose={handleClose}>
         <Slide direction="left" in={open} mountOnEnter unmountOnExit>
           <Box
@@ -1037,17 +1186,18 @@ const OrderList = ({ fetchOrdersFromParent }) => {
               position: "absolute",
               top: 0,
               right: 0,
-              width: 900,
+              width: { xs: "100%", md: 900 },
               height: "100vh",
               bgcolor: "background.paper",
               boxShadow: 24,
-              p: 3,
+              p: { xs: 2, md: 3 },
             }}
           >
             <MannualOrder handleClose={handleClose} />
           </Box>
         </Slide>
       </Modal>
+
       <Menu
         anchorEl={anchorEl}
         open={Boolean(anchorEl)}
@@ -1130,6 +1280,7 @@ const OrderList = ({ fetchOrdersFromParent }) => {
           </>
         )}
       </Menu>
+
       <Modal
         open={downloadModalOpen}
         onClose={() => setDownloadModalOpen(false)}
@@ -1140,15 +1291,21 @@ const OrderList = ({ fetchOrdersFromParent }) => {
             top: "50%",
             left: "50%",
             transform: "translate(-50%, -50%)",
-            width: 400,
+            width: { xs: "90%", sm: 400 },
             bgcolor: "background.paper",
             boxShadow: 24,
-            p: 4,
+            p: { xs: 2, md: 4 },
             borderRadius: 2,
+            maxHeight: { xs: "80vh", md: "auto" },
+            overflow: "auto",
           }}
         >
           <Stack spacing={2}>
-            <Typography variant="h6" gutterBottom>
+            <Typography
+              variant="h6"
+              gutterBottom
+              sx={{ fontSize: { xs: "1.2rem", md: "1.5rem" } }}
+            >
               Download Orders
             </Typography>
             {selectedBrand.length > 0 && (
@@ -1188,7 +1345,7 @@ const OrderList = ({ fetchOrdersFromParent }) => {
                       size="small"
                       onDelete={() =>
                         setSelectedBrand((prev) =>
-                          prev.filter((b) => b.id !== brand.id)
+                          prev.filter((b) => b.id !== brand.id),
                         )
                       }
                     />
@@ -1208,11 +1365,11 @@ const OrderList = ({ fetchOrdersFromParent }) => {
               hasMore={hasMore}
               toggleSelection={(option) => {
                 const isSelected = selectedBrand.some(
-                  (b) => b.id === option.id
+                  (b) => b.id === option.id,
                 );
                 if (isSelected) {
                   setSelectedBrand(
-                    selectedBrand.filter((b) => b.id !== option.id)
+                    selectedBrand.filter((b) => b.id !== option.id),
                   );
                 } else {
                   setSelectedBrand([...selectedBrand, option]);
@@ -1234,6 +1391,7 @@ const OrderList = ({ fetchOrdersFromParent }) => {
                     {...params}
                     fullWidth
                     InputLabelProps={{ required: false }}
+                    size="small"
                   />
                 )}
                 maxDate={new Date(downloadEndDate)}
@@ -1247,6 +1405,7 @@ const OrderList = ({ fetchOrdersFromParent }) => {
                     {...params}
                     fullWidth
                     InputLabelProps={{ required: false }}
+                    size="small"
                   />
                 )}
                 minDate={new Date(downloadStartDate)}
@@ -1258,6 +1417,7 @@ const OrderList = ({ fetchOrdersFromParent }) => {
                 value={downloadFormat}
                 label="Format"
                 onChange={(e) => setDownloadFormat(e.target.value)}
+                size="small"
               >
                 <MenuItem value="csv">CSV</MenuItem>
                 <MenuItem value="xlsx">Excel (XLSX)</MenuItem>
