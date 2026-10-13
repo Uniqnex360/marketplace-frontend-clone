@@ -7,6 +7,10 @@ import LoginPage from "./Components/MarketLogin/LoginPage";
 import PrivateRoute from "./Components/MarketLogin/PrivateRoute";
 import Register from "./Components/MarketLogin/Register";
 import { MarketplaceProvider } from "./utils/MarketplaceProvider";
+
+import PrivacyPolicyPage from "./pages/privacy-policy.tsx";
+import AccountDeletionPage from "./pages/AccountDeletion.tsx";
+
 const AppRoutes = () => {
   return (
     <Router>
@@ -14,6 +18,8 @@ const AppRoutes = () => {
       <Routes>
         <Route path="/" element={<LoginPage />} />
         <Route path="/register" element={<Register />} />
+        <Route path="/privacy" element={<PrivacyPolicyPage />} />
+        <Route path="/account-deletion" element={<AccountDeletionPage />} />
         <Route
           path="/Home/*"
           element={

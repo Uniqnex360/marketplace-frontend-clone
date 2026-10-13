@@ -7,10 +7,10 @@ if (keystorePropertiesFile.exists()) {
 apply plugin: 'com.android.application'
 
 android {
-    namespace = "com.marketlynxe.app"
+    namespace = "com.uniqnex360.marketlynxe"
     compileSdk = rootProject.ext.compileSdkVersion
     defaultConfig {
-        applicationId "com.example.app"
+        applicationId "com.uniqnex360.marketlynxe"
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
         versionCode 1

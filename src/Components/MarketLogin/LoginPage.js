@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 
+
 import {
   TextField,
   Button,
@@ -8,6 +9,7 @@ import {
   Paper,
   IconButton,
   InputAdornment,
+  Link,
 } from "@mui/material";
 
 import { useNavigate } from "react-router-dom";
@@ -214,6 +216,14 @@ const LoginPage = () => {
           listing, real-time inventory sync, and centralized order management.
           Gain valuable insights with sales and profit reports, enabling smarter
           decisions and accurate sales forecasting.
+        </Typography>
+
+        <Typography variant="body2" sx={{ mt: 2 }}>
+          <Link href="/privacy">Privacy Policy</Link>
+        </Typography>
+
+        <Typography variant="body2" sx={{ mt: 2 }}>
+          <Link href="/account-deletion">Account Deletion</Link>
         </Typography>
       </Box>
 

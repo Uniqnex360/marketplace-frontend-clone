@@ -1,4 +1,4 @@
-package com.example.app;
+package com.uniqnex360.marketlynxe;
 
 import com.getcapacitor.BridgeActivity;
 
