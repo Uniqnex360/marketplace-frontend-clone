@@ -9,7 +9,7 @@ workflows:
 
     environment:
       groups:
-        - app_env
+        - dev
       vars:
         BUNDLE_ID: "com.marketlynxe.marketplace"
         XCODE_WORKSPACE: "App.xcworkspace"
