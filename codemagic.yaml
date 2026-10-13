@@ -3,8 +3,10 @@ workflows:
     name: iOS Release
     instance_type: mac_mini_m2
     max_build_duration: 60
+
     integrations:
       app_store_connect: codemagic_api
+
     environment:
       groups:
         - app_env
@@ -16,26 +18,37 @@ workflows:
       xcode: latest
       cocoapods: default
       ios_signing:
-        distribution_type: app_store   # use ad_hoc to install on registered devices
+        distribution_type: app_store
         bundle_identifier: com.marketlynxe.marketplace
+
     scripts:
       - name: Install dependencies
         script: npm ci
+
       - name: Build web app
         script: npm run build
+
       - name: Sync Capacitor
         script: npx cap sync ios
+
+      - name: Fetch or create signing files
+        script: |
+          app-store-connect fetch-signing-files "$(xcode-project locate)" --type IOS_APP_STORE --create
+
       - name: Set up code signing
         script: xcode-project use-profiles
+
       - name: Set build number
         script: |
           cd ios/App
           agvtool new-version -all $BUILD_NUMBER
+
       - name: Build IPA
         script: |
           xcode-project build-ipa \
             --workspace "ios/App/$XCODE_WORKSPACE" \
             --scheme "$XCODE_SCHEME"
+
     artifacts:
       - build/ios/ipa/*.ipa
       - /tmp/xcodebuild_logs/*.log
