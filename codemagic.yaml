@@ -1,11 +1,11 @@
 workflows:
   ios-release:
-    name: iOS Release
-    instance_type: mac_mini_m2
+    name: iOS Release - Marketlynxe
     max_build_duration: 60
+    instance_type: mac_mini_m2
 
     integrations:
-      app_store_connect: codemagic_api
+      app_store_connect: Codemagic
 
     environment:
       groups:
@@ -17,33 +17,38 @@ workflows:
       node: 20
       xcode: latest
       cocoapods: default
-      ios_signing:
-        distribution_type: app_store
-        bundle_identifier: com.marketlynxe.marketplace
 
     scripts:
       - name: Install dependencies
-        script: npm ci
+        script: |
+          npm install --legacy-peer-deps
 
       - name: Build web app
-        script: npm run build
-
-      - name: Sync Capacitor
-        script: npx cap sync ios
-
-      - name: Fetch or create signing files
         script: |
-          app-store-connect fetch-signing-files "$(xcode-project locate)" --type IOS_APP_STORE --create
+          npm run build
 
-      - name: Set up code signing
-        script: xcode-project use-profiles
+      - name: Sync Capacitor iOS
+        script: |
+          npx cap sync ios
+
+      - name: Install CocoaPods
+        script: |
+          cd ios/App
+          pod install
+
+      - name: Set up iOS Code Signing
+        script: |
+          keychain initialize
+          app-store-connect fetch-signing-files "com.marketlynxe.marketplace" --type IOS_APP_STORE
+          keychain add-certificates
+          xcode-project use-profiles
 
       - name: Set build number
         script: |
           cd ios/App
           agvtool new-version -all $BUILD_NUMBER
 
-      - name: Build IPA
+      - name: Build IPA binary
         script: |
           xcode-project build-ipa \
             --workspace "ios/App/$XCODE_WORKSPACE" \
@@ -52,3 +57,8 @@ workflows:
     artifacts:
       - build/ios/ipa/*.ipa
       - /tmp/xcodebuild_logs/*.log
+
+    publishing:
+      app_store_connect:
+        auth: integration
+        submit_to_testflight: true
