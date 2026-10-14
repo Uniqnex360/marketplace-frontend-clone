@@ -23,18 +23,11 @@ workflows:
         script: |
           node --version
           npm --version
-          node -e "console.log('Working directory:', process.cwd())"
           test -f package.json || { echo "ERROR: package.json not found"; exit 1; }
-          node -e "const p=require('./package.json'); console.log('react-scripts:', p.dependencies?.['react-scripts'] || p.devDependencies?.['react-scripts'] || 'MISSING');"
 
       - name: Install dependencies
         script: |
           npm ci --include=dev --legacy-peer-deps
-
-      - name: Verify build dependencies
-        script: |
-          npm ls react-scripts typescript @capacitor/cli @capacitor/core
-          node -e "console.log('react-scripts path:', require.resolve('react-scripts/package.json'))"
 
       - name: Build web app
         script: |
@@ -51,11 +44,8 @@ workflows:
       - name: Verify iOS Bundle ID
         script: |
           echo "Expected bundle ID: $BUNDLE_ID"
-          echo "Bundle IDs in Xcode project:"
           grep -n "PRODUCT_BUNDLE_IDENTIFIER" ios/App/App.xcodeproj/project.pbxproj
-          echo "App ID in Capacitor config:"
           grep -n "appId" capacitor.config.ts
-          test -f ios/App/App.xcodeproj/project.pbxproj || exit 1
 
       - name: Set up iOS Code Signing
         script: |
@@ -64,20 +54,12 @@ workflows:
             --type IOS_APP_STORE \
             --create
           keychain add-certificates
-
-          echo "=== use-profiles options ==="
-          xcode-project use-profiles --help
-
-          echo "=== Applying profiles ==="
           xcode-project use-profiles --project "ios/App/App.xcodeproj"
-
           echo "=== Profiles on disk ==="
           ls -la "$HOME/Library/MobileDevice/Provisioning Profiles" || true
-
           echo "=== Signing identities ==="
           security find-identity -v -p codesigning || true
-
-          echo "=== Bundle IDs and signing settings in project ==="
+          echo "=== Project signing settings ==="
           grep -nE "PRODUCT_BUNDLE_IDENTIFIER|PROVISIONING_PROFILE|CODE_SIGN_STYLE|DEVELOPMENT_TEAM" ios/App/App.xcodeproj/project.pbxproj
 
       - name: Set build number
