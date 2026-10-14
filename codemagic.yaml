@@ -48,8 +48,22 @@ workflows:
         script: |
           npx cap sync ios
 
-      - name: Install CocoaPods
+            - name: Install CocoaPods
         script: |
+          if [ ! -f ios/App/Podfile ]; then
+            echo "Podfile missing. Checking iOS project..."
+            ls -la ios || true
+            ls -la ios/App || true
+            npx cap add ios
+          fi
+
+          npx cap sync ios
+
+          if [ ! -f ios/App/Podfile ]; then
+            echo "ERROR: ios/App/Podfile was not generated."
+            exit 1
+          fi
+
           cd ios/App
           pod install
 
