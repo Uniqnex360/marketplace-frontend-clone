@@ -48,6 +48,15 @@ workflows:
         script: |
           npx cap sync ios
 
+      - name: Verify iOS Bundle ID
+        script: |
+          echo "Expected bundle ID: $BUNDLE_ID"
+          echo "Bundle IDs in Xcode project:"
+          grep -n "PRODUCT_BUNDLE_IDENTIFIER" ios/App/App.xcodeproj/project.pbxproj
+          echo "App ID in Capacitor config:"
+          grep -n "appId" capacitor.config.ts
+          test -f ios/App/App.xcodeproj/project.pbxproj || exit 1
+
       - name: Set up iOS Code Signing
         script: |
           keychain initialize
@@ -60,13 +69,11 @@ workflows:
           cd ios/App
           agvtool new-version -all "$BUILD_NUMBER"
 
-
       - name: Build IPA binary
         script: |
           xcode-project build-ipa \
             --project "ios/App/App.xcodeproj" \
             --scheme "$XCODE_SCHEME"
-
 
     artifacts:
       - build/ios/ipa/*.ipa
