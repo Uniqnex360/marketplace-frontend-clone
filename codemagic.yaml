@@ -19,13 +19,30 @@ workflows:
       cocoapods: default
 
     scripts:
+      - name: Check Node and npm versions
+        script: |
+          node --version
+          npm --version
+          node -e "console.log('Working directory:', process.cwd())"
+          test -f package.json || { echo "ERROR: package.json not found"; exit 1; }
+          node -e "const p=require('./package.json'); console.log('react-scripts:', p.dependencies?.['react-scripts'] || p.devDependencies?.['react-scripts'] || 'MISSING');"
+
       - name: Install dependencies
         script: |
-          npm install --legacy-peer-deps
+          npm ci --include=dev --legacy-peer-deps
+
+      - name: Verify build dependencies
+        script: |
+          npm ls react-scripts typescript @capacitor/cli @capacitor/core
+          node -e "console.log('react-scripts path:', require.resolve('react-scripts/package.json'))"
 
       - name: Build web app
         script: |
           npm run build
+
+      - name: Verify web build output
+        script: |
+          test -f build/index.html || { echo "ERROR: build/index.html was not generated"; exit 1; }
 
       - name: Sync Capacitor iOS
         script: |
@@ -39,14 +56,14 @@ workflows:
       - name: Set up iOS Code Signing
         script: |
           keychain initialize
-          app-store-connect fetch-signing-files "com.marketlynxe.marketplace" --type IOS_APP_STORE
+          app-store-connect fetch-signing-files "$BUNDLE_ID" --type IOS_APP_STORE
           keychain add-certificates
           xcode-project use-profiles
 
       - name: Set build number
         script: |
           cd ios/App
-          agvtool new-version -all $BUILD_NUMBER
+          agvtool new-version -all "$BUILD_NUMBER"
 
       - name: Build IPA binary
         script: |
