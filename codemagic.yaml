@@ -60,11 +60,13 @@ workflows:
           cd ios/App
           agvtool new-version -all "$BUILD_NUMBER"
 
+
       - name: Build IPA binary
         script: |
           xcode-project build-ipa \
-            --workspace "ios/App/$XCODE_WORKSPACE" \
+            --project "ios/App/App.xcodeproj" \
             --scheme "$XCODE_SCHEME"
+
 
     artifacts:
       - build/ios/ipa/*.ipa
