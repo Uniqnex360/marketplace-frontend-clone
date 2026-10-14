@@ -1,7 +1,7 @@
 import type { CapacitorConfig } from '@capacitor/cli';
 
 const config: CapacitorConfig = {
-  appId: 'com.marketlynxe.app',
+  appId: 'com.marketlynxe.marketplace',
   appName: 'marketlynxe',
   webDir: 'build'
 };
