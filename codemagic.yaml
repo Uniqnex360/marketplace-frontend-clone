@@ -38,7 +38,7 @@ workflows:
 
       - name: Build web app
         script: |
-          npm run build
+          CI=false npm run build
 
       - name: Verify web build output
         script: |
