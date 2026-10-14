@@ -65,6 +65,10 @@ workflows:
             --create
           keychain add-certificates
           xcode-project use-profiles
+          echo "--- Profiles on disk ---"
+          ls -la "$HOME/Library/MobileDevice/Provisioning Profiles" || true
+          echo "--- Signing identities ---"
+          security find-identity -v -p codesigning || true
 
       - name: Set build number
         script: |
