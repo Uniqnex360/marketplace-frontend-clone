@@ -36,7 +36,7 @@
     "react-datepicker": "^8.3.0",
     "react-dom": "^18.3.1",
     "react-router-dom": "^7.2.0",
-    "react-scripts": "5.0.1",
+    "react-scripts": "^0.0.0",
     "react-toastify": "^11.0.5",
     "recharts": "^2.15.1",
     "timezone": "^1.0.23",
@@ -69,6 +69,7 @@
     ]
   },
   "devDependencies": {
-    "eslint-config-react-app": "^7.0.1"
+    "eslint-config-react-app": "^5.2.1",
+    "typescript": "^5.8.3"
   }
 }
