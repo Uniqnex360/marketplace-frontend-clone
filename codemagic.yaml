@@ -64,11 +64,21 @@ workflows:
             --type IOS_APP_STORE \
             --create
           keychain add-certificates
-          xcode-project use-profiles
-          echo "--- Profiles on disk ---"
+
+          echo "=== use-profiles options ==="
+          xcode-project use-profiles --help
+
+          echo "=== Applying profiles ==="
+          xcode-project use-profiles --project "ios/App/App.xcodeproj"
+
+          echo "=== Profiles on disk ==="
           ls -la "$HOME/Library/MobileDevice/Provisioning Profiles" || true
-          echo "--- Signing identities ---"
+
+          echo "=== Signing identities ==="
           security find-identity -v -p codesigning || true
+
+          echo "=== Bundle IDs and signing settings in project ==="
+          grep -nE "PRODUCT_BUNDLE_IDENTIFIER|PROVISIONING_PROFILE|CODE_SIGN_STYLE|DEVELOPMENT_TEAM" ios/App/App.xcodeproj/project.pbxproj
 
       - name: Set build number
         script: |
