@@ -26,6 +26,8 @@ import {
   Collapse,
   Autocomplete,
   Chip,
+  useMediaQuery,
+  useTheme,
 } from "@mui/material";
 import axios from "axios";
 import ImageIcon from "@mui/icons-material/Image";
@@ -63,7 +65,105 @@ import { useEnhancedCategories } from "../../../utils/UseEnhancedCategories";
 import CountrySelector from "../../../utils/countrySelector";
 import TestCard from "./Helium10/TestCard";
 
+/* ----------------------------- static config ----------------------------- */
+
+const PRESETS = [
+  "Today",
+  "Yesterday",
+  "This Week",
+  "Last Week",
+  "Last 7 days",
+  "Last 14 days",
+  "Last 30 days",
+  "Last 60 days",
+  "Last 90 days",
+  "This Month",
+  "Last Month",
+  "This Quarter",
+  "Last Quarter",
+  "This Year",
+  "Last Year",
+];
+
+const TAB_ITEMS = [
+  { label: "Revenue", Icon: BarChartOutlined },
+  { label: "Top Products", Icon: EmojiEventsOutlined },
+  { label: "Total Sales", Icon: AttachMoneyOutlined },
+  { label: "Latest Orders", Icon: ShoppingCartOutlined },
+];
+
+const FIELD_HEIGHT = 40;
+
+/**
+ * One slot in the filter bar.
+ * Desktop: fixed width (same as before). Mobile: fills its grid cell.
+ */
+const FilterField = ({ width, isMobile, children, sx, ...boxProps }) => (
+  <Box
+    {...boxProps}
+    sx={{
+      width: isMobile ? "100%" : width,
+      minWidth: 0,
+      flexShrink: 0,
+      ...sx,
+    }}
+  >
+    {children}
+  </Box>
+);
+
+/**
+ * Keeps the dashboard's current scroll position when the brand selector opens.
+ * Some custom dropdown implementations can move focus to the document and
+ * unexpectedly reset the page scroll. Capture/correct the position locally,
+ * without changing BrandSelector's API or selection behavior.
+ */
+const PreserveScrollPosition = ({ children }) => {
+  const scrollYRef = useRef(0);
+
+  const rememberScrollPosition = useCallback(() => {
+    if (typeof window !== "undefined") {
+      scrollYRef.current = window.scrollY || window.pageYOffset || 0;
+    }
+  }, []);
+
+  const restoreScrollPosition = useCallback(() => {
+    if (typeof window === "undefined") return;
+
+    const targetY = scrollYRef.current;
+    requestAnimationFrame(() => {
+      requestAnimationFrame(() => {
+        if (
+          Math.abs((window.scrollY || window.pageYOffset || 0) - targetY) > 2
+        ) {
+          window.scrollTo({
+            top: targetY,
+            left: window.scrollX || 0,
+            behavior: "auto",
+          });
+        }
+      });
+    });
+  }, []);
+
+  return (
+    <Box
+      onMouseDownCapture={rememberScrollPosition}
+      onTouchStartCapture={rememberScrollPosition}
+      onClickCapture={restoreScrollPosition}
+      sx={{ minWidth: 0, width: "100%" }}
+    >
+      {children}
+    </Box>
+  );
+};
+
 function ClientDashboardpage() {
+  const theme = useTheme();
+  // "Mobile" = below the `sm` breakpoint (<600px). Change here to move the cut-off.
+  const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
+  const [filtersOpen, setFiltersOpen] = useState(false);
+
   const [selectedCategory, setSelectedCategory] = useState({
     id: "all",
     name: "All Channels",
@@ -130,23 +230,6 @@ function ClientDashboardpage() {
     const data = JSON.parse(userData);
     userIds = data.id;
   }
-  const presets = [
-    "Today",
-    "Yesterday",
-    "This Week",
-    "Last Week",
-    "Last 7 days",
-    "Last 14 days",
-    "Last 30 days",
-    "Last 60 days",
-    "Last 90 days",
-    "This Month",
-    "Last Month",
-    "This Quarter",
-    "Last Quarter",
-    "This Year",
-    "Last Year",
-  ];
   const getPresetDisplayLabel = (preset) => {
     if (preset === "Today") {
       // return "September 1";
@@ -154,18 +237,46 @@ function ClientDashboardpage() {
     }
     return preset;
   };
+
+  // Shared date-picker styling: readable text and consistent touch targets.
   const datePickerSx = useMemo(
     () => ({
       width: "100%",
+      minWidth: 0,
       "& .MuiInputBase-root": {
-        height: 40,
+        minHeight: FIELD_HEIGHT,
+        fontSize: 14,
       },
       "& .MuiInputLabel-root": {
-        fontSize: "16px",
+        fontSize: 13,
+      },
+      "& input": {
+        fontSize: 14,
+        minWidth: 0,
       },
     }),
     [],
   );
+
+  // Shared Autocomplete styling (SKU + ASIN). Keep fields inside their grid cell.
+  const getAutocompleteSx = (desktopWidth) => ({
+    width: isMobile ? "100%" : desktopWidth,
+    minWidth: 0,
+    "& .MuiInputBase-root": {
+      minHeight: FIELD_HEIGHT,
+      height: "auto",
+      fontSize: 14,
+      width: "100%",
+    },
+    "& .MuiInputLabel-root": {
+      fontSize: 13,
+    },
+    "& input": {
+      fontSize: 14,
+      minWidth: 0,
+    },
+  });
+
   const setSelectedBrandImmediate = (brands) => {
     setSelectedBrand(brands);
     setSelectedBrandFilter(brands.map((b) => b.id));
@@ -747,24 +858,367 @@ function ClientDashboardpage() {
       pauseOnHover: true,
     });
   };
+
+  /* ------------------------- shared filter elements ------------------------ */
+  // Built once and reused by both the desktop row and the mobile dropdown (DRY).
+
+  const resetButton = (
+    <Tooltip title="Reset" arrow>
+      <Button
+        onClick={handleClearFilter}
+        variant="outlined"
+        sx={{
+          backgroundColor: "#000080",
+          minWidth: "auto",
+          height: isMobile ? FIELD_HEIGHT : "auto",
+          padding: "8px",
+          flexShrink: 0,
+          "&:hover": {
+            backgroundColor: "darkblue",
+          },
+        }}
+      >
+        <Refresh sx={{ color: "white", fontSize: "19px" }} />
+      </Button>
+    </Tooltip>
+  );
+
+  const filterFields = (
+    <>
+      <FilterField width="180px" isMobile={isMobile}>
+        <CountrySelector
+          selectedCountry={selectedCountry}
+          onCountryChange={(country) => {
+            setSelectedCountry(country);
+            setActiveFilters((prev) => {
+              const filtered = prev.filter((f) => f.type !== "country");
+              return [
+                ...filtered,
+                { type: "country", value: country, label: country },
+              ];
+            });
+          }}
+        />
+      </FilterField>
+
+      <FilterField width="190px" isMobile={isMobile}>
+        <PreserveScrollPosition>
+          <BrandSelector
+            selectedBrand={selectedBrand}
+            setSelectedBrand={(brands) => {
+              setSelectedBrand(brands);
+              setActiveFilters((prev) => {
+                const filtered = prev.filter((f) => f.type !== "brand");
+                const brandFilters = brands.map((brand) => ({
+                  type: "brand",
+                  value: brand.id,
+                  label: brand.name,
+                }));
+                return [...filtered, ...brandFilters];
+              });
+            }}
+            brandList={brandList}
+            inputValueBrand={inputValueBrand}
+            setInputValueBrand={setInputValueBrand}
+            brandLimit={brandLimit}
+            setBrandLimit={setBrandLimit}
+            isLoading={isLoading}
+            hasMore={hasMore}
+            toggleSelection={toggleSelection}
+            label="Brands"
+          />
+        </PreserveScrollPosition>
+      </FilterField>
+
+      <FilterField width="140px" isMobile={isMobile}>
+        <Autocomplete
+          multiple
+          disableCloseOnSelect
+          options={[
+            ...selectedSku,
+            ...skuList.filter((s) => !selectedSku.some((ss) => ss.id === s.id)),
+          ].filter(
+            (item) =>
+              item && item.sku != null && String(item.sku).trim() !== "",
+          )}
+          getOptionLabel={(option) =>
+            typeof option === "string"
+              ? option.trim()
+              : String(option?.sku ?? "").trim()
+          }
+          isOptionEqualToValue={(option, value) => option.id === value.id}
+          inputValue={inputValueSku}
+          onInputChange={(e, newInputValue) => {
+            setInputValueSku(newInputValue);
+            setSkuLimit(11);
+          }}
+          value={selectedSku}
+          onChange={(event, newValue) => {
+            setSelectedSku(newValue);
+            setActiveFilters((prev) => {
+              const filtered = prev.filter((f) => f.type !== "sku");
+              const skuFilters = newValue.map((sku) => ({
+                type: "sku",
+                value: sku.id,
+                label: sku.sku,
+              }));
+              return [...filtered, ...skuFilters];
+            });
+            updateMergedProducts(selectedAsin, newValue);
+          }}
+          renderTags={() => null}
+          noOptionsText={inputValueSku ? "No options" : ""}
+          renderOption={(props, option) => {
+            const isSelected = selectedSku.some((s) => s.id === option.id);
+            return (
+              <Box
+                component="li"
+                {...props}
+                onClick={() => toggleSelectionSKU(option)}
+                sx={{
+                  backgroundColor: isSelected
+                    ? "#b6d5f3 !important"
+                    : "transparent",
+                  fontSize: isMobile ? 14 : 13,
+                  cursor: "pointer",
+                }}
+                key={option.id}
+              >
+                {option.sku}
+              </Box>
+            );
+          }}
+          renderInput={(params) => (
+            <TextField
+              {...params}
+              label="SKU"
+              size="small"
+              placeholder="Search SKU..."
+              InputProps={{
+                ...params.InputProps,
+                endAdornment: <>{params.InputProps.endAdornment}</>,
+              }}
+            />
+          )}
+          sx={getAutocompleteSx(140)}
+        />
+      </FilterField>
+
+      <FilterField isMobile={isMobile} width="auto">
+        <Button
+          variant="outlined"
+          onClick={handleMenuOpen}
+          sx={{
+            width: isMobile ? "100%" : 160,
+            height: FIELD_HEIGHT,
+            justifyContent: "space-between",
+            padding: "9px 8px 6px 8px",
+            color: "rgba(0, 0, 0, 0.6)",
+            fontSize: isMobile ? "14px" : "16px",
+            borderColor: "#cacaca",
+            textTransform: "none",
+            overflow: "hidden",
+            whiteSpace: "nowrap",
+            textOverflow: "ellipsis",
+          }}
+        >
+          {selectedCategory
+            ? selectedCategory.fulfillment
+              ? `${selectedCategory.name} - ${selectedCategory.fulfillment}`
+              : selectedCategory.name
+            : "Select Channel"}
+          <ArrowDropDownIcon />
+        </Button>
+      </FilterField>
+
+      <FilterField width="150px" isMobile={isMobile}>
+        <Autocomplete
+          multiple
+          disableCloseOnSelect
+          freeSolo
+          options={[
+            ...selectedAsin,
+            ...asinList.filter(
+              (a) => !selectedAsin.some((sa) => sa.id === a.id),
+            ),
+          ]}
+          getOptionLabel={(option) =>
+            typeof option === "string" ? option : option.Asin
+          }
+          isOptionEqualToValue={(option, value) => option.id === value.id}
+          inputValue={inputValueAsin}
+          onInputChange={(e, newInputValue) => setInputValueAsin(newInputValue)}
+          value={selectedAsin}
+          onChange={(event, newValue) => {
+            setSelectedAsin(newValue);
+            setActiveFilters((prev) => {
+              const filtered = prev.filter((f) => f.type !== "asin");
+              const asinFilters = newValue.map((asin) => ({
+                type: "asin",
+                value: asin.id,
+                label: asin.Asin,
+              }));
+              return [...filtered, ...asinFilters];
+            });
+            updateMergedProducts(newValue, selectedSku);
+          }}
+          renderTags={() => null}
+          renderOption={(props, option) => {
+            const isSelected = selectedAsin.some((s) => s.id === option.id);
+            return (
+              <Box
+                component="li"
+                {...props}
+                onClick={() => toggleSelectionAsin(option)}
+                sx={{
+                  backgroundColor: isSelected
+                    ? "#b6d5f3 !important"
+                    : "transparent",
+                  fontSize: isMobile ? 14 : 13,
+                  cursor: "pointer",
+                }}
+              >
+                {option.Asin}
+              </Box>
+            );
+          }}
+          renderInput={(params) => (
+            <TextField
+              {...params}
+              label="Product ID"
+              size="small"
+              placeholder="Search ASIN..."
+              InputProps={{
+                ...params.InputProps,
+                endAdornment: <>{params.InputProps.endAdornment}</>,
+              }}
+            />
+          )}
+          sx={getAutocompleteSx(150)}
+        />
+      </FilterField>
+
+      <FilterField width="130px" isMobile={isMobile}>
+        <FormControl
+          size="small"
+          sx={{
+            width: isMobile ? "100%" : "110%",
+            "& .MuiInputBase-root": { fontSize: isMobile ? 14 : undefined },
+            "& .MuiInputLabel-root": { fontSize: isMobile ? 14 : undefined },
+          }}
+        >
+          <InputLabel>Preset</InputLabel>
+          <Select
+            value={selectedPreset}
+            label="Preset"
+            onChange={(e) => {
+              setSelectedPreset(e.target.value);
+              handlePresetSelectHelium(e.target.value);
+              setBefePreset(e.target.value);
+              setAppliedPreset(e.target.value);
+            }}
+            MenuProps={{
+              PaperProps: {
+                sx: {
+                  "& .MuiMenuItem-root": {
+                    fontSize: isMobile ? 14 : undefined,
+                  },
+                },
+              },
+            }}
+          >
+            {PRESETS.map((preset) => (
+              <MenuItem key={preset} value={preset}>
+                {getPresetDisplayLabel(preset)}
+              </MenuItem>
+            ))}
+          </Select>
+        </FormControl>
+      </FilterField>
+
+      <FilterField
+        width="130px"
+        isMobile={isMobile}
+        sx={{ ml: isMobile ? 0 : 2 }}
+      >
+        <LocalizationProvider dateAdapter={AdapterDayjs}>
+          <DatePicker
+            label="Start Date"
+            value={startDate}
+            onChange={handleStartDateChangeOptimized}
+            format="DD/MM/YYYY"
+            disableFuture
+            maxDate={endDate || dayjs()}
+            slotProps={{
+              textField: {
+                size: "small",
+                sx: datePickerSx,
+              },
+            }}
+          />
+        </LocalizationProvider>
+      </FilterField>
+
+      <FilterField width="130px" isMobile={isMobile}>
+        <LocalizationProvider dateAdapter={AdapterDayjs}>
+          <DatePicker
+            label="End Date"
+            value={endDate}
+            onChange={handleEndDateChangeOptimized}
+            format="DD/MM/YYYY"
+            disableFuture
+            minDate={startDate}
+            disabled={!startDate}
+            openTo="day"
+            views={["year", "month", "day"]}
+            slotProps={{
+              textField: {
+                size: "small",
+                sx: datePickerSx,
+              },
+              calendarHeader: {
+                defaultCalendarMonth: startDate,
+              },
+            }}
+            referenceDate={startDate || dayjs()}
+          />
+        </LocalizationProvider>
+      </FilterField>
+    </>
+  );
+
   return (
-    <Box sx={{ marginTop: "50px" }}>
+    <Box
+      sx={{
+        width: "100%",
+        maxWidth: "100%",
+        minWidth: 0,
+        boxSizing: "border-box",
+        pt: { xs: "60px", sm: "90px" },
+        px: { xs: 1, sm: 2 },
+        overflowX: "clip",
+        "& *": { boxSizing: "border-box" },
+      }}
+    >
       <Grid
         container
-        spacing={2}
+        spacing={{ xs: 1, sm: 2 }}
         className="stickyGrid"
         sx={{
-          position: "sticky",
-          top: 0,
-          zIndex: 1000,
+          position: "relative",
+          top: "auto",
+          zIndex: 1,
           backgroundColor: "white",
           paddingBottom: activeFilters.length > 0 ? 0 : 2,
           boxShadow: "0 2px 4px rgba(0,0,0,0.1)",
+          minWidth: 0,
+          width: "100%",
+          boxSizing: "border-box",
         }}
       >
         {/* filters */}
 
-        <Grid item xs={12}>
+        <Grid item xs={12} sx={{mb: "30px"}}>
           <Grid container spacing={2} className="dashboard-filter">
             <Grid
               item
@@ -773,458 +1227,195 @@ function ClientDashboardpage() {
               sx={{
                 paddingBottom: "10px",
                 backgroundColor: "#fff",
-                display: "flex",
-                justifyContent: "space-between",
-                alignItems: "center",
                 px: 2,
-                gap: 2,
-                overflowX: { xs: "auto", md: "visible" },
-                overflowY: "hidden",
-                WebkitOverflowScrolling: "touch",
               }}
             >
-              {/* Filters */}
-              <Box
-                sx={{
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: { xs: "flex-start", md: "center" },
-                  gap: 1,
-                  flexWrap: "nowrap",
-                  flex: { xs: "0 0 auto", md: 1 },
-                  width: { xs: "max-content", md: "auto" },
-                  minWidth: { xs: "max-content", md: 0 },
-                }}
-              >
-                <Box sx={{ width: "180px", flexShrink: 0 }}>
-                  <CountrySelector
-                    selectedCountry={selectedCountry}
-                    onCountryChange={(country) => {
-                      setSelectedCountry(country);
-                      setActiveFilters((prev) => {
-                        const filtered = prev.filter(
-                          (f) => f.type !== "country",
-                        );
-                        return [
-                          ...filtered,
-                          { type: "country", value: country, label: country },
-                        ];
-                      });
-                    }}
-                  />
-                </Box>
-
-                <Box sx={{ width: "190px", flexShrink: 0 }}>
-                  <BrandSelector
-                    selectedBrand={selectedBrand}
-                    setSelectedBrand={(brands) => {
-                      setSelectedBrand(brands);
-                      setActiveFilters((prev) => {
-                        const filtered = prev.filter((f) => f.type !== "brand");
-                        const brandFilters = brands.map((brand) => ({
-                          type: "brand",
-                          value: brand.id,
-                          label: brand.name,
-                        }));
-                        return [...filtered, ...brandFilters];
-                      });
-                    }}
-                    brandList={brandList}
-                    inputValueBrand={inputValueBrand}
-                    setInputValueBrand={setInputValueBrand}
-                    brandLimit={brandLimit}
-                    setBrandLimit={setBrandLimit}
-                    isLoading={isLoading}
-                    hasMore={hasMore}
-                    toggleSelection={toggleSelection}
-                    label="Brands"
-                  />
-                </Box>
-
-                <Box sx={{ width: "140px", flexShrink: 0 }}>
-                  <Autocomplete
-                    multiple
-                    disableCloseOnSelect
-                    options={[
-                      ...selectedSku,
-                      ...skuList.filter(
-                        (s) => !selectedSku.some((ss) => ss.id === s.id),
-                      ),
-                    ]}
-                    getOptionLabel={(option) =>
-                      typeof option === "string" ? option : option.sku
-                    }
-                    isOptionEqualToValue={(option, value) =>
-                      option.id === value.id
-                    }
-                    inputValue={inputValueSku}
-                    onInputChange={(e, newInputValue) => {
-                      setInputValueSku(newInputValue);
-                      setSkuLimit(11);
-                    }}
-                    value={selectedSku}
-                    onChange={(event, newValue) => {
-                      setSelectedSku(newValue);
-                      setActiveFilters((prev) => {
-                        const filtered = prev.filter((f) => f.type !== "sku");
-                        const skuFilters = newValue.map((sku) => ({
-                          type: "sku",
-                          value: sku.id,
-                          label: sku.sku,
-                        }));
-                        return [...filtered, ...skuFilters];
-                      });
-                      updateMergedProducts(selectedAsin, newValue);
-                    }}
-                    renderTags={() => null}
-                    noOptionsText={inputValueSku ? "No options" : ""}
-                    renderOption={(props, option) => {
-                      const isSelected = selectedSku.some(
-                        (s) => s.id === option.id,
-                      );
-                      return (
-                        <Box
-                          component="li"
-                          {...props}
-                          onClick={() => toggleSelectionSKU(option)}
-                          sx={{
-                            backgroundColor: isSelected
-                              ? "#b6d5f3 !important"
-                              : "transparent",
-                            fontSize: 13,
-                            cursor: "pointer",
-                          }}
-                          key={option.id}
-                        >
-                          {option.sku}
-                        </Box>
-                      );
-                    }}
-                    renderInput={(params) => (
-                      <TextField
-                        {...params}
-                        label="SKU"
-                        size="small"
-                        placeholder="Search SKU..."
-                        InputProps={{
-                          ...params.InputProps,
-                          endAdornment: <>{params.InputProps.endAdornment}</>,
-                        }}
-                      />
-                    )}
-                    sx={{
-                      "& .MuiInputBase-root": {
-                        height: 40,
-                        fontSize: 14,
-                        width: 140,
-                      },
-                      "& input": {
-                        fontSize: 13,
-                      },
-                    }}
-                  />
-                </Box>
-
-                <Box sx={{ flexShrink: 0 }}>
-                  <Button
-                    variant="outlined"
-                    onClick={handleMenuOpen}
-                    sx={{
-                      width: 160,
-                      height: 40,
-                      justifyContent: "space-between",
-                      padding: "9px 8px 6px 8px",
-                      color: "rgba(0, 0, 0, 0.6)",
-                      fontSize: "16px",
-                      borderColor: "#cacaca",
-                      textTransform: "none",
-                    }}
-                  >
-                    {selectedCategory
-                      ? selectedCategory.fulfillment
-                        ? `${selectedCategory.name} - ${selectedCategory.fulfillment}`
-                        : selectedCategory.name
-                      : "Select Channel"}
-                    <ArrowDropDownIcon />
-                  </Button>
-                </Box>
-
-                <Menu
-                  anchorEl={anchorEl}
-                  open={Boolean(anchorEl)}
-                  onClose={handleMenuClose}
-                  PaperProps={{
-                    sx: { maxHeight: 400, width: 143, fontSize: "15px" },
-                  }}
-                >
-                  {isLoading ? (
-                    <MenuItem disabled>
-                      <CircularProgress size={24} sx={{ margin: "0 auto" }} />
-                    </MenuItem>
-                  ) : (
-                    enhancedCategories.map((category) => (
-                      <div key={category.id}>
-                        <MenuItem
-                          onClick={() => handleCategorySelect(category)}
-                          sx={{
-                            pl: 2,
-                            color: "black",
-                            display: "flex",
-                            justifyContent: "space-between",
-                          }}
-                        >
-                          <div
-                            style={{
-                              display: "flex",
-                              alignItems: "center",
-                            }}
-                          >
-                            <ListItemIcon>
-                              {category.icon ||
-                                (category.imageUrl ? (
-                                  <img
-                                    src={category.imageUrl}
-                                    alt={category.name}
-                                    style={{
-                                      width: 17,
-                                      height: 14,
-                                      marginRight: 5,
-                                    }}
-                                  />
-                                ) : (
-                                  <ImageIcon
-                                    sx={{ width: 17, height: 14, mr: 0.5 }}
-                                  />
-                                ))}
-                            </ListItemIcon>
-                            <ListItemText primary={category.name} />
-                          </div>
-
-                          {category.fulfillment_channel && (
-                            <IconButton
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                toggleExpandCategory(category.id);
-                              }}
-                              size="small"
-                              sx={{ ml: 1 }}
-                            >
-                              {expandedCategories[category.id] ? (
-                                <ExpandLessIcon fontSize="small" />
-                              ) : (
-                                <ExpandMoreIcon fontSize="small" />
-                              )}
-                            </IconButton>
-                          )}
-                        </MenuItem>
-
-                        {category.fulfillment_channel && (
-                          <Collapse
-                            in={expandedCategories[category.id]}
-                            timeout="auto"
-                            unmountOnExit
-                          >
-                            {category.fulfillment_channel.map((channelObj) => {
-                              const [label, value] =
-                                Object.entries(channelObj)[0];
-                              return (
-                                <MenuItem
-                                  key={label}
-                                  onClick={() =>
-                                    handleFulfillmentSelect(category, {
-                                      label,
-                                      value,
-                                    })
-                                  }
-                                  sx={{ pl: 6 }}
-                                >
-                                  {label}
-                                </MenuItem>
-                              );
-                            })}
-                          </Collapse>
-                        )}
-                      </div>
-                    ))
-                  )}
-                </Menu>
-
-                <Box sx={{ width: "150px", flexShrink: 0 }}>
-                  <Autocomplete
-                    multiple
-                    disableCloseOnSelect
-                    freeSolo
-                    options={[
-                      ...selectedAsin,
-                      ...asinList.filter(
-                        (a) => !selectedAsin.some((sa) => sa.id === a.id),
-                      ),
-                    ]}
-                    getOptionLabel={(option) =>
-                      typeof option === "string" ? option : option.Asin
-                    }
-                    isOptionEqualToValue={(option, value) =>
-                      option.id === value.id
-                    }
-                    inputValue={inputValueAsin}
-                    onInputChange={(e, newInputValue) =>
-                      setInputValueAsin(newInputValue)
-                    }
-                    value={selectedAsin}
-                    onChange={(event, newValue) => {
-                      setSelectedAsin(newValue);
-                      setActiveFilters((prev) => {
-                        const filtered = prev.filter((f) => f.type !== "asin");
-                        const asinFilters = newValue.map((asin) => ({
-                          type: "asin",
-                          value: asin.id,
-                          label: asin.Asin,
-                        }));
-                        return [...filtered, ...asinFilters];
-                      });
-                      updateMergedProducts(newValue, selectedSku);
-                    }}
-                    renderTags={() => null}
-                    renderOption={(props, option) => {
-                      const isSelected = selectedAsin.some(
-                        (s) => s.id === option.id,
-                      );
-                      return (
-                        <Box
-                          component="li"
-                          {...props}
-                          onClick={() => toggleSelectionAsin(option)}
-                          sx={{
-                            backgroundColor: isSelected
-                              ? "#b6d5f3 !important"
-                              : "transparent",
-                            fontSize: 13,
-                            cursor: "pointer",
-                          }}
-                        >
-                          {option.Asin}
-                        </Box>
-                      );
-                    }}
-                    renderInput={(params) => (
-                      <TextField
-                        {...params}
-                        label="Product ID"
-                        size="small"
-                        placeholder="Search ASIN..."
-                        InputProps={{
-                          ...params.InputProps,
-                          endAdornment: <>{params.InputProps.endAdornment}</>,
-                        }}
-                      />
-                    )}
-                    sx={{
-                      "& .MuiInputBase-root": {
-                        height: 40,
-                        fontSize: 14,
-                        width: 150,
-                      },
-                      "& input": {
-                        fontSize: 13,
-                      },
-                    }}
-                  />
-                </Box>
-
-                <Box sx={{ width: "130px", flexShrink: 0 }}>
-                  <FormControl size="small" sx={{ width: "110%" }}>
-                    <InputLabel>Preset</InputLabel>
-                    <Select
-                      value={selectedPreset}
-                      label="Preset"
-                      onChange={(e) => {
-                        setSelectedPreset(e.target.value);
-                        handlePresetSelectHelium(e.target.value);
-                        setBefePreset(e.target.value);
-                        setAppliedPreset(e.target.value);
+              {isMobile ? (
+                /* ---------- Mobile: single "Filters" button -> dropdown panel ---------- */
+                <>
+                  <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+                    <Button
+                      fullWidth
+                      variant="outlined"
+                      onClick={() => setFiltersOpen((prev) => !prev)}
+                      startIcon={<FilterAltIcon sx={{ fontSize: 18 }} />}
+                      endIcon={
+                        filtersOpen ? (
+                          <ExpandLessIcon fontSize="small" />
+                        ) : (
+                          <ExpandMoreIcon fontSize="small" />
+                        )
+                      }
+                      sx={{
+                        height: FIELD_HEIGHT,
+                        justifyContent: "space-between",
+                        fontSize: "13px",
+                        textTransform: "none",
+                        color: "rgba(0, 0, 0, 0.7)",
+                        borderColor: "#cacaca",
                       }}
                     >
-                      {presets.map((preset) => (
-                        <MenuItem key={preset} value={preset}>
-                          {getPresetDisplayLabel(preset)}
-                        </MenuItem>
-                      ))}
-                    </Select>
-                  </FormControl>
-                </Box>
+                      {`Filters${
+                        activeFilters.length > 0
+                          ? ` (${activeFilters.length})`
+                          : ""
+                      }`}
+                    </Button>
+                    {resetButton}
+                  </Box>
 
-                <Box sx={{ width: "130px", ml: 2, flexShrink: 0 }}>
-                  <LocalizationProvider dateAdapter={AdapterDayjs}>
-                    <DatePicker
-                      label="Start Date"
-                      value={startDate}
-                      onChange={handleStartDateChangeOptimized}
-                      format="DD/MM/YYYY"
-                      disableFuture
-                      maxDate={endDate || dayjs()}
-                      slotProps={{
-                        textField: {
-                          size: "small",
-                          sx: datePickerSx,
+                  <Collapse in={filtersOpen} timeout="auto">
+                    <Box
+                      sx={{
+                        display: "grid",
+                        gridTemplateColumns: {
+                          xs: "minmax(0, 1fr)",
+                          sm: "repeat(2, minmax(0, 1fr))",
                         },
+                        gap: 1,
+                        pt: 1.5,
+                        mt: 1,
+                        minWidth: 0,
                       }}
-                    />
-                  </LocalizationProvider>
-                </Box>
-
-                <Box sx={{ width: "130px", flexShrink: 0 }}>
-                  <LocalizationProvider dateAdapter={AdapterDayjs}>
-                    <DatePicker
-                      label="End Date"
-                      value={endDate}
-                      onChange={handleEndDateChangeOptimized}
-                      format="DD/MM/YYYY"
-                      disableFuture
-                      minDate={startDate}
-                      disabled={!startDate}
-                      openTo="day"
-                      views={["year", "month", "day"]}
-                      slotProps={{
-                        textField: {
-                          size: "small",
-                          sx: datePickerSx,
-                        },
-                        calendarHeader: {
-                          defaultCalendarMonth: startDate,
-                        },
-                      }}
-                      referenceDate={startDate || dayjs()}
-                    />
-                  </LocalizationProvider>
-                </Box>
-
+                    >
+                      {filterFields}
+                    </Box>
+                  </Collapse>
+                </>
+              ) : (
+                /* ---------- Desktop / tablet: inline filter row (wraps, no scroll) ---------- */
                 <Box
                   sx={{
                     display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    flexWrap: "wrap",
                     gap: 1,
-                    flexShrink: 0,
-                    position: "relative",
-                    right: 0,
                   }}
                 >
-                  <Tooltip title="Reset" arrow>
-                    <Button
-                      onClick={handleClearFilter}
-                      variant="outlined"
-                      sx={{
-                        backgroundColor: "#000080",
-                        minWidth: "auto",
-                        padding: "8px",
-                        "&:hover": {
-                          backgroundColor: "darkblue",
-                        },
-                      }}
-                    >
-                      <Refresh sx={{ color: "white", fontSize: "19px" }} />
-                    </Button>
-                  </Tooltip>
+                  {filterFields}
+                  <Box
+                    sx={{
+                      display: "flex",
+                      gap: 1,
+                      flexShrink: 0,
+                      position: "relative",
+                      right: 0,
+                    }}
+                  >
+                    {resetButton}
+                  </Box>
                 </Box>
-              </Box>
+              )}
+
+              {/* Channel menu (single instance, shared by both layouts) */}
+              <Menu
+                anchorEl={anchorEl}
+                open={Boolean(anchorEl)}
+                onClose={handleMenuClose}
+                PaperProps={{
+                  sx: { maxHeight: 400, width: 143, fontSize: "15px" },
+                }}
+              >
+                {isLoading ? (
+                  <MenuItem disabled>
+                    <CircularProgress size={24} sx={{ margin: "0 auto" }} />
+                  </MenuItem>
+                ) : (
+                  enhancedCategories.map((category) => (
+                    <div key={category.id}>
+                      <MenuItem
+                        onClick={() => handleCategorySelect(category)}
+                        sx={{
+                          pl: 2,
+                          color: "black",
+                          display: "flex",
+                          justifyContent: "space-between",
+                        }}
+                      >
+                        <div
+                          style={{
+                            display: "flex",
+                            alignItems: "center",
+                          }}
+                        >
+                          <ListItemIcon>
+                            {category.icon ||
+                              (category.imageUrl ? (
+                                <img
+                                  src={category.imageUrl}
+                                  alt={category.name}
+                                  style={{
+                                    width: 17,
+                                    height: 14,
+                                    marginRight: 5,
+                                  }}
+                                />
+                              ) : (
+                                <ImageIcon
+                                  sx={{ width: 17, height: 14, mr: 0.5 }}
+                                />
+                              ))}
+                          </ListItemIcon>
+                          <ListItemText
+                            primary={category.name}
+                            primaryTypographyProps={{
+                              fontSize: isMobile ? 13 : undefined,
+                            }}
+                          />
+                        </div>
+
+                        {category.fulfillment_channel && (
+                          <IconButton
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              toggleExpandCategory(category.id);
+                            }}
+                            size="small"
+                            sx={{ ml: 1 }}
+                          >
+                            {expandedCategories[category.id] ? (
+                              <ExpandLessIcon fontSize="small" />
+                            ) : (
+                              <ExpandMoreIcon fontSize="small" />
+                            )}
+                          </IconButton>
+                        )}
+                      </MenuItem>
+
+                      {category.fulfillment_channel && (
+                        <Collapse
+                          in={expandedCategories[category.id]}
+                          timeout="auto"
+                          unmountOnExit
+                        >
+                          {category.fulfillment_channel.map((channelObj) => {
+                            const [label, value] =
+                              Object.entries(channelObj)[0];
+                            return (
+                              <MenuItem
+                                key={label}
+                                onClick={() =>
+                                  handleFulfillmentSelect(category, {
+                                    label,
+                                    value,
+                                  })
+                                }
+                                sx={{
+                                  pl: 6,
+                                  fontSize: isMobile ? 13 : undefined,
+                                }}
+                              >
+                                {label}
+                              </MenuItem>
+                            );
+                          })}
+                        </Collapse>
+                      )}
+                    </div>
+                  ))
+                )}
+              </Menu>
             </Grid>
           </Grid>
 
@@ -1232,11 +1423,11 @@ function ClientDashboardpage() {
             <Box
               sx={{
                 display: "flex",
-                width: "88%",
+                width: { xs: "auto", md: "88%" },
                 flexWrap: "wrap",
                 alignItems: "center",
                 gap: 1,
-                p: 1.5,
+                p: { xs: 1, md: 1.5 },
                 border: "1px solid #e0e0e0",
                 borderRadius: "8px",
                 backgroundColor: "#f9f9f9",
@@ -1244,7 +1435,14 @@ function ClientDashboardpage() {
                 mt: 2,
               }}
             >
-              <Typography variant="body2" sx={{ fontWeight: "bold", mr: 1 }}>
+              <Typography
+                variant="body2"
+                sx={{
+                  fontWeight: "bold",
+                  mr: 1,
+                  fontSize: { xs: "12px", md: "14px" },
+                }}
+              >
                 Active Filters:
               </Typography>
 
@@ -1258,6 +1456,8 @@ function ClientDashboardpage() {
                   size="small"
                   sx={{
                     fontWeight: 500,
+                    fontSize: { xs: "11px", md: "13px" },
+                    maxWidth: "100%",
                   }}
                 />
               ))}
@@ -1269,6 +1469,7 @@ function ClientDashboardpage() {
                 sx={{
                   ml: "auto",
                   textTransform: "none",
+                  fontSize: { xs: "12px", md: "14px" },
                 }}
               >
                 Clear All
@@ -1276,17 +1477,6 @@ function ClientDashboardpage() {
             </Box>
           )}
         </Grid>
-
-        <Grid
-          item
-          xs={12}
-          sx={{
-            marginTop: "5%",
-            pt: "0 !important",
-            pl: "16px !important",
-            pr: "16px !important",
-          }}
-        ></Grid>
 
         {/* Executive overview */}
         <Grid item xs={12} sm={12} sx={{ marginTop: "0%" }}>
@@ -1312,7 +1502,13 @@ function ClientDashboardpage() {
           item
           xs={12}
           sm={12}
-          sx={{ marginBottom: "2%", paddingRight: "16px" }}
+          sx={{
+            mb: { xs: 1.5, sm: 2 },
+            px: 0,
+            minWidth: 0,
+            width: "100%",
+            maxWidth: "100%",
+          }}
         >
           <AllMarketplace
             country={selectedCountry}
@@ -1335,7 +1531,11 @@ function ClientDashboardpage() {
             item
             xs={12}
             sm={12}
-            sx={{ padding: "13px", marginLeft: "15px" }}
+            sx={{
+              padding: { xs: "8px", sm: "13px" },
+              marginLeft: { xs: 0, sm: "15px" },
+              minWidth: 0,
+            }}
           >
             <Box
               sx={{
@@ -1343,6 +1543,7 @@ function ClientDashboardpage() {
                 boxShadow: "none",
                 borderRadius: "12px",
                 p: 1.2,
+                minWidth: 0,
               }}
             >
               <Box
@@ -1358,71 +1559,41 @@ function ClientDashboardpage() {
                 <Tabs
                   value={tab}
                   onChange={(e, newValue) => setTab(newValue)}
-                  variant="fullWidth"
+                  variant={isMobile ? "scrollable" : "fullWidth"}
+                  scrollButtons={false}
+                  allowScrollButtonsMobile={false}
                   sx={{
                     minHeight: 0,
                     width: "100%",
                     "& .MuiTabs-indicator": { display: "none" },
                   }}
                 >
-                  {[
-                    {
-                      label: "Revenue",
-                      icon: (
-                        <BarChartOutlined
-                          sx={{ fontSize: { xs: 16, sm: 20 } }}
-                        />
-                      ),
-                    },
-                    {
-                      label: "Top Products",
-                      icon: (
-                        <EmojiEventsOutlined
-                          sx={{ fontSize: { xs: 16, sm: 20 } }}
-                        />
-                      ),
-                    },
-                    {
-                      label: "Total Sales",
-                      icon: (
-                        <AttachMoneyOutlined
-                          sx={{ fontSize: { xs: 16, sm: 20 } }}
-                        />
-                      ),
-                    },
-                    {
-                      label: "Latest Orders",
-                      icon: (
-                        <ShoppingCartOutlined
-                          sx={{ fontSize: { xs: 16, sm: 20 } }}
-                        />
-                      ),
-                    },
-                  ].map((item, index) => (
+                  {TAB_ITEMS.map(({ label, Icon }, index) => (
                     <Tab
-                      key={item.label}
-                      icon={item.icon}
+                      key={label}
+                      icon={<Icon sx={{ fontSize: { xs: 16, sm: 20 } }} />}
                       iconPosition="start"
                       label={
                         <Typography
                           sx={{
-                            fontSize: { xs: "11px", sm: "12px", md: "14px" },
+                            fontSize: { xs: "12px", sm: "12px", md: "14px" },
                             fontFamily:
                               "'Nunito Sans', -apple-system, 'Segoe UI', 'Roboto', 'Helvetica Neue', 'Arial', sans-serif",
                             fontWeight: tab === index ? 600 : "normal",
-                            display: { xs: "none", sm: "block" },
+                            display: "block",
+                            whiteSpace: "nowrap",
                           }}
                         >
-                          {item.label}
+                          {label}
                         </Typography>
                       }
                       sx={{
                         textTransform: "none",
-                        minHeight: { xs: 24, sm: 26 },
-                        minWidth: { xs: "auto", sm: "unset" },
-                        px: { xs: 0.5, sm: 0.8, md: 1.2 },
+                        minHeight: 44,
+                        minWidth: { xs: 105, sm: "unset" },
+                        px: { xs: 1, sm: 0.8, md: 1.2 },
                         mx: { xs: 0.2, sm: 0.3, md: 0.4 },
-                        fontSize: { xs: "11px", sm: "12px", md: "14px" },
+                        fontSize: { xs: "12px", sm: "12px", md: "14px" },
                         borderRadius: { xs: "12px", sm: "14px", md: "16px" },
                         color: "#2b2f3c",
                         backgroundColor: tab === index ? "#fff" : "transparent",
@@ -1441,7 +1612,7 @@ function ClientDashboardpage() {
                   ))}
                 </Tabs>
               </Box>
-              <Box>
+              <Box sx={{ minWidth: 0, overflowX: "auto" }}>
                 {tab === 0 && (
                   <CompareChart
                     country={selectedCountry}
@@ -1565,11 +1736,21 @@ function ClientDashboardpage() {
         </Grid>
 
         {/* Insights cardd */}
-        <Grid item xs={12} sm={12} sx={{ width: "100%", borderRadius: "2px" }}>
+        <Grid
+          item
+          xs={12}
+          sm={12}
+          sx={{
+            width: "100%",
+            maxWidth: "100%",
+            minWidth: 0,
+            borderRadius: "2px",
+          }}
+        >
           <Box
             sx={{
               // padding: "16px",
-              paddingRight: "16px",
+              paddingRight: { xs: 0, sm: "16px" },
             }}
           >
             <InsightCategory />
@@ -1577,7 +1758,12 @@ function ClientDashboardpage() {
         </Grid>
 
         {/* P & L */}
-        <Grid item xs={12} sm={12} sx={{ width: "99%" }}>
+        <Grid
+          item
+          xs={12}
+          sm={12}
+          sx={{ width: "100%", maxWidth: "100%", minWidth: 0 }}
+        >
           <ProfitAndLoss
             country={selectedCountry}
             widgetData={appliedPreset}
@@ -1594,7 +1780,12 @@ function ClientDashboardpage() {
         </Grid>
 
         {/* product list */}
-        <Grid item xs={12} sm={12} sx={{ width: "99%" }}>
+        <Grid
+          item
+          xs={12}
+          sm={12}
+          sx={{ width: "100%", maxWidth: "100%", minWidth: 0 }}
+        >
           <MyProductList
             country={selectedCountry}
             widgetData={appliedPreset}

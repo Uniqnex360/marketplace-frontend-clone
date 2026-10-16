@@ -86,16 +86,32 @@ const MetricItem = ({
     <Card
       sx={{
         borderRadius: 2,
-        minWidth: { xs: 150, sm: 180, md: 200 },
-        height: { xs: 55, sm: 60 },
+        width: "100%",
+        minWidth: { xs: 0, sm: 180, md: 200 },
+        minHeight: { xs: 58, sm: 60 },
+        height: "100%",
+        boxSizing: "border-box",
         opacity: loading ? 0.6 : 1,
       }}
     >
-      <CardContent sx={{ py: { xs: 0.3, sm: 0.5 }, px: { xs: 1, sm: 2 } }}>
-        <Box display="flex" justifyContent="space-between" alignItems="center">
+      <CardContent
+        sx={{
+          py: { xs: 0.5, sm: 0.5 },
+          px: { xs: 0.75, sm: 2 },
+          "&:last-child": { pb: { xs: 0.5, sm: 0.5 } },
+        }}
+      >
+        <Box
+          display="flex"
+          justifyContent="space-between"
+          alignItems="center"
+          sx={{ minWidth: 0 }}
+        >
           <Typography
             sx={{
-              fontSize: { xs: 12, sm: 14 },
+              fontSize: { xs: 10, sm: 14 },
+              lineHeight: 1.2,
+              overflowWrap: "anywhere",
               color: "text.secondary",
             }}
           >
@@ -107,12 +123,22 @@ const MetricItem = ({
           justifyContent="flex-start"
           alignItems="center"
           mt={0.5}
-          sx={{ paddingRight: "4px", gap: { xs: 0.5, sm: 1 } }}
+          sx={{
+            paddingRight: "2px",
+            gap: { xs: 0.25, sm: 1 },
+            minWidth: 0,
+            flexWrap: { xs: "wrap", sm: "nowrap" },
+          }}
         >
           <Tooltip title={tooltip || ""}>
             <Typography
               variant="subtitle2"
-              sx={{ fontSize: { xs: "16px", sm: "18px", md: "20px" } }}
+              sx={{
+                fontSize: { xs: "12px", sm: "18px", md: "20px" },
+                lineHeight: 1.2,
+                overflowWrap: "anywhere",
+                minWidth: 0,
+              }}
               fontWeight="bold"
             >
               {loading ? "..." : displayValue}
@@ -121,7 +147,7 @@ const MetricItem = ({
           {change !== undefined && (
             <Typography
               sx={{
-                fontSize: { xs: 10, sm: 11 },
+                fontSize: { xs: 9, sm: 11 },
                 color: isNegative ? "error.main" : "success.main",
                 display: "flex",
                 alignItems: "center",
@@ -640,59 +666,43 @@ const TestCard = ({
   //     value: item[metric],
   //   }));
   // };
-  
-  const getGraphPoints = (
-  metric = "gross_revenue_without_tax"
-) => {
-  const maxValue = Math.max(
-    ...dataState.bindGraph.map((d) => d[metric]),
-    1
-  );
 
-  const width = isMobile ? 200 : 280;
-  const padding = 15;
+  const getGraphPoints = (metric = "gross_revenue_without_tax") => {
+    const maxValue = Math.max(...dataState.bindGraph.map((d) => d[metric]), 1);
 
-  return dataState.bindGraph
-    .map((item, index) => {
-      const x =
-        padding +
-        (index * (width - padding * 2)) /
-          (dataState.bindGraph.length - 1);
+    const width = isMobile ? 200 : 280;
+    const padding = 15;
 
-      const y =
-        50 - (item[metric] / maxValue) * 30;
+    return dataState.bindGraph
+      .map((item, index) => {
+        const x =
+          padding +
+          (index * (width - padding * 2)) / (dataState.bindGraph.length - 1);
 
-      return `${x},${y}`;
-    })
-    .join(" ");
-};
+        const y = 50 - (item[metric] / maxValue) * 30;
 
-const getCirclePoints = (
-  metric = "gross_revenue_without_tax"
-) => {
-  const maxValue = Math.max(
-    ...dataState.bindGraph.map((d) => d[metric]),
-    1
-  );
+        return `${x},${y}`;
+      })
+      .join(" ");
+  };
 
-  const width = isMobile ? 200 : 280;
-  const padding = 15;
+  const getCirclePoints = (metric = "gross_revenue_without_tax") => {
+    const maxValue = Math.max(...dataState.bindGraph.map((d) => d[metric]), 1);
 
-  return dataState.bindGraph.map(
-    (item, index) => ({
+    const width = isMobile ? 200 : 280;
+    const padding = 15;
+
+    return dataState.bindGraph.map((item, index) => ({
       ...item,
       cx:
         padding +
-        (index * (width - padding * 2)) /
-          (dataState.bindGraph.length - 1),
+        (index * (width - padding * 2)) / (dataState.bindGraph.length - 1),
 
-      cy:
-        50 - (item[metric] / maxValue) * 30,
+      cy: 50 - (item[metric] / maxValue) * 30,
 
       value: item[metric],
-    })
-  );
-};
+    }));
+  };
   const metricBlockStyle = {
     display: "flex",
     alignItems: "center",
@@ -708,7 +718,11 @@ const getCirclePoints = (
         border: "1px solid #e0e0e0",
         borderRadius: 2,
         backgroundColor: "#fff",
-        width: { xs: "100%", sm: "99%" },
+        width: "100%",
+        maxWidth: "100%",
+        minWidth: 0,
+        boxSizing: "border-box",
+        overflowX: "clip",
         boxShadow: "0 2px 8px rgba(0, 0, 0, 0.05)",
         py: 0.5,
         mt: -5,
@@ -751,9 +765,12 @@ const getCirclePoints = (
             sx={{
               display: "flex",
               flexWrap: "wrap",
-              justifyContent: "center",
+              justifyContent: { xs: "space-between", sm: "center" },
               width: "100%",
-              px: { xs: 1, sm: 2 },
+              minWidth: 0,
+              boxSizing: "border-box",
+              px: { xs: 0.75, sm: 2 },
+              columnGap: { xs: 0.5, sm: 0 },
             }}
           >
             <Box
@@ -762,10 +779,18 @@ const getCirclePoints = (
                 borderRight: { xs: "none", sm: "1px solid #e0e0e0" },
                 borderLeft: "none",
                 flex: { xs: "1 1 100%", sm: "0 0 auto" },
-                minWidth: { xs: "100%", sm: "180px", md: "200px" },
+                minWidth: { xs: 0, sm: "180px", md: "200px" },
+                maxWidth: "100%",
+                boxSizing: "border-box",
               }}
             >
-              <Box display="flex" alignItems="center" gap={1}>
+              <Box
+                display="flex"
+                alignItems="center"
+                justifyContent="center"
+                gap={{ xs: 0.25, sm: 1 }}
+                sx={{ width: "100%", minWidth: 0 }}
+              >
                 <IconButton
                   size="small"
                   onClick={handlePrevious}
@@ -779,7 +804,13 @@ const getCirclePoints = (
                     "DD/MM/YYYY",
                   )} - ${currentDates.selectedDate.format("DD/MM/YYYY")}`}
                 >
-                  <Box>
+                  <Box
+                    sx={{
+                      minWidth: 0,
+                      textAlign: "center",
+                      overflowWrap: "anywhere",
+                    }}
+                  >
                     <Typography
                       fontWeight="bold"
                       sx={{
@@ -844,20 +875,21 @@ const getCirclePoints = (
                 sx={{
                   ...metricBlockStyle,
                   flex: {
-                    xs: "1 1 calc(50% - 16px)",
+                    xs: "1 1 calc(50% - 4px)",
                     sm: "1 1 180px",
                     md: "1 1 200px",
                   },
                   minWidth: {
-                    xs: "calc(50% - 16px)",
+                    xs: 0,
                     sm: "180px",
                     md: "200px",
                   },
                   maxWidth: {
-                    xs: "calc(50% - 16px)",
+                    xs: "calc(50% - 4px)",
                     sm: "180px",
                     md: "200px",
                   },
+                  boxSizing: "border-box",
                 }}
               >
                 <MetricItem
@@ -890,20 +922,21 @@ const getCirclePoints = (
                 sx={{
                   ...metricBlockStyle,
                   flex: {
-                    xs: "1 1 calc(50% - 16px)",
+                    xs: "1 1 calc(50% - 4px)",
                     sm: "1 1 180px",
                     md: "1 1 200px",
                   },
                   minWidth: {
-                    xs: "calc(50% - 16px)",
+                    xs: 0,
                     sm: "180px",
                     md: "200px",
                   },
                   maxWidth: {
-                    xs: "calc(50% - 16px)",
+                    xs: "calc(50% - 4px)",
                     sm: "180px",
                     md: "200px",
                   },
+                  boxSizing: "border-box",
                 }}
               >
                 <MetricItem
@@ -936,9 +969,10 @@ const getCirclePoints = (
               <Box
                 sx={{
                   borderRight: { xs: "none", sm: "1px solid #e0e0e0" },
-                  flex: { xs: "1 1 100%", sm: "1 1 280px", md: "1 1 300px" },
-                  minWidth: { xs: "100%", sm: "280px", md: "300px" },
-                  maxWidth: { xs: "100%", sm: "280px", md: "300px" },
+                  flex: { xs: "1 1 100%", sm: "1 1 260px", md: "1 1 300px" },
+                  minWidth: { xs: 0, sm: "260px", md: "300px" },
+                  maxWidth: { xs: "100%", sm: "300px", md: "300px" },
+                  boxSizing: "border-box",
                 }}
               >
                 <Box
@@ -973,7 +1007,14 @@ const getCirclePoints = (
                       overflow: "visible",
                     }}
                   >
-                    <svg ref={svgRef} width="100%" height={isMobile ? 50 : 60}>
+                    <svg
+                      ref={svgRef}
+                      width="100%"
+                      height={isMobile ? 50 : 60}
+                      viewBox={`0 0 ${isMobile ? 200 : 280} 60`}
+                      preserveAspectRatio="none"
+                      style={{ display: "block", maxWidth: "100%" }}
+                    >
                       {/* Grid lines */}
                       {[20, 30, 40].map((y, idx) => (
                         <line
@@ -1100,8 +1141,11 @@ const getCirclePoints = (
                           justifyContent: "space-between",
                           fontSize: { xs: 9, sm: 11 },
                           color: "#555",
-                          px: 1,
+                          px: { xs: 0.25, sm: 1 },
                           marginTop: "3px",
+                          minWidth: 0,
+                          overflow: "hidden",
+                          whiteSpace: "nowrap",
                         }}
                       >
                         <span>{dataState.bindGraph[0]?.date}</span>
@@ -1149,8 +1193,9 @@ const getCirclePoints = (
                         pointerEvents: "none",
                         zIndex: 1000,
                         boxShadow: "0 8px 24px rgba(0,0,0,0.15)",
-                        whiteSpace: "nowrap",
-                        maxWidth: 200,
+                        whiteSpace: "normal",
+                        overflowWrap: "anywhere",
+                        maxWidth: { xs: 160, sm: 200 },
                       }}
                     >
                       <Typography
@@ -1195,20 +1240,21 @@ const getCirclePoints = (
                     sx={{
                       ...metricBlockStyle,
                       flex: {
-                        xs: "1 1 calc(50% - 16px)",
+                        xs: "1 1 calc(50% - 4px)",
                         sm: "1 1 180px",
                         md: "1 1 200px",
                       },
                       minWidth: {
-                        xs: "calc(50% - 16px)",
+                        xs: 0,
                         sm: "180px",
                         md: "200px",
                       },
                       maxWidth: {
-                        xs: "calc(50% - 16px)",
+                        xs: "calc(50% - 4px)",
                         sm: "180px",
                         md: "200px",
                       },
+                      boxSizing: "border-box",
                     }}
                   >
                     <MetricItem

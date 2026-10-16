@@ -1,5 +1,4 @@
-import React, { useEffect, useState } from "react";
-import axios from "axios";
+import React, { useEffect, useMemo, useState } from "react";
 import {
   Box,
   Typography,
@@ -13,622 +12,565 @@ import {
   List,
   ListItem,
   Collapse,
-  Grid,
-  TextField
+  TextField,
 } from "@mui/material";
 import AddIcon from "@mui/icons-material/Add";
 
-// Function to group filters alphabetically
-const groupByAlphabet = (items) => {
-  return items.reduce((acc, item) => {
-    // Check if item.name exists and is a string
-    if (item.name && typeof item.name === 'string') {
-      const firstLetter = item.name[0].toUpperCase();
-      const groupKey = /^[A-Z]$/.test(firstLetter) ? firstLetter : "#";
-      acc[groupKey] = acc[groupKey] || [];
-      acc[groupKey].push(item);
-    } else {
-      // Handle cases where item.name is undefined or not a string
-      acc["#"] = acc["#"] || [];
-      acc["#"].push(item);
-    }
+// Group items alphabetically.
+const groupByAlphabet = (items = []) =>
+  items.reduce((acc, item) => {
+    const name = typeof item?.name === "string" ? item.name.trim() : "";
+
+    const firstLetter = name.charAt(0).toUpperCase();
+    const key = /^[A-Z]$/.test(firstLetter) ? firstLetter : "#";
+
+    if (!acc[key]) acc[key] = [];
+    acc[key].push(item);
+
     return acc;
   }, {});
-};
 
+// Divide alphabet groups into three balanced columns.
 const splitIntoColumns = (alphabetList) => {
   const mid = Math.ceil(alphabetList.length / 3);
-  const leftColumn = alphabetList.slice(0, mid);
-  const centerColumn = alphabetList.slice(mid, 2 * mid);
-  const rightColumn = alphabetList.slice(2 * mid);
-  return [leftColumn, centerColumn, rightColumn];
+
+  return [
+    alphabetList.slice(0, mid),
+    alphabetList.slice(mid, mid * 2),
+    alphabetList.slice(mid * 2),
+  ];
 };
 
-const FiltersUi = ({ categories, setCategoryFilterList, onProductTypeChange, brandFilterList , onBrandTypeChange}) => {
-  const [selectedCategories, setSelectedCategories] = useState([]);
-  const [productTypes, setproductTypes] = useState([]);
-  const [brandTypes, setbrandTypes] = useState([]);
+const FiltersUi = ({
+  categories,
+  setCategoryFilterList,
+  onProductTypeChange,
+  brandFilterList,
+  onBrandTypeChange,
+  resetKey = 0,
+}) => {
+  const [productTypes, setProductTypes] = useState([]);
+  const [brandTypes, setBrandTypes] = useState([]);
+
   const [selectedProductTypes, setSelectedProductTypes] = useState([]);
-  
-  const [SelectedBrandTypes, setSelectedBrandTypes] = useState([]);
+  const [selectedBrandTypes, setSelectedBrandTypes] = useState([]);
+
   const [openCategoryPopup, setOpenCategoryPopup] = useState(false);
   const [openBrandPopup, setOpenBrandPopup] = useState(false);
-  const [selectedStockStatuses, setSelectedStockStatuses] = useState([]);
-  const [selectedListingStatus, setSelectedListingStatus] = useState([]);
-  const [selectedBrands, setSelectedBrands] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [expandedSection, setExpandedSection] = useState(null); // Track which section is expanded
-  const [searchQuery, setSearchQuery] = useState(""); // For search functionality in filter and dialog
-  const [dialogSearchQuery, setDialogSearchQuery] = useState(""); // For search inside the dialog
-  const [dialogBrandSearchQuery, setDialogBrandSearchQuery] = useState(""); // For search inside the dialog
 
-  const groupedProductTypes = groupByAlphabet(productTypes);
-  
-  const groupedBrandTypes = groupByAlphabet(brandTypes);
+  const [expandedSection, setExpandedSection] = useState(null);
+
+  const [searchQuery, setSearchQuery] = useState("");
+  const [dialogSearchQuery, setDialogSearchQuery] = useState("");
+  const [dialogBrandSearchQuery, setDialogBrandSearchQuery] = useState("");
+
   const alphabet = "#ABCDEFGHIJKLMNOPQRSTUVWXYZ".split("");
-  const [marketplaceData, setMarketplaceData] = useState({ id: "" }); // Define state to store only id
+
   const [leftColumn, centerColumn, rightColumn] = splitIntoColumns(alphabet);
 
+  // Synchronize the available filter options with parent state.
   useEffect(() => {
-    console.log("Updated Category 111111:",  brandFilterList);
-    setproductTypes(setCategoryFilterList);
-    setbrandTypes(brandFilterList)
-  }, [setCategoryFilterList, brandFilterList]); // This will run every time setCategoryFilterList changes
+    setProductTypes(
+      Array.isArray(setCategoryFilterList) ? setCategoryFilterList : [],
+    );
 
+    setBrandTypes(Array.isArray(brandFilterList) ? brandFilterList : []);
+  }, [setCategoryFilterList, brandFilterList]);
 
-
-
-{/* Handlers for Product Type and Brand Type */}
-const handleProductTypeChange = (productType) => {
-  setSelectedProductTypes((prev) => {
-    const isSelected = prev.some((pt) => pt.id === productType.id);
-    const updatedList = isSelected
-      ? prev.filter((pt) => pt.id !== productType.id)
-      : [...prev, productType];
-
-    console.log("Updated Product Types List:", updatedList);
-    if (onProductTypeChange) {
-      onProductTypeChange({
-        updatedList,
-      });
-    }
-    return updatedList;
-  });
-};
-
-const handleBrandTypeChange = (brand) => {
-  setSelectedBrandTypes((prev) => {
-    const isSelected = prev.some((pt) => pt.id === brand.id);
-    const updatedList = isSelected
-      ? prev.filter((pt) => pt.id !== brand.id)
-      : [...prev, brand];
-
-    console.log("Updated Brand Types List:", updatedList);
-    if (onBrandTypeChange) {
-      onBrandTypeChange({
-        updatedList,
-      });
-    }
-    return updatedList;
-  });
-};
-
-  const handleDialogClose = () => {
+  // Clear the internal checkbox selections when the parent resets.
+  useEffect(() => {
+    setSelectedProductTypes([]);
+    setSelectedBrandTypes([]);
+    setSearchQuery("");
+    setDialogSearchQuery("");
+    setDialogBrandSearchQuery("");
+    setExpandedSection(null);
     setOpenCategoryPopup(false);
+    setOpenBrandPopup(false);
+  }, [resetKey]);
+
+  const groupedProductTypes = useMemo(
+    () => groupByAlphabet(productTypes),
+    [productTypes],
+  );
+
+  const groupedBrandTypes = useMemo(
+    () => groupByAlphabet(brandTypes),
+    [brandTypes],
+  );
+
+  const filterItems = (items, query) => {
+    const search = query.trim().toLowerCase();
+
+    return items.filter((item) =>
+      String(item?.name || "")
+        .toLowerCase()
+        .includes(search),
+    );
   };
 
-  const handleMoreClick = () => {
-    setOpenCategoryPopup(true); // Opens the dialog when "+more" is clicked
+  const filteredProductTypes = useMemo(
+    () => filterItems(productTypes, searchQuery),
+    [productTypes, searchQuery],
+  );
+
+  const filteredBrandTypes = useMemo(
+    () => filterItems(brandTypes, searchQuery),
+    [brandTypes, searchQuery],
+  );
+
+  const filteredDialogCategories = useMemo(() => {
+    const result = {};
+
+    Object.entries(groupedProductTypes).forEach(([letter, items]) => {
+      const filtered = filterItems(items, dialogSearchQuery);
+
+      if (filtered.length) result[letter] = filtered;
+    });
+
+    return result;
+  }, [groupedProductTypes, dialogSearchQuery]);
+
+  const filteredDialogBrands = useMemo(() => {
+    const result = {};
+
+    Object.entries(groupedBrandTypes).forEach(([letter, items]) => {
+      const filtered = filterItems(items, dialogBrandSearchQuery);
+
+      if (filtered.length) result[letter] = filtered;
+    });
+
+    return result;
+  }, [groupedBrandTypes, dialogBrandSearchQuery]);
+
+  const handleProductTypeChange = (productType) => {
+    setSelectedProductTypes((previous) => {
+      const exists = previous.some((item) => item.id === productType.id);
+
+      const updatedList = exists
+        ? previous.filter((item) => item.id !== productType.id)
+        : [...previous, productType];
+
+      onProductTypeChange?.({ updatedList });
+
+      return updatedList;
+    });
   };
 
+  const handleBrandTypeChange = (brand) => {
+    setSelectedBrandTypes((previous) => {
+      const exists = previous.some((item) => item.id === brand.id);
 
+      const updatedList = exists
+        ? previous.filter((item) => item.id !== brand.id)
+        : [...previous, brand];
+
+      onBrandTypeChange?.({ updatedList });
+
+      return updatedList;
+    });
+  };
 
   const toggleSection = (section) => {
-    setExpandedSection(expandedSection === section ? null : section);
+    setExpandedSection((previous) => (previous === section ? null : section));
   };
 
+  const checkboxSx = {
+    color: "#777",
+    "&.Mui-checked": {
+      color: "#000080",
+    },
+  };
 
+  const renderFilterItems = (items, selectedItems, onChange, limit) => {
+    const visibleItems =
+      typeof limit === "number" ? items.slice(0, limit) : items;
 
-  // Filter categories and product types based on search query
-  const filteredProductTypes = productTypes.filter((type) =>
-    type.name.toLowerCase().includes(searchQuery.toLowerCase())
+    return (
+      <>
+        {visibleItems.map((item) => (
+          <ListItem
+            key={item.id}
+            disableGutters
+            sx={{
+              py: 0.25,
+              px: 0,
+              minWidth: 0,
+              alignItems: "flex-start",
+            }}
+          >
+            <FormControlLabel
+              sx={{
+                m: 0,
+                width: "100%",
+                minWidth: 0,
+                alignItems: "flex-start",
+                "& .MuiFormControlLabel-label": {
+                  fontSize: 13,
+                  lineHeight: 1.5,
+                  overflowWrap: "anywhere",
+                  pt: 0.75,
+                },
+              }}
+              control={
+                <Checkbox
+                  size="small"
+                  checked={selectedItems.some(
+                    (selected) => selected.id === item.id,
+                  )}
+                  onChange={() => onChange(item)}
+                  sx={checkboxSx}
+                />
+              }
+              label={`${item.name || "Unnamed"} (${item.product_count ?? 0})`}
+            />
+          </ListItem>
+        ))}
+
+        {items.length === 0 && (
+          <Typography variant="body2" color="text.secondary" sx={{ py: 1 }}>
+            No results found.
+          </Typography>
+        )}
+      </>
+    );
+  };
+
+  const renderDialogColumns = (
+    groupedItems,
+    selectedItems,
+    onChange,
+    columns,
+  ) => (
+    <Box
+      sx={{
+        display: "grid",
+        gridTemplateColumns: {
+          xs: "minmax(0, 1fr)",
+          sm: "repeat(2, minmax(0, 1fr))",
+          md: "repeat(3, minmax(0, 1fr))",
+        },
+        gap: 2,
+        alignItems: "start",
+      }}
+    >
+      {columns.map((column, columnIndex) => (
+        <Box key={columnIndex} sx={{ minWidth: 0 }}>
+          {column.map((letter) => {
+            const items = groupedItems[letter];
+
+            if (!items?.length) return null;
+
+            return (
+              <Box key={letter} sx={{ mb: 2, minWidth: 0 }}>
+                <Typography
+                  variant="subtitle1"
+                  fontWeight="bold"
+                  sx={{
+                    position: "sticky",
+                    top: 0,
+                    zIndex: 1,
+                    backgroundColor: "#fff",
+                    py: 0.5,
+                  }}
+                >
+                  {letter}
+                </Typography>
+
+                <List dense disablePadding>
+                  {renderFilterItems(items, selectedItems, onChange)}
+                </List>
+              </Box>
+            );
+          })}
+        </Box>
+      ))}
+    </Box>
   );
 
-  const filteredBrandTypes = brandTypes.filter((type) =>
-    type.name.toLowerCase().includes(searchQuery.toLowerCase())
-  );
-
-  const filteredGroupedProductTypes = Object.keys(groupedProductTypes).reduce((acc, key) => {
-    const filteredCategories = groupedProductTypes[key].filter((category) =>
-      category.name.toLowerCase().includes(searchQuery.toLowerCase())
-    );
-    if (filteredCategories.length > 0) {
-      acc[key] = filteredCategories;
-    }
-    return acc;
-  }, {});
-
-
-  const filteredGroupedBrandTypes = Object.keys(groupedBrandTypes).reduce((acc, key) => {
-    const filteredCategories = groupedBrandTypes[key].filter((category) =>
-      category.name.toLowerCase().includes(searchQuery.toLowerCase())
-    );
-    if (filteredCategories.length > 0) {
-      acc[key] = filteredCategories;
-    }
-    return acc;
-  }, {});
-
-
-  // Filter categories in dialog based on dialogSearchQuery
-  const filteredDialogCategories = Object.keys(groupedProductTypes).reduce((acc, key) => {
-    const filteredCategories = groupedProductTypes[key].filter((category) =>
-      category.name.toLowerCase().includes(dialogSearchQuery.toLowerCase())
-    );
-    if (filteredCategories.length > 0) {
-      acc[key] = filteredCategories;
-    }
-    return acc;
-  }, {});
-
-
-  
-  // Filter categories in dialog based on dialogSearchQuery
-  const filteredDialogBrandList = Object.keys(groupedBrandTypes).reduce((acc, key) => {
-    const filteredBrand = groupedBrandTypes[key].filter((category) =>
-      category.name.toLowerCase().includes(dialogBrandSearchQuery.toLowerCase())
-    );
-    if (filteredBrand.length > 0) {
-      acc[key] = filteredBrand;
-    }
-    return acc;
-  }, {});
+  const sectionHeaderSx = {
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "space-between",
+    gap: 1,
+    width: "100%",
+    px: 1.5,
+    py: 1.25,
+    backgroundColor: "#e1f5fe",
+    color: "#000080",
+    borderBottom: "2px solid #000080",
+    borderRadius: 1,
+    cursor: "pointer",
+    userSelect: "none",
+    "&:hover": {
+      backgroundColor: "#d5effb",
+    },
+  };
 
   return (
     <Box
       sx={{
-        position: "fixed",
-        top: 100,
-        marginTop: "60px",
+        position: "relative",
+        width: "100%",
+        minWidth: 0,
+        maxWidth: "100%",
+        boxSizing: "border-box",
         backgroundColor: "#fff",
-        width: "189px",
-        padding: 2,
-        boxShadow: 3,
-        borderRadius: 1,
-        zIndex: 9999,
-        maxHeight: "calc(92vh - 150px)",
-        overflowY: "auto",
-        "&::-webkit-scrollbar": {
-          width: "3px",
-        },
-        "&::-webkit-scrollbar-thumb": {
-          backgroundColor: "#888",
-          borderRadius: "10px",
-        },
-        "&::-webkit-scrollbar-thumb:hover": {
-          backgroundColor: "#555",
-        },
+        overflow: "visible",
+        display: "flex",
+        flexDirection: "column",
+        gap: 1.5,
       }}
     >
-      {/* Search Box */}
+      {/* Shared search for Category and Brand List */}
       <TextField
-        label="Search"
+        label="Search categories and brands"
+        placeholder="Type to search..."
         variant="outlined"
         fullWidth
         size="small"
         value={searchQuery}
-        onChange={(e) => setSearchQuery(e.target.value)}
-        sx={{ marginBottom: 2 }}
+        onChange={(event) => setSearchQuery(event.target.value)}
+        inputProps={{
+          "aria-label": "Search categories and brands",
+        }}
+        sx={{
+          minWidth: 0,
+          "& .MuiInputBase-root": {
+            backgroundColor: "#fff",
+          },
+        }}
       />
 
-{/* Product Type Section */}
-<Typography
-  variant="subtitle1"
-  fontWeight="bold"
-  sx={{
-    backgroundColor: "#e1f5fe",
-    color: "#000080",
-    padding: "8px",
-    cursor: "pointer",
-    borderBottom: "2px solid #000080",
-    marginBottom: "8px",
-    fontSize: "16px",
-  }}
-  onClick={() => toggleSection("productTypes")}
->Category
-</Typography>
-
-<Collapse in={expandedSection === "productTypes"}>
-  <List sx={{ marginBottom: "16px", fontSize: "12px", padding: 0 }}>
-    {/* Loop through filtered product types and create checkboxes */}
-    {filteredProductTypes.slice(0, 6).map((type, index) => (
-      <ListItem key={index} sx={{ padding: "4px 0", height: "auto" }}>
-        <FormControlLabel
-          control={
-            <Checkbox
-              checked={selectedProductTypes.some((pt) => pt.id === type.id)}
-              onChange={() => handleProductTypeChange(type)}
-              sx={{
-                fontSize: "12px",
-                "&.Mui-checked": {
-                  color: "#000080",
-                },
-              }}
-            />
-          }
-          label={`${type.name} (${type.product_count})`}
-          componentsProps={{
-            typography: {
-              fontSize: "14px",
-              fontWeight: 600,
-            },
+      {/* Category filter */}
+      <Box sx={{ width: "100%", minWidth: 0 }}>
+        <Box
+          role="button"
+          tabIndex={0}
+          aria-expanded={expandedSection === "productTypes"}
+          onClick={() => toggleSection("productTypes")}
+          onKeyDown={(event) => {
+            if (event.key === "Enter" || event.key === " ") {
+              event.preventDefault();
+              toggleSection("productTypes");
+            }
           }}
-        />
-      </ListItem>
-    ))}
-    {filteredProductTypes.length > 6 && (
-      <Button
-        variant="text"
-        startIcon={<AddIcon />}
-        
-        onClick={() => setOpenCategoryPopup(true)}
-        sx={{
-          color: "red",
-          textTransform: "none",
-          fontSize: "12px",
-        }}
-      >
-        + {filteredProductTypes.length - 6} more
-      </Button>
-    )}
-  </List>
-</Collapse>
+          sx={sectionHeaderSx}
+        >
+          <Typography fontWeight="bold" variant="body2">
+            Category
+            <Typography
+              component="span"
+              variant="caption"
+              sx={{ ml: 1, color: "#555" }}
+            >
+              ({filteredProductTypes.length})
+            </Typography>
+          </Typography>
 
-{/* Brand List Section */}
-<Typography
-  variant="subtitle1"
-  fontWeight="bold"
-  sx={{
-    backgroundColor: "#e1f5fe",
-    color: "#000080",
-    padding: "8px",
-    cursor: "pointer",
-    borderBottom: "2px solid #000080",
-    marginBottom: "8px",
-    fontSize: "16px",
-  }}
-  onClick={() => toggleSection("brandTypes")}
->
-  Brand List
-</Typography>
+          <Typography component="span">
+            {expandedSection === "productTypes" ? "−" : "+"}
+          </Typography>
+        </Box>
 
-<Collapse in={expandedSection === "brandTypes"}>
-  <List sx={{ marginBottom: "16px", fontSize: "12px", padding: 0 }}>
-    {/* Loop through filtered brand types and create checkboxes */}
-    {filteredBrandTypes.slice(0, 6).map((brand, index) => (
-      <ListItem key={index} sx={{ padding: "4px 0", height: "auto" }}>
-        <FormControlLabel
-          control={
-            <Checkbox
-              checked={SelectedBrandTypes.some((brandType) => brandType.id === brand.id)}
-              onChange={() => handleBrandTypeChange(brand)}
-              sx={{
-                fontSize: "12px",
-                "&.Mui-checked": {
+        <Collapse in={expandedSection === "productTypes"}>
+          <Box
+            sx={{
+              mt: 1,
+              p: { xs: 1, sm: 1.5 },
+              border: "1px solid #eee",
+              borderRadius: 1,
+              minWidth: 0,
+            }}
+          >
+            <List dense disablePadding>
+              {renderFilterItems(
+                filteredProductTypes,
+                selectedProductTypes,
+                handleProductTypeChange,
+                6,
+              )}
+            </List>
+
+            {filteredProductTypes.length > 6 && (
+              <Button
+                variant="text"
+                size="small"
+                startIcon={<AddIcon />}
+                onClick={() => setOpenCategoryPopup(true)}
+                sx={{
+                  mt: 0.5,
                   color: "#000080",
-                },
-              }}
-            />
-          }
-          label={`${brand.name} (${brand.product_count})`}
-          componentsProps={{
-            typography: {
-              fontSize: "14px",
-              fontWeight: 600,
-            },
+                  textTransform: "none",
+                }}
+              >
+                View all {filteredProductTypes.length} categories
+              </Button>
+            )}
+          </Box>
+        </Collapse>
+      </Box>
+
+      {/* Brand filter */}
+      <Box sx={{ width: "100%", minWidth: 0 }}>
+        <Box
+          role="button"
+          tabIndex={0}
+          aria-expanded={expandedSection === "brandTypes"}
+          onClick={() => toggleSection("brandTypes")}
+          onKeyDown={(event) => {
+            if (event.key === "Enter" || event.key === " ") {
+              event.preventDefault();
+              toggleSection("brandTypes");
+            }
           }}
-        />
-      </ListItem>
-    ))}
-    {filteredBrandTypes.length > 6 && (
-      <Button
-        variant="text"
-        startIcon={<AddIcon />}
-        onClick={() => setOpenBrandPopup(true)}
-        sx={{
-          color: "red",
-          textTransform: "none",
-          fontSize: "12px",
-        }}
-      >
-        + {filteredBrandTypes.length - 6} more
-      </Button>
-    )}
-  </List>
-</Collapse>
+          sx={sectionHeaderSx}
+        >
+          <Typography fontWeight="bold" variant="body2">
+            Brand List
+            <Typography
+              component="span"
+              variant="caption"
+              sx={{ ml: 1, color: "#555" }}
+            >
+              ({filteredBrandTypes.length})
+            </Typography>
+          </Typography>
 
+          <Typography component="span">
+            {expandedSection === "brandTypes" ? "−" : "+"}
+          </Typography>
+        </Box>
 
+        <Collapse in={expandedSection === "brandTypes"}>
+          <Box
+            sx={{
+              mt: 1,
+              p: { xs: 1, sm: 1.5 },
+              border: "1px solid #eee",
+              borderRadius: 1,
+              minWidth: 0,
+            }}
+          >
+            <List dense disablePadding>
+              {renderFilterItems(
+                filteredBrandTypes,
+                selectedBrandTypes,
+                handleBrandTypeChange,
+                6,
+              )}
+            </List>
 
-      {/* Category Popup */}
+            {filteredBrandTypes.length > 6 && (
+              <Button
+                variant="text"
+                size="small"
+                startIcon={<AddIcon />}
+                onClick={() => setOpenBrandPopup(true)}
+                sx={{
+                  mt: 0.5,
+                  color: "#000080",
+                  textTransform: "none",
+                }}
+              >
+                View all {filteredBrandTypes.length} brands
+              </Button>
+            )}
+          </Box>
+        </Collapse>
+      </Box>
+
+      {/* Category selection dialog */}
       <Dialog
-        open={openCategoryPopup} onClose={() => setOpenCategoryPopup(false)}
+        open={openCategoryPopup}
+        onClose={() => setOpenCategoryPopup(false)}
         fullWidth
         maxWidth="lg"
-        sx={{
-          "& .MuiDialog-paper": {
-            maxWidth: "1200px", // Set fixed width
-            height: "80vh", // Set fixed height
-            overflow: "hidden",
+        scroll="paper"
+        PaperProps={{
+          sx: {
+            width: "100%",
+            maxWidth: 1200,
+            maxHeight: "85vh",
+            m: { xs: 1, sm: 2 },
           },
         }}
       >
         <DialogTitle>Select Categories</DialogTitle>
-        <DialogContent
-          sx={{
-            height: "calc(80vh - 120px)", // Adjust content height to fit inside fixed height dialog
-            overflowX: "auto", // Allow horizontal scrolling
-            overflowY: "auto", // Allow vertical scrolling
-          }}
-        >
-          {/* Add Search Field Inside Dialog */}
-         {/* Add Search Field Inside Dialog */}
-<Box sx={{ display: 'flex', justifyContent: 'flex-end', marginTop: '5px' }}>
-  <TextField
-    label="Search Categories"
-    variant="outlined"
-    size="small"
-    value={dialogSearchQuery}
-    onChange={(e) => setDialogSearchQuery(e.target.value)}
-    sx={{ marginBottom: 2, width: '30%' }}
-  />
-</Box>
 
-          <Grid container spacing={2} sx={{ flexWrap: "wrap", overflowX: "auto" }}>
-            {/* Left Column */}
-            <Grid item xs={4}>
-              {leftColumn.map((letter) => {
-                const filteredCategories = filteredDialogCategories[letter];
-                if (filteredCategories) {
-                  return (
-                    <Box key={letter} sx={{ marginBottom: 2 }}>
-                      <Typography variant="h6" fontWeight="bold">
-                        {letter}
-                      </Typography>
-                      <List>
-                        {filteredCategories.map((category, idx) => (
-                          <ListItem key={idx} sx={{ paddingY: 0 }}>
-                            <FormControlLabel
-                              control={
-                                <Checkbox
-                                  checked={selectedProductTypes.some((pt) => pt.id === category.id)}
-                                  onChange={() => handleProductTypeChange(category)}
-                                  sx={{ "&.Mui-checked": { color: "#000080" } }}
-                                />
-                              }
-                              label={`${category.name} (${category.product_count})`}
-                            />
-                          </ListItem>
-                        ))}
-                      </List>
-                    </Box>
-                  );
-                }
-                return null;
-              })}
-            </Grid>
+        <DialogContent dividers>
+          <TextField
+            label="Search categories"
+            placeholder="Search by category name..."
+            fullWidth
+            size="small"
+            value={dialogSearchQuery}
+            onChange={(event) => setDialogSearchQuery(event.target.value)}
+            sx={{ mb: 2 }}
+          />
 
-            {/* Center Column */}
-            <Grid item xs={4}>
-              {centerColumn.map((letter) => {
-                const filteredCategories = filteredDialogCategories[letter];
-                if (filteredCategories) {
-                  return (
-                    <Box key={letter} sx={{ marginBottom: 2 }}>
-                      <Typography variant="h6" fontWeight="bold">
-                        {letter}
-                      </Typography>
-                      <List>
-                        {filteredCategories.map((category, idx) => (
-                          <ListItem key={idx} sx={{ paddingY: 0 }}>
-                            <FormControlLabel
-                              control={
-                                <Checkbox
-                                  checked={selectedProductTypes.some((pt) => pt.id === category.id)}
-                                  onChange={() => handleProductTypeChange(category)}
-                                  sx={{ "&.Mui-checked": { color: "#000080" } }}
-                                />
-                              }
-                              label={`${category.name} (${category.product_count})`}
-                            />
-                          </ListItem>
-                        ))}
-                      </List>
-                    </Box>
-                  );
-                }
-                return null;
-              })}
-            </Grid>
-
-            {/* Right Column */}
-            <Grid item xs={4}>
-              {rightColumn.map((letter) => {
-                const filteredCategories = filteredDialogCategories[letter];
-                if (filteredCategories) {
-                  return (
-                    <Box key={letter} sx={{ marginBottom: 2 }}>
-                      <Typography variant="h6" fontWeight="bold">
-                        {letter}
-                      </Typography>
-                      <List>
-                        {filteredCategories.map((category, idx) => (
-                          <ListItem key={idx} sx={{ paddingY: 0 }}>
-                            <FormControlLabel
-                              control={
-                                <Checkbox
-                                  checked={selectedProductTypes.some((pt) => pt.id === category.id)}
-                                  onChange={() => handleProductTypeChange(category)}
-                                  sx={{ "&.Mui-checked": { color: "#000080" } }}
-                                />
-                              }
-                              label={`${category.name} (${category.product_count})`}
-                            />
-                          </ListItem>
-                        ))}
-                      </List>
-                    </Box>
-                  );
-                }
-                return null;
-              })}
-            </Grid>
-          </Grid>
+          {renderDialogColumns(
+            filteredDialogCategories,
+            selectedProductTypes,
+            handleProductTypeChange,
+            [leftColumn, centerColumn, rightColumn],
+          )}
         </DialogContent>
+
         <DialogActions>
-        <Button onClick={() => setOpenCategoryPopup(false)}>Close</Button>
+          <Button
+            onClick={() => setOpenCategoryPopup(false)}
+            sx={{ textTransform: "none" }}
+          >
+            Close
+          </Button>
         </DialogActions>
       </Dialog>
 
-
-           {/* Category Popup */}
-           <Dialog
-       open={openBrandPopup} onClose={() => setOpenBrandPopup(false)}
+      {/* Brand selection dialog */}
+      <Dialog
+        open={openBrandPopup}
+        onClose={() => setOpenBrandPopup(false)}
         fullWidth
         maxWidth="lg"
-        sx={{
-          "& .MuiDialog-paper": {
-            maxWidth: "1200px", // Set fixed width
-            height: "80vh", // Set fixed height
-            overflow: "hidden",
+        scroll="paper"
+        PaperProps={{
+          sx: {
+            width: "100%",
+            maxWidth: 1200,
+            maxHeight: "85vh",
+            m: { xs: 1, sm: 2 },
           },
         }}
       >
-        <DialogTitle>Select Brand</DialogTitle>
-        <DialogContent
-          sx={{
-            height: "calc(80vh - 120px)", // Adjust content height to fit inside fixed height dialog
-            overflowX: "auto", // Allow horizontal scrolling
-            overflowY: "auto", // Allow vertical scrolling
-          }}
-        >
-   
+        <DialogTitle>Select Brands</DialogTitle>
 
-          {/* Add Search Field Inside Dialog */}
-<Box sx={{ display: 'flex', justifyContent: 'flex-end', marginTop: '5px' }}>
-  <TextField
-    label="Search Brand"
-    variant="outlined"
-    size="small"
-    value={dialogBrandSearchQuery}
-    onChange={(e) => setDialogBrandSearchQuery(e.target.value)}
-    sx={{ marginBottom: 2, width: '30%' }}
-  />
-</Box>
+        <DialogContent dividers>
+          <TextField
+            label="Search brands"
+            placeholder="Search by brand name..."
+            fullWidth
+            size="small"
+            value={dialogBrandSearchQuery}
+            onChange={(event) => setDialogBrandSearchQuery(event.target.value)}
+            sx={{ mb: 2 }}
+          />
 
-
-          <Grid container spacing={2} sx={{ flexWrap: "wrap", overflowX: "auto" }}>
-            {/* Left Column */}
-            <Grid item xs={4}>
-              {leftColumn.map((letter) => {
-                const filteredBrand = filteredDialogBrandList[letter];
-                if (filteredBrand) {
-                  return (
-                    <Box key={letter} sx={{ marginBottom: 2 }}>
-                      <Typography variant="h6" fontWeight="bold">
-                        {letter}
-                      </Typography>
-                      <List>
-                        {filteredBrand.map((brand, idx) => (
-                          <ListItem key={idx} sx={{ paddingY: 0 }}>
-                            <FormControlLabel
-                              control={
-                                <Checkbox
-                                  checked={SelectedBrandTypes.some((pt) => pt.id === brand.id)}
-                                  onChange={() => handleBrandTypeChange(brand)}
-                                  sx={{ "&.Mui-checked": { color: "#000080" } }}
-                                />
-                              }
-                              label={`${brand.name} (${brand.product_count})`}
-                            />
-                          </ListItem>
-                        ))}
-                      </List>
-                    </Box>
-                  );
-                }
-                return null;
-              })}
-            </Grid>
-
-            {/* Center Column */}
-            <Grid item xs={4}>
-              {centerColumn.map((letter) => {
-                const filteredBrand = filteredDialogBrandList[letter];
-                if (filteredBrand) {
-                  return (
-                    <Box key={letter} sx={{ marginBottom: 2 }}>
-                      <Typography variant="h6" fontWeight="bold">
-                        {letter}
-                      </Typography>
-                      <List>
-                        {filteredBrand.map((brand, idx) => (
-                          <ListItem key={idx} sx={{ paddingY: 0 }}>
-                            <FormControlLabel
-                              control={
-                                <Checkbox
-                                  checked={SelectedBrandTypes.some((pt) => pt.id === brand.id)}
-                                  onChange={() => handleBrandTypeChange(brand)}
-                                  sx={{ "&.Mui-checked": { color: "#000080" } }}
-                                />
-                              }
-                              label={`${brand.name} (${brand.product_count})`}
-                            />
-                          </ListItem>
-                        ))}
-                      </List>
-                    </Box>
-                  );
-                }
-                return null;
-              })}
-            </Grid>
-
-            {/* Right Column */}
-            <Grid item xs={4}>
-              {rightColumn.map((letter) => {
-                const filteredBrand = filteredDialogBrandList[letter];
-                if (filteredBrand) {
-                  return (
-                    <Box key={letter} sx={{ marginBottom: 2 }}>
-                      <Typography variant="h6" fontWeight="bold">
-                        {letter}
-                      </Typography>
-                      <List>
-                        {filteredBrand.map((brand, idx) => (
-                          <ListItem key={idx} sx={{ paddingY: 0 }}>
-                            <FormControlLabel
-                              control={
-                                <Checkbox
-                                  checked={SelectedBrandTypes.some((pt) => pt.id === brand.id)}
-                                  onChange={() => handleBrandTypeChange(brand)}
-                                  sx={{ "&.Mui-checked": { color: "#000080" } }}
-                                />
-                              }
-                              label={`${brand.name} (${brand.product_count})`}
-                            />
-                          </ListItem>
-                        ))}
-                      </List>
-                    </Box>
-                  );
-                }
-                return null;
-              })}
-            </Grid>
-          </Grid>
+          {renderDialogColumns(
+            filteredDialogBrands,
+            selectedBrandTypes,
+            handleBrandTypeChange,
+            [leftColumn, centerColumn, rightColumn],
+          )}
         </DialogContent>
+
         <DialogActions>
-        <Button onClick={() => setOpenBrandPopup(false)}>Close</Button>
+          <Button
+            onClick={() => setOpenBrandPopup(false)}
+            sx={{ textTransform: "none" }}
+          >
+            Close
+          </Button>
         </DialogActions>
       </Dialog>
     </Box>

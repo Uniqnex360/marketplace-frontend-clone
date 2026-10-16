@@ -414,8 +414,7 @@ const OrderList = ({ fetchOrdersFromParent }) => {
 
   return (
     <Box sx={{ flex: 1, width: "100%", px: { xs: 1, sm: 2 } }}>
-      {/* Header Section - Made Responsive */}
-      {/* Fixed Header (Filters, Search, Buttons) */}
+      {/* Header Section - Desktop unchanged, Mobile dropdown */}
       <Box
         sx={{
           position: "fixed",
@@ -423,7 +422,7 @@ const OrderList = ({ fetchOrdersFromParent }) => {
           right: 0,
           marginTop: { xs: "60px", md: "90px" },
           marginRight: { xs: "0px", md: "22px" },
-          width: { xs: "calc(100% - 20px)", md: "100%" },
+          width: { xs: "100%", md: "100%" },
           backgroundColor: "white",
           zIndex: 100,
           padding: { xs: "8px", md: "10px" },
@@ -433,33 +432,78 @@ const OrderList = ({ fetchOrdersFromParent }) => {
           boxSizing: "border-box",
         }}
       >
-        {/* Scrollable row (horizontal scroll on mobile, normal row on desktop) */}
+        {/* MOBILE: Filter Dropdown Button */}
         <Box
           sx={{
-            display: "flex",
-            flexDirection: "row",
-            flexWrap: "nowrap",
+            display: { xs: "flex", md: "none" },
             alignItems: "center",
-            justifyContent: { xs: "flex-start", md: "flex-end" },
-            gap: { xs: 1, md: 2 },
-            overflowX: { xs: "auto", md: "visible" },
-            overflowY: "hidden",
-            WebkitOverflowScrolling: "touch",
-            pb: { xs: 1, md: 0 },
-            "& > *": { flexShrink: 0 },
-            "&::-webkit-scrollbar": { height: "4px" },
-            "&::-webkit-scrollbar-thumb": {
-              backgroundColor: "#bbb",
-              borderRadius: "10px",
-            },
-            "&::-webkit-scrollbar-track": {
-              backgroundColor: "#f1f1f1",
-              borderRadius: "10px",
-            },
+            justifyContent: "space-between",
+            gap: 1,
           }}
         >
-          {/* Country Selector */}
-          <Box sx={{ width: { xs: 170, md: "auto" }, display: "flex" }}>
+          <Button
+            variant="contained"
+            onClick={() => setShowFilter((prev) => !prev)}
+            startIcon={<FilterList />}
+            endIcon={
+              <Box
+                component="span"
+                sx={{
+                  display: "inline-flex",
+                  transform: showFilter ? "rotate(180deg)" : "rotate(0deg)",
+                  transition: "transform 0.2s",
+                }}
+              >
+                ▾
+              </Box>
+            }
+            sx={{
+              backgroundColor: "#000080",
+              color: "white",
+              textTransform: "none",
+              "&:hover": { backgroundColor: "darkblue" },
+            }}
+          >
+            Filters
+          </Button>
+
+          <Typography variant="body2" sx={{ whiteSpace: "nowrap" }}>
+            Total Orders: {orderCount || 0}
+          </Typography>
+
+          <Tooltip title="Reset" arrow>
+            <Button
+              variant="contained"
+              onClick={handleResetChange}
+              sx={{
+                backgroundColor: "#000080",
+                minWidth: 40,
+                padding: "6px",
+                "&:hover": { backgroundColor: "darkblue" },
+              }}
+            >
+              <Refresh sx={{ color: "white" }} />
+            </Button>
+          </Tooltip>
+        </Box>
+
+        {/* MOBILE: Dropdown Content - No horizontal scrolling */}
+        {showFilter && (
+          <Box
+            sx={{
+              display: { xs: "grid", md: "none" },
+              gridTemplateColumns: "minmax(0, 1fr)",
+              gap: 1.5,
+              mt: 2,
+              pb: 1,
+              width: "100%",
+              maxHeight: "calc(100vh - 180px)",
+              overflowY: "auto",
+              overflowX: "hidden",
+              boxSizing: "border-box",
+            }}
+          >
+            {/* Country Selector */}
             <CountrySelector
               selectedCountry={selectedCountry}
               onCountryChange={(country) => {
@@ -467,13 +511,155 @@ const OrderList = ({ fetchOrdersFromParent }) => {
                 setPage(1);
               }}
               minWidth={150}
-              sx={{ width: { xs: "100%", md: 150 } }}
+              sx={{ width: "100%" }}
+            />
+
+            {/* Marketplace Selector */}
+            <FormControl size="small" fullWidth>
+              <InputLabel id="mobile-marketplace-label">Marketplace</InputLabel>
+              <Select
+                labelId="mobile-marketplace-label"
+                label="Marketplace"
+                value={selectedCategory?.id || "all"}
+                onChange={(e) => {
+                  const selected = enhancedCategories.find(
+                    (cat) => cat.id === e.target.value,
+                  );
+                  if (selected) {
+                    handleMarketplaceSelect(selected);
+                  }
+                }}
+              >
+                {marketplaceLoading ? (
+                  <MenuItem disabled>Loading...</MenuItem>
+                ) : (
+                  enhancedCategories.map((category) => (
+                    <MenuItem key={category.id} value={category.id}>
+                      <Box display="flex" alignItems="center" gap={1}>
+                        {category.icon ||
+                          (category.imageUrl ? (
+                            <img
+                              src={category.imageUrl}
+                              alt={category.name}
+                              width={18}
+                              height={14}
+                            />
+                          ) : (
+                            <ImageIcon fontSize="small" />
+                          ))}
+                        <span>{category.name}</span>
+                      </Box>
+                    </MenuItem>
+                  ))
+                )}
+              </Select>
+            </FormControl>
+
+            {/* Status Filter */}
+            <FormControl size="small" fullWidth>
+              <InputLabel id="mobile-order-status-label">Status</InputLabel>
+              <Select
+                labelId="mobile-order-status-label"
+                value={selectedStatus}
+                label="Status"
+                onChange={(e) => setSelectedStatus(e.target.value)}
+              >
+                <MenuItem value="all">All Status</MenuItem>
+                <MenuItem value="Pending">Pending</MenuItem>
+                <MenuItem value="Shipped">Shipped</MenuItem>
+                <MenuItem value="Canceled">Canceled</MenuItem>
+              </Select>
+            </FormControl>
+
+            {/* Search Field */}
+            <TextField
+              size="small"
+              fullWidth
+              placeholder="Search Purchase Order ID"
+              value={searchQuery}
+              onChange={handleSearchChange}
+            />
+
+            {/* Mobile Action Buttons */}
+            <Box
+              sx={{
+                display: "flex",
+                flexWrap: "wrap",
+                gap: 1,
+                alignItems: "center",
+              }}
+            >
+              {selectedCategory.id === "custom" && (
+                <Button
+                  variant="contained"
+                  onClick={handleOpen}
+                  startIcon={<AddIcon />}
+                  sx={{
+                    backgroundColor: "#000080",
+                    textTransform: "none",
+                    "&:hover": { backgroundColor: "darkblue" },
+                  }}
+                >
+                  Create Order
+                </Button>
+              )}
+
+              <Button
+                variant="contained"
+                onClick={() => setDownloadModalOpen(true)}
+                sx={{
+                  backgroundColor: "#000080",
+                  textTransform: "none",
+                  "&:hover": { backgroundColor: "darkblue" },
+                }}
+              >
+                Download Orders
+              </Button>
+
+              <Button
+                variant="outlined"
+                onClick={handleResetChange}
+                startIcon={<Refresh />}
+                sx={{
+                  borderColor: "#000080",
+                  color: "#000080",
+                  textTransform: "none",
+                }}
+              >
+                Reset
+              </Button>
+            </Box>
+          </Box>
+        )}
+
+        {/* DESKTOP: Existing horizontal layout */}
+        <Box
+          sx={{
+            display: { xs: "none", md: "flex" },
+            flexDirection: "row",
+            flexWrap: "nowrap",
+            alignItems: "center",
+            justifyContent: "flex-end",
+            gap: 2,
+            width: "100%",
+          }}
+        >
+          {/* Country Selector */}
+          <Box sx={{ display: "flex" }}>
+            <CountrySelector
+              selectedCountry={selectedCountry}
+              onCountryChange={(country) => {
+                setSelectedCountry(country);
+                setPage(1);
+              }}
+              minWidth={150}
+              sx={{ width: 150 }}
             />
           </Box>
 
           {/* Marketplace Selector */}
-          <Box sx={{ width: { xs: 180, md: "auto" } }}>
-            <FormControl size="small" sx={{ width: { xs: "100%", md: 180 } }}>
+          <Box>
+            <FormControl size="small" sx={{ width: 180 }}>
               <Select
                 value={selectedCategory?.id || "all"}
                 onChange={(e) => {
@@ -513,8 +699,8 @@ const OrderList = ({ fetchOrdersFromParent }) => {
           </Box>
 
           {/* Status Filter */}
-          <Box sx={{ width: { xs: 140, md: "auto" } }}>
-            <FormControl size="small" sx={{ width: { xs: "100%", md: 150 } }}>
+          <Box>
+            <FormControl size="small" sx={{ width: 150 }}>
               <InputLabel>Status</InputLabel>
               <Select
                 value={selectedStatus}
@@ -536,12 +722,12 @@ const OrderList = ({ fetchOrdersFromParent }) => {
             value={searchQuery}
             onChange={handleSearchChange}
             sx={{
-              width: { xs: 240, md: 300 },
+              width: 300,
               "& input": { fontSize: "14px" },
             }}
           />
 
-          {/* Action Buttons */}
+          {/* Existing Desktop Action Buttons */}
           <Box
             sx={{
               display: "flex",
@@ -550,17 +736,17 @@ const OrderList = ({ fetchOrdersFromParent }) => {
               gap: 1,
             }}
           >
-            {selectedCategory.id == "custom" && (
+            {selectedCategory.id === "custom" && (
               <Button
                 variant="text"
                 color="primary"
                 sx={{
                   backgroundColor: "#000080",
-                  fontSize: { xs: "12px", md: "14px" },
+                  fontSize: "14px",
                   color: "white",
                   fontWeight: 400,
                   minWidth: "auto",
-                  padding: { xs: "6px 12px", md: "8px 17px" },
+                  padding: "8px 17px",
                   textTransform: "capitalize",
                   height: "35px",
                   whiteSpace: "nowrap",
@@ -568,24 +754,8 @@ const OrderList = ({ fetchOrdersFromParent }) => {
                 }}
                 onClick={handleOpen}
               >
-                <AddIcon
-                  sx={{
-                    marginRight: "3px",
-                    fontSize: { xs: "16px", md: "20px" },
-                  }}
-                />
-                <Box
-                  component="span"
-                  sx={{ display: { xs: "none", sm: "inline" } }}
-                >
-                  Create Order
-                </Box>
-                <Box
-                  component="span"
-                  sx={{ display: { xs: "inline", sm: "none" } }}
-                >
-                  Create
-                </Box>
+                <AddIcon sx={{ marginRight: "3px", fontSize: "20px" }} />
+                Create Order
               </Button>
             )}
 
@@ -594,25 +764,14 @@ const OrderList = ({ fetchOrdersFromParent }) => {
               color="primary"
               onClick={() => setDownloadModalOpen(true)}
               sx={{
-                marginLeft: { xs: 0, md: "10px" },
+                marginLeft: "10px",
                 backgroundColor: "#000080",
-                fontSize: { xs: "12px", md: "14px" },
+                fontSize: "14px",
                 whiteSpace: "nowrap",
                 "&:hover": { backgroundColor: "darkblue" },
               }}
             >
-              <Box
-                component="span"
-                sx={{ display: { xs: "none", sm: "inline" } }}
-              >
-                Download orders
-              </Box>
-              <Box
-                component="span"
-                sx={{ display: { xs: "inline", sm: "none" } }}
-              >
-                Download
-              </Box>
+              Download orders
             </Button>
 
             <Tooltip title="Reset" arrow>
@@ -625,14 +784,11 @@ const OrderList = ({ fetchOrdersFromParent }) => {
                   display: "flex",
                   justifyContent: "center",
                   alignItems: "center",
-                  width: { xs: "40px", md: "auto" },
                   "&:hover": { backgroundColor: "darkblue" },
                 }}
                 onClick={handleResetChange}
               >
-                <Refresh
-                  sx={{ color: "white", fontSize: { xs: "18px", md: "20px" } }}
-                />
+                <Refresh sx={{ color: "white", fontSize: "20px" }} />
               </Button>
             </Tooltip>
           </Box>
@@ -647,7 +803,7 @@ const OrderList = ({ fetchOrdersFromParent }) => {
               px: 1,
             }}
           >
-            Total Orders: {orderCount ? orderCount : "0"}
+            Total Orders: {orderCount || 0}
           </Typography>
         </Box>
       </Box>

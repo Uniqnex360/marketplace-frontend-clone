@@ -5,9 +5,7 @@ import {
   IconButton,
   Typography,
   ListItemText,
-  List,
   Avatar,
-  ListItem,
   Menu,
   MenuItem,
   Divider,
@@ -15,7 +13,6 @@ import {
   Box,
   FormControl,
   Select,
-  InputLabel,
   useMediaQuery,
 } from "@mui/material";
 import {
@@ -28,8 +25,6 @@ import {
   Language,
 } from "@mui/icons-material";
 import { useTheme } from "@mui/material/styles";
-import { LocalizationProvider } from "@mui/x-date-pickers";
-import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
 import { useMarketplace } from "../../../utils/MarketplaceProvider";
 import { useNavigate } from "react-router-dom";
 
@@ -38,18 +33,15 @@ const accentColor = "#000080";
 function Notificationbar() {
   const navigate = useNavigate();
   const theme = useTheme();
-
-  // Responsive breakpoint
   const isSmall = useMediaQuery(theme.breakpoints.down("sm"));
-  const isMedium = useMediaQuery(theme.breakpoints.down("md"));
 
   const [anchorEl, setAnchorEl] = useState(null);
   const [mobileMenuAnchor, setMobileMenuAnchor] = useState(null);
 
+  const { selectedCountry, setSelectedCountry } = useMarketplace();
+
   const open = Boolean(anchorEl);
   const openMobileMenu = Boolean(mobileMenuAnchor);
-
-  const { selectedCountry, setSelectedCountry } = useMarketplace();
 
   const handleProfileClick = (event) => setAnchorEl(event.currentTarget);
   const handleProfileClose = () => setAnchorEl(null);
@@ -57,70 +49,116 @@ function Notificationbar() {
   const handleLogout = () => {
     localStorage.removeItem("token");
     localStorage.removeItem("user");
+    handleProfileClose();
     navigate("/");
   };
 
   const handleMobileMenu = (event) => setMobileMenuAnchor(event.currentTarget);
+
   const handleMobileMenuClose = () => setMobileMenuAnchor(null);
 
   return (
-    <AppBar position="fixed" sx={{ backgroundColor: accentColor, zIndex: 1201 }}>
-     <Toolbar sx={{ display: 'flex', justifyContent: 'space-between' }}>
-    {/* LEFT: Logo + (Optional) Drawer Trigger */}
-    <Box sx={{ display: "flex", alignItems: "center", flex: 1 }}>
-      {isSmall && (
-        <IconButton color="inherit" edge="start" onClick={handleMobileMenu}>
-          <MenuIcon />
-        </IconButton>
-      )}
-      <IconButton edge="start" color="inherit" aria-label="logo">
-        <img
-          src={require("../../assets/MarketLynxe.png")}
-          alt="Logo"
-          style={{
-            height: isSmall ? "32px" : "40px",
-            width: "auto",
-            backgroundColor: "#fff",
-            padding: "2px",
-            borderRadius: "2px",
-          }}
-        />
-      </IconButton>
-    </Box>
+    <AppBar
+      position="fixed"
+      sx={{ backgroundColor: accentColor, zIndex: 1201 }}
+    >
+      <Toolbar
+        sx={{
+          minHeight: { xs: 56, sm: 64 },
+          px: { xs: 1, sm: 2 },
+          display: "flex",
+          justifyContent: "space-between",
+          gap: 1,
+        }}
+      >
+        {/* Left: Logo and mobile menu */}
+        <Box sx={{ display: "flex", alignItems: "center", minWidth: 0 }}>
+          {isSmall && (
+            <IconButton
+              color="inherit"
+              edge="start"
+              aria-label="Open menu"
+              onClick={handleMobileMenu}
+            >
+              <MenuIcon />
+            </IconButton>
+          )}
 
-    {/* CENTER: Country Selector (Large screens only) */}
-    
-
-    {/* RIGHT SECTION */}
-    <Box sx={{ display: "flex", alignItems: "center", justifyContent: 'flex-end', gap: 1, flex: 1 }}>
-       <Box
+          <IconButton
+            edge="start"
+            color="inherit"
+            aria-label="Home"
+            onClick={() => navigate("/")}
+            sx={{ flexShrink: 0 }}
+          >
+            <Box
+              component="img"
+              src={require("../../assets/MarketLynxe.png")}
+              alt="Logo"
               sx={{
-                fontSize: "20px",
-                fontFamily:
-                  "'Nunito Sans', -apple-system, 'Segoe UI', 'Roboto', 'Helvetica Neue', 'Arial', sans-serif",
-                fontWeight: 500,
-                flexShrink: 0,
+                height: { xs: 30, sm: 40 },
+                width: "auto",
+                maxWidth: { xs: 90, sm: 140 },
+                backgroundColor: "#fff",
+                padding: "2px",
+                borderRadius: "2px",
+              }}
+            />
+          </IconButton>
+        </Box>
+
+        {/* Right: Welcome, notifications and profile */}
+        <Box
+          sx={{
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "flex-end",
+            gap: { xs: 0.5, sm: 1 },
+            minWidth: 0,
+          }}
+        >
+          <Typography
+            noWrap
+            sx={{
+              display: { xs: "none", sm: "block" },
+              fontFamily:
+                "'Nunito Sans', -apple-system, 'Segoe UI', Roboto, Arial, sans-serif",
+              fontWeight: 500,
+              fontSize: { sm: 14, md: 20 },
+              maxWidth: { sm: 120, md: "none" },
+              overflow: "hidden",
+              textOverflow: "ellipsis",
+            }}
+          >
+            Welcome User
+          </Typography>
+
+          {!isSmall && (
+            <IconButton color="inherit" aria-label="Notifications">
+              <Notifications sx={{ fontSize: { sm: 23, md: 26 } }} />
+            </IconButton>
+          )}
+
+          <IconButton
+            color="inherit"
+            aria-label="Profile menu"
+            onClick={handleProfileClick}
+          >
+            <Avatar
+              sx={{
+                bgcolor: "white",
+                color: accentColor,
+                width: { xs: 32, sm: 40 },
+                height: { xs: 32, sm: 40 },
               }}
             >
-              Welcome User
-            </Box>
-      {/* Notification Icon */}
-      {!isSmall && (
-        <IconButton color="inherit">
-          <Notifications sx={{ fontSize: 26 }} />
-        </IconButton>
-      )}
+              <AccountCircle />
+            </Avatar>
+          </IconButton>
+        </Box>
+      </Toolbar>
 
-      {/* Profile */}
-      <IconButton color="inherit" onClick={handleProfileClick}>
-        <Avatar sx={{ bgcolor: "white", color: accentColor }}>
-          <AccountCircle />
-        </Avatar>
-      </IconButton>
-    </Box>
-  </Toolbar>
-
-      {/* --- Profile Menu --- */}
+      {/* Profile menu */}
       <Menu anchorEl={anchorEl} open={open} onClose={handleProfileClose}>
         <MenuItem disabled>
           <ListItemText
@@ -128,26 +166,32 @@ function Notificationbar() {
             secondary="marketplace@user1gmail.com"
           />
         </MenuItem>
+
         <Divider />
+
         <MenuItem onClick={handleProfileClose}>
           <ListItemIcon>
             <AccountCircle />
           </ListItemIcon>
           <ListItemText primary="Profile" />
         </MenuItem>
+
         <MenuItem onClick={handleProfileClose}>
           <ListItemIcon>
             <CreditCard />
           </ListItemIcon>
           <ListItemText primary="Billing" />
         </MenuItem>
+
         <MenuItem onClick={handleProfileClose}>
           <ListItemIcon>
             <HelpOutline />
           </ListItemIcon>
           <ListItemText primary="Get Help" />
         </MenuItem>
+
         <Divider />
+
         <MenuItem onClick={handleLogout}>
           <ListItemIcon>
             <ExitToApp />
@@ -156,21 +200,29 @@ function Notificationbar() {
         </MenuItem>
       </Menu>
 
-      {/* --- Mobile Menu (Hamburger) --- */}
+      {/* Mobile menu: country selector and notifications */}
       <Menu
         anchorEl={mobileMenuAnchor}
         open={openMobileMenu}
         onClose={handleMobileMenuClose}
+        slotProps={{
+          paper: {
+            sx: { width: 220, maxWidth: "calc(100vw - 16px)" },
+          },
+        }}
       >
-        <MenuItem>
+        <MenuItem disableRipple>
           <ListItemIcon>
             <Language />
           </ListItemIcon>
-          <FormControl size="small" sx={{ minWidth: 120 }}>
+          <FormControl size="small" fullWidth>
             <Select
               value={selectedCountry}
-              onChange={(e) => setSelectedCountry(e.target.value)}
-              displayEmpty
+              onChange={(event) => {
+                setSelectedCountry(event.target.value);
+                handleMobileMenuClose();
+              }}
+              inputProps={{ "aria-label": "Select country" }}
             >
               <MenuItem value="US">US</MenuItem>
               <MenuItem value="UK">UK</MenuItem>
@@ -178,7 +230,7 @@ function Notificationbar() {
           </FormControl>
         </MenuItem>
 
-        <MenuItem>
+        <MenuItem onClick={handleMobileMenuClose}>
           <ListItemIcon>
             <Notifications />
           </ListItemIcon>
